@@ -6,17 +6,22 @@
 #include <map>
 #include <tuple>
 #include <functional>
+#include <mutex>
 
 extern "C" void eventCallback(evutil_socket_t fd, short eventType, void* data);
+extern "C" void controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
 
 namespace ThorsAnvil::Nissa
 {
 
+enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
+enum class EventTask        {Create, Restore, Remove};
+
 using EventBase     = ::event_base;
 using Event         = ::event;
-using EventAction   = std::function<void()>;
+using TimeOut       = ::timeval;
+using EventAction   = std::function<void(bool)>;
 
-enum class EventType : short {Read = EV_READ, Write = EV_WRITE};
 
 struct EventDef
 {
@@ -29,13 +34,25 @@ struct EventInfo
     Event*      event;
     EventAction action;
 };
+struct EventUpdate
+{
+    EventDef    eventDef;
+    EventTask   task;
+    EventAction action;
+};
 
-using EventMap = std::map<EventDef, EventInfo>;
+using EventMap          = std::map<EventDef, EventInfo>;
+using EventUpdateList   = std::vector<EventUpdate>;
 
 class EventHandler
 {
+    static constexpr int ControlTimerPause = 1000;  // microsends between iterations.
+
     EventBase*      eventBase;
     EventMap        tracking;
+    std::mutex      updateListMutex;
+    EventUpdateList updateList;
+    Event*          timer;
 
     public:
         EventHandler();
@@ -46,9 +63,17 @@ class EventHandler
 
         void run();
         void add(int fd, EventType eventType, EventAction&& action);
+        void restore(int fd, EventType eventType);
+        void remove(int fd, EventType eventType);
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
         void eventHandle(int fd, EventType type);
+
+    private:
+        friend void ::controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
+        void controlTimerAction();
+
+        bool checkFileDescriptorOK(int fd, EventType type);
 };
 
 }

@@ -32,11 +32,11 @@ class MoveOnCopy
         MoveOnCopy& operator=(MoveOnCopy&&)         = delete;
 };
 
-Work Server::createHttpJob(SocketStream&& acceptStream)
+Work Server::createHttpJob(int socketId)
 {
-    return [&, streamRef = MoveOnCopy{std::move(acceptStream)}]()
+    return [&, socketId]()
     {
-        SocketStream& stream = streamRef.value;
+        SocketStream& stream = connections[socketId];
 
         std::size_t bodySize = 0;
         bool        closeSocket = true;
@@ -69,8 +69,43 @@ Work Server::createHttpJob(SocketStream&& acceptStream)
             stream.flush();
         }
         std::cerr << "Done\n";
-        if (!closeSocket) {
-            jobQueue.addJob(createHttpJob(std::move(stream)));
+        if (!closeSocket)
+        {
+            std::cerr << "Restore Socket\n";
+            eventHandler.restore(socketId, EventType::Read);
+        }
+        else
+        {
+            std::cerr << "Remove Socket\n";
+            eventHandler.remove(socketId, EventType::Read);
+            connections.erase(socketId);
+        }
+    };
+}
+
+Work Server::createAcceptJob(int serverId)
+{
+    return [&, serverId]()
+    {
+        using ThorsAnvil::ThorsSocket::Socket;
+        using ThorsAnvil::ThorsSocket::Blocking;
+
+        Socket          accept = listeners[serverId].accept(Blocking::No);
+        if (accept.isConnected())
+        {
+            int socketId = accept.socketId();
+            connections.insert({socketId, std::move(accept)});
+            eventHandler.add(socketId, EventType::Read, [&, socketId](bool streamOk)
+            {
+                if (!streamOk)
+                {
+                    eventHandler.remove(socketId, EventType::Read);
+                    connections.erase(socketId);
+                    return;
+                }
+                jobQueue.addJob(createHttpJob(socketId));
+            });
+            eventHandler.restore(listeners[serverId].socketId(), EventType::Read);
         }
     };
 }
@@ -80,17 +115,9 @@ void Server::listen(int port)
     using ThorsAnvil::ThorsSocket::SServerInfo;
     listeners.emplace_back(SServerInfo{port, ctx});
 
-    eventHandler.add(listeners.back().socketId(), EventType::Read, [&, serverId = listeners.size() - 1]()
+    eventHandler.add(listeners.back().socketId(), EventType::Read, [&, serverId = listeners.size() - 1](bool)
     {
-        using ThorsAnvil::ThorsSocket::Socket;
-        using ThorsAnvil::ThorsSocket::Blocking;
-
-        Socket          accept = listeners[serverId].accept(Blocking::No);
-        if (accept.isConnected())
-        {
-            SocketStream    stream{std::move(accept)};
-            jobQueue.addJob(createHttpJob(std::move(stream)));
-        }
+        jobQueue.addJob(createAcceptJob(serverId));
         std::cerr << "Next Connection\n";
     });
 }

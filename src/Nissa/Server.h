@@ -20,10 +20,12 @@ class Server
     using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
     using Certificate   = ThorsAnvil::ThorsSocket::CertificateInfo;
     using SSLctx        = ThorsAnvil::ThorsSocket::SSLctx;
-    using Connections   = std::queue<SocketStream>;
+    using Listeners     = std::vector<SocketServer>;
+    using Connections   = std::map<int, SocketStream>;
 
     SSLctx                          ctx;
-    std::vector<SocketServer>       listeners;
+    Listeners                       listeners;
+    Connections                     connections;
     EventHandler                    eventHandler;
     JobQueue                        jobQueue;
 
@@ -37,7 +39,8 @@ class Server
         SocketStream getNextStream();
         void         connectionHandler();
 
-        Work createHttpJob(SocketStream&& acceptStream);
+        Work createAcceptJob(int serverId);
+        Work createHttpJob(int socketId);
 };
 
 }
