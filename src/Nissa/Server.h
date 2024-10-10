@@ -25,7 +25,6 @@ class Server
 
     SSLctx                          ctx;
     Listeners                       listeners;
-    Connections                     connections;
     EventHandler                    eventHandler;
     JobQueue                        jobQueue;
 
@@ -39,8 +38,8 @@ class Server
         SocketStream getNextStream();
         void         connectionHandler();
 
-        Work createAcceptJob(int serverId);
-        Work createHttpJob(int socketId);
+        WorkAction createAcceptJob(int serverId);
+        WorkAction createHttpJob(int socketId);
 };
 
 }

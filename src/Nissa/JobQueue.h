@@ -2,6 +2,7 @@
 #define THORSANVIL_NISSA_JOB_QUEUE_H
 
 #include "NissaConfig.h"
+#include "ThorsSocket/SocketStream.h"
 #include <functional>
 #include <thread>
 #include <mutex>
@@ -10,7 +11,13 @@
 namespace ThorsAnvil::Nissa
 {
 
-using Work          = std::function<void()>;
+using WorkAction    = std::function<void(ThorsAnvil::ThorsSocket::SocketStream&&)>;
+struct Work
+{
+
+    WorkAction      action;
+    ThorsAnvil::ThorsSocket::SocketStream    stream;
+};
 class JobQueue
 {
     using WorkQueue     = std::queue<Work>;
@@ -25,7 +32,7 @@ class JobQueue
         JobQueue(int workerCount);
         ~JobQueue();
 
-        void addJob(Work&& work);
+        void addJob(WorkAction&& action, ThorsAnvil::ThorsSocket::SocketStream&& stream);
 
     private:
         Work     getNextJob();
