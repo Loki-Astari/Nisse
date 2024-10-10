@@ -6,6 +6,19 @@
 #include "ThorsSocket/SocketStream.h"
 #include "ThorsLogging/ThorsLogging.h"
 #include <charconv>
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
+using Connections = std::queue<ThorsAnvil::ThorsSocket::SocketStream>;
+std::vector<std::thread>    workers;
+std::mutex                  connectionMutex;
+std::condition_variable     connectionCV;
+Connections                 connections;
+bool                        finished = false;
+
+void connectionHandler();
 
 int main()
 {
@@ -22,18 +35,44 @@ int main()
     using ThorsAnvil::ThorsSocket::SServerInfo;
     using ThorsAnvil::ThorsSocket::Blocking;
 
-    bool            finished = false;
     CertificateInfo certificate{"/etc/letsencrypt/live/thorsanvil.dev/fullchain.pem",
                                 "/etc/letsencrypt/live/thorsanvil.dev/privkey.pem"
                                };
     SSLctx          ctx{SSLMethodType::Server, certificate};
     Server          server{SServerInfo{8080, ctx}};
 
+
+    workers.emplace_back(connectionHandler);
+
     while (!finished)
     {
         Socket          accept = server.accept(Blocking::No);
-        SocketStream    stream(std::move(accept));
-        bool            anotherPage;
+        std::unique_lock    lock(connectionMutex);
+        connections.emplace(std::move(accept));
+        connectionCV.notify_one();
+    }
+}
+
+ThorsAnvil::ThorsSocket::SocketStream getNextStream()
+{
+    using ThorsAnvil::ThorsSocket::SocketStream;
+
+    std::unique_lock    lock(connectionMutex);
+    connectionCV.wait(lock, [](){return !connections.empty();});
+    SocketStream socket = std::move(connections.front());
+    connections.pop();
+    return socket;
+}
+
+void connectionHandler()
+{
+    using ThorsAnvil::ThorsSocket::SocketStream;
+
+    while(!finished)
+    {
+        SocketStream stream = getNextStream();
+
+        bool         anotherPage;
         do
         {
             anotherPage = false;
