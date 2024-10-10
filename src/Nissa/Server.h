@@ -2,6 +2,7 @@
 #define THORSANVIL_NISSA_SERVER_H
 
 #include "NissaConfig.h"
+#include "EventHandler.h"
 #include "ThorsSocket/Server.h"
 #include "ThorsSocket/SocketStream.h"
 #include <functional>
@@ -25,6 +26,7 @@ class Server
     std::condition_variable         connectionCV;
     Connections                     connections;
     bool                            finished;
+    EventHandler                    eventHandler;
 
     public:
         Server(Certificate certificate);

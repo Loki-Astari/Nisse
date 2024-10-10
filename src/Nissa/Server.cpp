@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "EventHandler.h"
 #include <charconv>
 
 using namespace ThorsAnvil::Nissa;
@@ -13,19 +14,20 @@ Server::Server(Certificate certificate)
 void Server::run(int port)
 {
     using ThorsAnvil::ThorsSocket::Server;
-    using ThorsAnvil::ThorsSocket::Socket;
     using ThorsAnvil::ThorsSocket::SServerInfo;
-    using ThorsAnvil::ThorsSocket::Blocking;
 
     Server  server{SServerInfo{port, ctx}};
-
-    while (!finished)
+    eventHandler.add(server.socketId(), EventType::Read, [&]()
     {
+        using ThorsAnvil::ThorsSocket::Socket;
+        using ThorsAnvil::ThorsSocket::Blocking;
+
         Socket          accept = server.accept(Blocking::No);
         std::unique_lock    lock(connectionMutex);
         connections.emplace(std::move(accept));
         connectionCV.notify_one();
-    }
+    });
+    eventHandler.run();
 }
 
 Server::SocketStream Server::getNextStream()
