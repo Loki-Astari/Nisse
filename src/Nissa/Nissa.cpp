@@ -22,5 +22,7 @@ int main(int argc, char* argv[])
     if (argc > 1) {
         port = std::stoi(argv[1]);
     }
-    server.run(port);
+    server.listen(port);
+    server.listen(port + 1);
+    server.run();
 }

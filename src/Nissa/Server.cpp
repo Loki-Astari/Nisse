@@ -11,23 +11,26 @@ Server::Server(Certificate certificate)
     workers.emplace_back(&Server::connectionHandler, this);
 }
 
-void Server::run(int port)
+void Server::run()
 {
-    using ThorsAnvil::ThorsSocket::Server;
-    using ThorsAnvil::ThorsSocket::SServerInfo;
+    eventHandler.run();
+}
 
-    Server  server{SServerInfo{port, ctx}};
-    eventHandler.add(server.socketId(), EventType::Read, [&]()
+void Server::listen(int port)
+{
+    using ThorsAnvil::ThorsSocket::SServerInfo;
+    listeners.emplace_back(SServerInfo{port, ctx});
+
+    eventHandler.add(listeners.back().socketId(), EventType::Read, [&, serverId = listeners.size() - 1]()
     {
         using ThorsAnvil::ThorsSocket::Socket;
         using ThorsAnvil::ThorsSocket::Blocking;
 
-        Socket          accept = server.accept(Blocking::No);
+        Socket          accept = listeners[serverId].accept(Blocking::No);
         std::unique_lock    lock(connectionMutex);
         connections.emplace(std::move(accept));
         connectionCV.notify_one();
     });
-    eventHandler.run();
 }
 
 Server::SocketStream Server::getNextStream()
