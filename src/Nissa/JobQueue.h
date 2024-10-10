@@ -11,13 +11,7 @@
 namespace ThorsAnvil::Nissa
 {
 
-using WorkAction    = std::function<void(ThorsAnvil::ThorsSocket::SocketStream&&)>;
-struct Work
-{
-
-    WorkAction      action;
-    ThorsAnvil::ThorsSocket::SocketStream    stream;
-};
+using Work    = std::function<void()>;
 class JobQueue
 {
     using WorkQueue     = std::queue<Work>;
@@ -32,7 +26,7 @@ class JobQueue
         JobQueue(int workerCount);
         ~JobQueue();
 
-        void addJob(WorkAction&& action, ThorsAnvil::ThorsSocket::SocketStream&& stream);
+        void addJob(Work&& action);
 
     private:
         Work     getNextJob();

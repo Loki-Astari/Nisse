@@ -2,6 +2,7 @@
 #define THORSANVIL_NISSA_PINT_H
 
 #include "NissaConfig.h"
+#include "EventHandler.h"
 #include "ThorsSocket/SocketStream.h"
 #include <functional>
 
@@ -15,7 +16,7 @@ class Pint
         using ServerAction = std::function<bool(SocketStream&&)>;
 
         virtual ~Pint() {}
-        virtual bool handleRequest(SocketStream& stream)    = 0;
+        virtual EventTask handleRequest(SocketStream& stream)    = 0;
 };
 
 }

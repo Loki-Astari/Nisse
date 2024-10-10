@@ -1,4 +1,5 @@
 #include "EventHandler.h"
+#include "JobQueue.h"
 
 void eventCallback(evutil_socket_t fd, short eventType, void* data)
 {
@@ -22,8 +23,9 @@ Event::Event(EventBase& eventBase, EventHandler& eventHandler)
     : event{evtimer_new(eventBase.eventBase, controlTimerCallback, &eventHandler)}
 {}
 
-EventHandler::EventHandler()
-    : timer(eventBase, *this)
+EventHandler::EventHandler(JobQueue& jobQueue)
+    : jobQueue(jobQueue)
+    , timer(eventBase, *this)
 {
     timer.add(ControlTimerPause);
 }
@@ -33,22 +35,10 @@ void EventHandler::run()
     eventBase.run();
 }
 
-void EventHandler::add(int fd, EventType eventType, EventAction&& action)
+void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, EventAction&& action)
 {
     std::unique_lock    lock(updateListMutex);
-    updateList.emplace_back(EventDef{fd, eventType}, EventTask::Create, std::move(action));
-}
-
-void EventHandler::restore(int fd, EventType eventType)
-{
-    std::unique_lock    lock(updateListMutex);
-    updateList.emplace_back(EventDef{fd, eventType}, EventTask::Restore, [](bool){});
-}
-
-void EventHandler::remove(int fd, EventType eventType)
-{
-    std::unique_lock    lock(updateListMutex);
-    updateList.emplace_back(EventDef{fd, eventType}, EventTask::Remove, [](bool){});
+    updateList.emplace_back(fd, EventTask::Create, std::move(action), std::move(stream));
 }
 
 bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
@@ -63,51 +53,73 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 
 void EventHandler::eventHandle(int fd, EventType type)
 {
-    auto find = tracking.find(EventDef{fd, type});
+    auto find = tracking.find(fd);
     if (find != tracking.end())
     {
         EventInfo& info = find->second;
-        info.action(checkFileDescriptorOK(fd, type));
+
+        if (info.stream.getSocket().isConnected() && !checkFileDescriptorOK(fd, type))
+        {
+            std::cerr << "Remove Socket\n";
+            std::unique_lock    lock(updateListMutex);
+            updateList.emplace_back(fd, EventTask::Remove, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
+            return;
+        }
+        jobQueue.addJob([&]()
+        {
+            EventTask task = info.action(info.stream);
+            std::unique_lock    lock(updateListMutex);
+            updateList.emplace_back(fd, task, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
+        });
     }
 }
 
 void EventHandler::controlTimerAction()
 {
     std::unique_lock    lock(updateListMutex);
-    for (auto const& eventUpdate: updateList)
+    for (auto& eventUpdate: updateList)
     {
-        EventDef const&    eventDef = eventUpdate.eventDef;
         switch (eventUpdate.task)
         {
             case EventTask::Create:
             {
-                auto find = tracking.find(eventDef);
+                auto find = tracking.find(eventUpdate.fd);
 
                 if (find == tracking.end())
                 {
-                    Event event(eventBase, eventDef.fd, static_cast<short>(eventDef.type), *this);
-                    auto const [iter, ok] = tracking.insert({eventDef, EventInfo{std::move(event), std::move(eventUpdate.action)}});
+                    Event readEvent(eventBase, eventUpdate.fd, EV_READ, *this);
+                    Event writeEvent(eventBase, eventUpdate.fd, EV_WRITE, *this);
+                    auto const [iter, ok] = tracking.insert({eventUpdate.fd, EventInfo{std::move(readEvent), std::move(writeEvent), std::move(eventUpdate.action), std::move(eventUpdate.stream)}});
                     find = iter;
                 }
                 else
                 {
                     find->second.action = std::move(eventUpdate.action);
+                    find->second.stream = std::move(eventUpdate.stream);
                 }
 
-                find->second.event.add();
+                find->second.readEvent.add();
                 break;
             }
-            case EventTask::Restore:
+            case EventTask::RestoreRead:
             {
-                auto find = tracking.find(eventDef);
+                auto find = tracking.find(eventUpdate.fd);
                 if (find != tracking.end()) {
-                    find->second.event.add();
+                    find->second.readEvent.add();
+                }
+                break;
+            }
+            case EventTask::RestoreWrite:
+            {
+                auto find = tracking.find(eventUpdate.fd);
+                if (find != tracking.end()) {
+                    find->second.writeEvent.add();
                 }
                 break;
             }
             case EventTask::Remove:
             {
-                auto find = tracking.find(eventDef);
+                auto find = tracking.find(eventUpdate.fd);
                 if (find != tracking.end()) {
                     tracking.erase(find);
                 }

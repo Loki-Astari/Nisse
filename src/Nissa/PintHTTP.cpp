@@ -3,7 +3,7 @@
 
 using namespace ThorsAnvil::Nissa;
 
-bool PintHTTP::handleRequest(SocketStream& stream)
+EventTask PintHTTP::handleRequest(SocketStream& stream)
 {
     std::size_t bodySize = 0;
     bool        closeSocket = true;
@@ -36,5 +36,5 @@ bool PintHTTP::handleRequest(SocketStream& stream)
         stream.flush();
     }
     std::cerr << "Done\n";
-    return closeSocket;
+    return closeSocket ? EventTask::Remove : EventTask::RestoreRead;
 }

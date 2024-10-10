@@ -30,8 +30,8 @@ class Server
 
     SSLctx                          ctx;
     Listeners                       listeners;
-    EventHandler                    eventHandler;
     JobQueue                        jobQueue;
+    EventHandler                    eventHandler;
 
     public:
         Server(Certificate certificate, int workerCount = 1);
@@ -43,8 +43,8 @@ class Server
         SocketStream getNextStream();
         void         connectionHandler();
 
-        WorkAction createAcceptJob(int serverId);
-        WorkAction createStreamJob(int socketId, Pint& pint);
+        EventAction createAcceptJob(int serverId);
+        EventAction createStreamJob(Pint& pint);
 };
 
 }

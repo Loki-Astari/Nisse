@@ -3,6 +3,7 @@
 
 #include "NissaConfig.h"
 #include "EventHandlerLibEvent.h"
+#include "ThorsSocket/SocketStream.h"
 #include <event2/event.h>
 #include <map>
 #include <tuple>
@@ -15,37 +16,54 @@ extern "C" void controlTimerCallback(evutil_socket_t fd, short eventType, void* 
 namespace ThorsAnvil::Nissa
 {
 
-enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
-enum class EventTask        {Create, Restore, Remove};
+class JobQueue;
 
-using EventAction   = std::function<void(bool)>;
+enum class EventType : short{Read = EV_READ, Write = EV_WRITE, Ignore = 0};
+enum class EventTask        {Create, RestoreRead, RestoreWrite, Remove};
+
+using EventAction   = std::function<EventTask(ThorsAnvil::ThorsSocket::SocketStream& stream)>;
 
 
-struct EventDef
-{
-    int         fd;
-    EventType   type;
-    friend bool operator<(EventDef const& lhs, EventDef const& rhs) {return std::tie(lhs.fd, lhs.type) < std::tie(rhs.fd, rhs.type);}
-};
 struct EventInfo
 {
-    Event       event;
-    EventAction action;
-};
-struct EventUpdate
-{
-    EventDef    eventDef;
-    EventTask   task;
-    EventAction action;
+    using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
+    EventInfo(Event&& readEvent, Event&& writeEvent, EventAction&& action, SocketStream&& stream)
+        : readEvent(std::move(readEvent))
+        , writeEvent(std::move(writeEvent))
+        , action(std::move(action))
+        , stream(std::move(stream))
+    {}
+    EventInfo(EventInfo&& move)
+        : readEvent(std::move(move.readEvent))
+        , writeEvent(std::move(move.writeEvent))
+        , action(std::move(move.action))
+        , stream(std::move(move.stream))
+    {}
+
+    Event           readEvent;
+    Event           writeEvent;
+    EventAction     action;
+    SocketStream    stream;
 };
 
-using EventMap          = std::map<EventDef, EventInfo>;
+struct EventUpdate
+{
+    using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
+
+    int             fd;
+    EventTask       task;
+    EventAction     action;
+    SocketStream    stream;
+};
+
+using EventMap          = std::map<int, EventInfo>;
 using EventUpdateList   = std::vector<EventUpdate>;
 
 class EventHandler
 {
     static constexpr int ControlTimerPause = 1000;  // microsends between iterations.
 
+    JobQueue&       jobQueue;
     EventBase       eventBase;
     EventMap        tracking;
     std::mutex      updateListMutex;
@@ -53,12 +71,10 @@ class EventHandler
     Event           timer;
 
     public:
-        EventHandler();
+        EventHandler(JobQueue& jobQueue);
 
         void run();
-        void add(int fd, EventType eventType, EventAction&& action);
-        void restore(int fd, EventType eventType);
-        void remove(int fd, EventType eventType);
+        void add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, EventAction&& action);
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
         void eventHandle(int fd, EventType type);

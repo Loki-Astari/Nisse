@@ -13,7 +13,7 @@ class PintHTTP: public Pint
     using ServerAction = Pint::ServerAction;
 
     public:
-        virtual bool handleRequest(SocketStream& stream) override;
+        virtual EventTask handleRequest(SocketStream& stream) override;
 };
 
 }

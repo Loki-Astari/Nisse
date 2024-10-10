@@ -17,10 +17,10 @@ JobQueue::~JobQueue()
     }
 }
 
-void JobQueue::addJob(WorkAction&& action, ThorsAnvil::ThorsSocket::SocketStream&& stream)
+void JobQueue::addJob(Work&& action)
 {
     std::unique_lock    lock(workMutex);
-    workQueue.emplace(std::move(action), std::move(stream));
+    workQueue.emplace(action);
     workCV.notify_one();
 }
 
@@ -38,6 +38,6 @@ void JobQueue::processWork()
     while (!finished)
     {
         Work work   = getNextJob();
-        work.action(std::move(work.stream));
+        work();
     }
 }
