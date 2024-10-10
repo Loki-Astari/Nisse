@@ -2,6 +2,7 @@
 #define THORSANVIL_NISSA_EVENT_HANDLER_H
 
 #include "NissaConfig.h"
+#include "EventHandlerLibEvent.h"
 #include <event2/event.h>
 #include <map>
 #include <tuple>
@@ -17,9 +18,6 @@ namespace ThorsAnvil::Nissa
 enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
 enum class EventTask        {Create, Restore, Remove};
 
-using EventBase     = ::event_base;
-using Event         = ::event;
-using TimeOut       = ::timeval;
 using EventAction   = std::function<void(bool)>;
 
 
@@ -31,7 +29,7 @@ struct EventDef
 };
 struct EventInfo
 {
-    Event*      event;
+    Event       event;
     EventAction action;
 };
 struct EventUpdate
@@ -48,18 +46,14 @@ class EventHandler
 {
     static constexpr int ControlTimerPause = 1000;  // microsends between iterations.
 
-    EventBase*      eventBase;
+    EventBase       eventBase;
     EventMap        tracking;
     std::mutex      updateListMutex;
     EventUpdateList updateList;
-    Event*          timer;
+    Event           timer;
 
     public:
         EventHandler();
-        ~EventHandler();
-
-        EventHandler(EventHandler const&)               = delete;
-        EventHandler& operator=(EventHandler const&)    = delete;
 
         void run();
         void add(int fd, EventType eventType, EventAction&& action);

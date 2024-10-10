@@ -14,27 +14,23 @@ void controlTimerCallback(evutil_socket_t, short, void* data)
 
 using namespace ThorsAnvil::Nissa;
 
-EventHandler::EventHandler()
-    : eventBase(event_base_new())
-{
-    timer = evtimer_new(eventBase, controlTimerCallback, this);
-    TimeOut timeout = {0, ControlTimerPause};
-    evtimer_add(timer, &timeout);
-}
+Event::Event(EventBase& eventBase, int fd, short type, EventHandler& eventHandler)
+    : event{event_new(eventBase.eventBase, fd, type, &eventCallback, &eventHandler)}
+{}
 
-EventHandler::~EventHandler()
+Event::Event(EventBase& eventBase, EventHandler& eventHandler)
+    : event{evtimer_new(eventBase.eventBase, controlTimerCallback, &eventHandler)}
+{}
+
+EventHandler::EventHandler()
+    : timer(eventBase, *this)
 {
-    for (auto& event: tracking)
-    {
-        event_del(event.second.event);
-    }
-    evtimer_del(timer);
-    event_base_free(eventBase);
+    timer.add(ControlTimerPause);
 }
 
 void EventHandler::run()
 {
-    event_base_loop(eventBase, EVLOOP_NO_EXIT_ON_EMPTY);
+    eventBase.run();
 }
 
 void EventHandler::add(int fd, EventType eventType, EventAction&& action)
@@ -42,11 +38,13 @@ void EventHandler::add(int fd, EventType eventType, EventAction&& action)
     std::unique_lock    lock(updateListMutex);
     updateList.emplace_back(EventDef{fd, eventType}, EventTask::Create, std::move(action));
 }
+
 void EventHandler::restore(int fd, EventType eventType)
 {
     std::unique_lock    lock(updateListMutex);
     updateList.emplace_back(EventDef{fd, eventType}, EventTask::Restore, [](bool){});
 }
+
 void EventHandler::remove(int fd, EventType eventType)
 {
     std::unique_lock    lock(updateListMutex);
@@ -72,6 +70,7 @@ void EventHandler::eventHandle(int fd, EventType type)
         info.action(checkFileDescriptorOK(fd, type));
     }
 }
+
 void EventHandler::controlTimerAction()
 {
     std::unique_lock    lock(updateListMutex);
@@ -86,8 +85,8 @@ void EventHandler::controlTimerAction()
 
                 if (find == tracking.end())
                 {
-                    Event* event = event_new(eventBase, eventDef.fd, static_cast<short>(eventDef.type), &eventCallback, this);
-                    auto const [iter, ok] = tracking.insert({eventDef, EventInfo{event, std::move(eventUpdate.action)}});
+                    Event event(eventBase, eventDef.fd, static_cast<short>(eventDef.type), *this);
+                    auto const [iter, ok] = tracking.insert({eventDef, EventInfo{std::move(event), std::move(eventUpdate.action)}});
                     find = iter;
                 }
                 else
@@ -95,27 +94,21 @@ void EventHandler::controlTimerAction()
                     find->second.action = std::move(eventUpdate.action);
                 }
 
-                EventInfo& info = find->second;
-                event_add(info.event, nullptr);
+                find->second.event.add();
                 break;
             }
             case EventTask::Restore:
             {
                 auto find = tracking.find(eventDef);
-                if (find != tracking.end())
-                {
-                    EventInfo& info = find->second;
-                    event_add(info.event, nullptr);
+                if (find != tracking.end()) {
+                    find->second.event.add();
                 }
                 break;
             }
             case EventTask::Remove:
             {
                 auto find = tracking.find(eventDef);
-                if (find != tracking.end())
-                {
-                    EventInfo& info = find->second;
-                    event_del(info.event);
+                if (find != tracking.end()) {
                     tracking.erase(find);
                 }
                 break;
@@ -123,6 +116,5 @@ void EventHandler::controlTimerAction()
         }
     }
     updateList.clear();
-    TimeOut timeout = {0, ControlTimerPause};
-    evtimer_add(timer, &timeout);
+    timer.add(ControlTimerPause);
 }
