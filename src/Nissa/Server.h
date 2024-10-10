@@ -4,6 +4,7 @@
 #include "NissaConfig.h"
 #include "EventHandler.h"
 #include "JobQueue.h"
+#include "Pint.h"
 #include "ThorsSocket/Server.h"
 #include "ThorsSocket/SocketStream.h"
 #include <functional>
@@ -20,8 +21,12 @@ class Server
     using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
     using Certificate   = ThorsAnvil::ThorsSocket::CertificateInfo;
     using SSLctx        = ThorsAnvil::ThorsSocket::SSLctx;
-    using Listeners     = std::vector<SocketServer>;
-    using Connections   = std::map<int, SocketStream>;
+    struct Listener
+    {
+        SocketServer    server;
+        Pint&           pint;
+    };
+    using Listeners     = std::vector<Listener>;
 
     SSLctx                          ctx;
     Listeners                       listeners;
@@ -32,14 +37,14 @@ class Server
         Server(Certificate certificate, int workerCount = 1);
 
         void run();
-        void listen(int port);
+        void listen(int port, Pint& pint);
 
     private:
         SocketStream getNextStream();
         void         connectionHandler();
 
         WorkAction createAcceptJob(int serverId);
-        WorkAction createHttpJob(int socketId);
+        WorkAction createStreamJob(int socketId, Pint& pint);
 };
 
 }

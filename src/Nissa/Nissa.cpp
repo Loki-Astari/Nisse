@@ -1,5 +1,6 @@
 #include "Nissa.h"
 #include "Server.h"
+#include "PintHTTP.h"
 
 #include "ThorsLogging/ThorsLogging.h"
 #include <string>
@@ -22,7 +23,8 @@ int main(int argc, char* argv[])
     if (argc > 1) {
         port = std::stoi(argv[1]);
     }
-    server.listen(port);
-    server.listen(port + 1);
+    PintHTTP    http;
+    server.listen(port, http);
+    server.listen(port + 1, http);
     server.run();
 }

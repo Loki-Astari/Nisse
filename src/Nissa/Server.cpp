@@ -1,6 +1,5 @@
 #include "Server.h"
 #include "EventHandler.h"
-#include <charconv>
 
 using namespace ThorsAnvil::Nissa;
 
@@ -32,43 +31,12 @@ class MoveOnCopy
         MoveOnCopy& operator=(MoveOnCopy&&)         = delete;
 };
 
-WorkAction Server::createHttpJob(int socketId)
+WorkAction Server::createStreamJob(int socketId, Pint& pint)
 {
     return [&, socketId](ThorsAnvil::ThorsSocket::SocketStream&& streamData)
     {
-        SocketStream stream = std::move(streamData);
-
-        std::size_t bodySize = 0;
-        bool        closeSocket = true;
-        std::string line;
-        while (std::getline(stream, line))
-        {
-            std::cout << "Request: " << line << "\n";
-            if (line == "\r") {
-                break;
-            }
-            if (line == "Connection: keep-alive\r") {
-                closeSocket = false;
-            }
-            if (line.compare("Content-Length: ") == 0) {
-                std::from_chars(&line[0] + 16, &line[0] + line.size(), bodySize);
-            }
-        }
-        stream.ignore(bodySize);
-
-        if (stream)
-        {
-            stream << "HTTP/1.1 200 OK\r\n"
-                   << "Content-Length: 135\r\n"
-                   << "\r\n"
-                   << R"(<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html>
-<head><title>Nissa server 1.1</title></head>
-<body>Hello world</body>
-</html>)";
-            stream.flush();
-        }
-        std::cerr << "Done\n";
+        ThorsAnvil::ThorsSocket::SocketStream stream = std::move(streamData);
+        bool closeSocket = pint.handleRequest(stream);
         if (!closeSocket)
         {
             std::cerr << "Restore Socket\n";
@@ -80,7 +48,7 @@ WorkAction Server::createHttpJob(int socketId)
                     eventHandler.remove(socketId, EventType::Read);
                     return;
                 }
-                jobQueue.addJob(createHttpJob(socketId), std::move(streamRef.value));
+                jobQueue.addJob(createStreamJob(socketId, pint), std::move(streamRef.value));
             });
         }
         else
@@ -98,7 +66,7 @@ WorkAction Server::createAcceptJob(int serverId)
         using ThorsAnvil::ThorsSocket::Socket;
         using ThorsAnvil::ThorsSocket::Blocking;
 
-        Socket          accept = listeners[serverId].accept(Blocking::No);
+        Socket          accept = listeners[serverId].server.accept(Blocking::No);
         if (accept.isConnected())
         {
             int socketId = accept.socketId();
@@ -106,24 +74,25 @@ WorkAction Server::createAcceptJob(int serverId)
             {
                 if (!streamOk)
                 {
+                    std::cerr << "Remove Socket\n";
                     eventHandler.remove(socketId, EventType::Read);
                     return;
                 }
-                jobQueue.addJob(createHttpJob(socketId), ThorsAnvil::ThorsSocket::SocketStream{std::move(acceptRef.value)});
+                jobQueue.addJob(createStreamJob(socketId, listeners[serverId].pint), ThorsAnvil::ThorsSocket::SocketStream{std::move(acceptRef.value)});
             });
-            eventHandler.restore(listeners[serverId].socketId(), EventType::Read);
+            eventHandler.restore(listeners[serverId].server.socketId(), EventType::Read);
         }
     };
 }
 
-void Server::listen(int port)
+void Server::listen(int port, Pint& pint)
 {
     // This is not safe to use after run() is called.
     // While the background workers can accesses listeners this should not be called.
     using ThorsAnvil::ThorsSocket::SServerInfo;
-    listeners.emplace_back(SServerInfo{port, ctx});
+    listeners.emplace_back(SServerInfo{port, ctx}, pint);
 
-    eventHandler.add(listeners.back().socketId(), EventType::Read, [&, serverId = listeners.size() - 1](bool)
+    eventHandler.add(listeners.back().server.socketId(), EventType::Read, [&, serverId = listeners.size() - 1](bool)
     {
         jobQueue.addJob(createAcceptJob(serverId), {});
         std::cerr << "Next Connection\n";
