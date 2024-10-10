@@ -3,6 +3,7 @@
 
 #include "NissaConfig.h"
 #include "EventHandler.h"
+#include "JobQueue.h"
 #include "ThorsSocket/Server.h"
 #include "ThorsSocket/SocketStream.h"
 #include <functional>
@@ -23,15 +24,11 @@ class Server
 
     SSLctx                          ctx;
     std::vector<SocketServer>       listeners;
-    std::vector<std::thread>        workers;
-    std::mutex                      connectionMutex;
-    std::condition_variable         connectionCV;
-    Connections                     connections;
-    bool                            finished;
     EventHandler                    eventHandler;
+    JobQueue                        jobQueue;
 
     public:
-        Server(Certificate certificate);
+        Server(Certificate certificate, int workerCount = 1);
 
         void run();
         void listen(int port);
@@ -39,6 +36,8 @@ class Server
     private:
         SocketStream getNextStream();
         void         connectionHandler();
+
+        Work createHttpJob(SocketStream&& acceptStream);
 };
 
 }
