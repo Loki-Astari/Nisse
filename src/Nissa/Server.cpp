@@ -1,6 +1,5 @@
 #include "Server.h"
 #include "EventHandler.h"
-#include <iostream>
 
 using namespace ThorsAnvil::Nissa;
 
@@ -15,46 +14,36 @@ void Server::run()
     eventHandler.run();
 }
 
-// Move on copy used to move an object
-// into a lambda capture when it can not be copied.
-template<typename T>
-class MoveOnCopy
-{
-    public:
-        mutable T   value;
-        MoveOnCopy(T&& move)
-            : value(std::move(move))
-        {}
-        MoveOnCopy(MoveOnCopy const& copy)
-            : value(std::move(copy.value))
-        {}
-
-        MoveOnCopy& operator=(MoveOnCopy const&)    = delete;
-        MoveOnCopy& operator=(MoveOnCopy&&)         = delete;
-};
-
 EventAction Server::createStreamJob(Pint& pint)
 {
-    return [&pint](ThorsAnvil::ThorsSocket::SocketStream& stream)
+    return [&pint](ThorsAnvil::ThorsSocket::SocketStream& stream, Yield& yield)
     {
-        return pint.handleRequest(stream);
+        PintResult result = pint.handleRequest(stream);
+        while (result == PintResult::More)
+        {
+            yield(EventTask::RestoreRead);
+            result = pint.handleRequest(stream);
+        }
     };
 }
 
 EventAction Server::createAcceptJob(int serverId)
 {
-    return [&, serverId](ThorsAnvil::ThorsSocket::SocketStream&)
+    return [&, serverId](ThorsAnvil::ThorsSocket::SocketStream&, Yield& yield)
     {
-        using ThorsAnvil::ThorsSocket::Socket;
-        using ThorsAnvil::ThorsSocket::Blocking;
-
-        Socket          accept = listeners[serverId].server.accept(Blocking::No);
-        if (accept.isConnected())
+        while (true)
         {
-            int socketId = accept.socketId();
-            eventHandler.add(socketId, ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, createStreamJob(listeners[serverId].pint));
+            using ThorsAnvil::ThorsSocket::Socket;
+            using ThorsAnvil::ThorsSocket::Blocking;
+
+            Socket          accept = listeners[serverId].server.accept(Blocking::No);
+            if (accept.isConnected())
+            {
+                int socketId = accept.socketId();
+                eventHandler.add(socketId, ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, createStreamJob(listeners[serverId].pint));
+            }
+            yield(EventTask::RestoreRead);
         }
-        return EventTask::RestoreRead;
     };
 }
 

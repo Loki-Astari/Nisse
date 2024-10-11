@@ -15,6 +15,8 @@ void controlTimerCallback(evutil_socket_t, short, void* data)
 
 using namespace ThorsAnvil::Nissa;
 
+CoRoutine EventInfo::invalid{[](Yield&){}};
+
 Event::Event(EventBase& eventBase, int fd, short type, EventHandler& eventHandler)
     : event{event_new(eventBase.eventBase, fd, type, &eventCallback, &eventHandler)}
 {}
@@ -67,11 +69,29 @@ void EventHandler::eventHandle(int fd, EventType type)
         }
         jobQueue.addJob([&]()
         {
-            EventTask task = info.action(info.stream);
+            EventTask task = EventTask::Remove;
+            if (info.state()) {
+                task = info.state.get();
+            }
             std::unique_lock    lock(updateListMutex);
             updateList.emplace_back(fd, task, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
         });
     }
+}
+
+CoRoutine EventHandler::buildCoRoutine(EventInfo& info)
+{
+    return CoRoutine
+    {
+        [&info](Yield& yield)
+        {
+            info.stream.getSocket().setReadYield([&yield](){yield(EventTask::RestoreRead);return true;});
+            info.stream.getSocket().setWriteYield([&yield](){yield(EventTask::RestoreWrite);return true;});
+            yield(EventTask::RestoreRead);
+            info.action(info.stream, yield);
+            yield(EventTask::Remove);
+        }
+    };
 }
 
 void EventHandler::controlTimerAction()
@@ -98,6 +118,7 @@ void EventHandler::controlTimerAction()
                     find->second.stream = std::move(eventUpdate.stream);
                 }
 
+                find->second.state = buildCoRoutine(find->second);
                 find->second.readEvent.add();
                 break;
             }

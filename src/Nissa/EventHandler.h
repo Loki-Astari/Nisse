@@ -5,6 +5,7 @@
 #include "EventHandlerLibEvent.h"
 #include "ThorsSocket/SocketStream.h"
 #include <event2/event.h>
+#include <boost/coroutine2/all.hpp>
 #include <map>
 #include <tuple>
 #include <functional>
@@ -21,29 +22,36 @@ class JobQueue;
 enum class EventType : short{Read = EV_READ, Write = EV_WRITE, Ignore = 0};
 enum class EventTask        {Create, RestoreRead, RestoreWrite, Remove};
 
-using EventAction   = std::function<EventTask(ThorsAnvil::ThorsSocket::SocketStream& stream)>;
+using CoRoutine     = boost::coroutines2::coroutine<EventTask>::pull_type;
+using Yield         = boost::coroutines2::coroutine<EventTask>::push_type;
+using EventAction   = std::function<void(ThorsAnvil::ThorsSocket::SocketStream& stream, Yield& yield)>;
 
 
 struct EventInfo
 {
+    static CoRoutine invalid;
+
     using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
     EventInfo(Event&& readEvent, Event&& writeEvent, EventAction&& action, SocketStream&& stream)
         : readEvent(std::move(readEvent))
         , writeEvent(std::move(writeEvent))
         , action(std::move(action))
         , stream(std::move(stream))
+        , state{std::move(invalid)}
     {}
     EventInfo(EventInfo&& move)
         : readEvent(std::move(move.readEvent))
         , writeEvent(std::move(move.writeEvent))
         , action(std::move(move.action))
         , stream(std::move(move.stream))
+        , state{std::move(move.state)}
     {}
 
     Event           readEvent;
     Event           writeEvent;
     EventAction     action;
     SocketStream    stream;
+    CoRoutine       state;
 };
 
 struct EventUpdate
@@ -84,6 +92,7 @@ class EventHandler
         void controlTimerAction();
 
         bool checkFileDescriptorOK(int fd, EventType type);
+        CoRoutine buildCoRoutine(EventInfo& action);
 };
 
 }

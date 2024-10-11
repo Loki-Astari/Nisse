@@ -2,12 +2,13 @@
 #define THORSANVIL_NISSA_PINT_H
 
 #include "NissaConfig.h"
-#include "EventHandler.h"
 #include "ThorsSocket/SocketStream.h"
 #include <functional>
 
 namespace ThorsAnvil::Nissa
 {
+
+enum class PintResult {Done, More};
 
 class Pint
 {
@@ -16,7 +17,7 @@ class Pint
         using ServerAction = std::function<bool(SocketStream&&)>;
 
         virtual ~Pint() {}
-        virtual EventTask handleRequest(SocketStream& stream)    = 0;
+        virtual PintResult handleRequest(SocketStream& stream)    = 0;
 };
 
 }
