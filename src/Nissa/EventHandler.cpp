@@ -1,6 +1,10 @@
 #include "EventHandler.h"
 #include "JobQueue.h"
 
+/*
+ * C Callback functions.
+ * Simply decide the data into EventHandler and call the C++ functions.
+ */
 void eventCallback(evutil_socket_t fd, short eventType, void* data)
 {
     ThorsAnvil::Nissa::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nissa::EventHandler*>(data);
@@ -15,8 +19,9 @@ void controlTimerCallback(evutil_socket_t, short, void* data)
 
 using namespace ThorsAnvil::Nissa;
 
-CoRoutine EventInfo::invalid{[](Yield&){}};
-
+/*
+ * EventLib wrapper. Set up C-Function callbacks
+ */
 Event::Event(EventBase& eventBase, int fd, short type, EventHandler& eventHandler)
     : event{event_new(eventBase.eventBase, fd, type, &eventCallback, &eventHandler)}
 {}
@@ -24,6 +29,11 @@ Event::Event(EventBase& eventBase, int fd, short type, EventHandler& eventHandle
 Event::Event(EventBase& eventBase, EventHandler& eventHandler)
     : event{evtimer_new(eventBase.eventBase, controlTimerCallback, &eventHandler)}
 {}
+
+// No co-routine object.
+// Used to simplify initialization.
+CoRoutine EventInfo::invalid{[](Yield&){}};
+
 
 EventHandler::EventHandler(JobQueue& jobQueue)
     : jobQueue(jobQueue)
@@ -40,11 +50,15 @@ void EventHandler::run()
 void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, EventAction&& action)
 {
     std::unique_lock    lock(updateListMutex);
-    updateList.emplace_back(fd, EventTask::Create, std::move(action), std::move(stream));
+    updateList.emplace_back(fd, true, EventTask::RestoreRead, std::move(action), std::move(stream));
 }
 
 bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 {
+    /*
+     * This function detects if the socket has been closed at the other end.
+     * This will induce a read event but there will be no data on the stream.
+     */
     if (type == EventType::Write) {
         return true;
     }
@@ -60,13 +74,21 @@ void EventHandler::eventHandle(int fd, EventType type)
     {
         EventInfo& info = find->second;
 
+        /*
+         * If the socket was cloes.
+         * Then remove it and all its data.
+         */
         if (info.stream.getSocket().isConnected() && !checkFileDescriptorOK(fd, type))
         {
             std::cerr << "Remove Socket\n";
             std::unique_lock    lock(updateListMutex);
-            updateList.emplace_back(fd, EventTask::Remove, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
+            updateList.emplace_back(fd, false, EventTask::Remove, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
             return;
         }
+        /*
+         * Add a lamda to the JobQueue to read/write data from the stream
+         * using the stored "EventAction via the CoRoutine.
+         */
         jobQueue.addJob([&]()
         {
             EventTask task = EventTask::Remove;
@@ -74,7 +96,7 @@ void EventHandler::eventHandle(int fd, EventType type)
                 task = info.state.get();
             }
             std::unique_lock    lock(updateListMutex);
-            updateList.emplace_back(fd, task, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
+            updateList.emplace_back(fd, false, task, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
         });
     }
 }
@@ -94,60 +116,61 @@ CoRoutine EventHandler::buildCoRoutine(EventInfo& info)
     };
 }
 
+/*
+ * Callback function controlled by timer.
+ * This is used to processes all pending changes.
+ *
+ * Thus all changes to state are done by the main thread.
+ */
 void EventHandler::controlTimerAction()
 {
     std::unique_lock    lock(updateListMutex);
     for (auto& eventUpdate: updateList)
     {
+        auto find = tracking.find(eventUpdate.fd);
+        // If this is a create then set up all the data.
+        if (eventUpdate.create)
+        {
+            if (find == tracking.end())
+            {
+                Event readEvent(eventBase, eventUpdate.fd, EV_READ, *this);
+                Event writeEvent(eventBase, eventUpdate.fd, EV_WRITE, *this);
+                auto const [iter, ok] = tracking.insert({eventUpdate.fd, EventInfo{std::move(readEvent), std::move(writeEvent), std::move(eventUpdate.action), std::move(eventUpdate.stream)}});
+                find = iter;
+            }
+            else
+            {
+                find->second.action = std::move(eventUpdate.action);
+                find->second.stream = std::move(eventUpdate.stream);
+            }
+
+            find->second.state = buildCoRoutine(find->second);
+        }
+        if (find == tracking.end()) {
+            continue;
+        }
+
+        // Now set any listeners.
         switch (eventUpdate.task)
         {
-            case EventTask::Create:
-            {
-                auto find = tracking.find(eventUpdate.fd);
-
-                if (find == tracking.end())
-                {
-                    Event readEvent(eventBase, eventUpdate.fd, EV_READ, *this);
-                    Event writeEvent(eventBase, eventUpdate.fd, EV_WRITE, *this);
-                    auto const [iter, ok] = tracking.insert({eventUpdate.fd, EventInfo{std::move(readEvent), std::move(writeEvent), std::move(eventUpdate.action), std::move(eventUpdate.stream)}});
-                    find = iter;
-                }
-                else
-                {
-                    find->second.action = std::move(eventUpdate.action);
-                    find->second.stream = std::move(eventUpdate.stream);
-                }
-
-                find->second.state = buildCoRoutine(find->second);
-                find->second.readEvent.add();
-                break;
-            }
             case EventTask::RestoreRead:
             {
-                auto find = tracking.find(eventUpdate.fd);
-                if (find != tracking.end()) {
-                    find->second.readEvent.add();
-                }
+                find->second.readEvent.add();
                 break;
             }
             case EventTask::RestoreWrite:
             {
-                auto find = tracking.find(eventUpdate.fd);
-                if (find != tracking.end()) {
-                    find->second.writeEvent.add();
-                }
+                find->second.writeEvent.add();
                 break;
             }
             case EventTask::Remove:
             {
-                auto find = tracking.find(eventUpdate.fd);
-                if (find != tracking.end()) {
-                    tracking.erase(find);
-                }
+                tracking.erase(find);
                 break;
             }
         }
     }
     updateList.clear();
+    // Put the timer back.
     timer.add(ControlTimerPause);
 }
