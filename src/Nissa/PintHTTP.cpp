@@ -35,6 +35,6 @@ PintResult PintHTTP::handleRequest(SocketStream& stream)
 </html>)";
         stream.flush();
     }
-    std::cerr << "Done\n";
+    std::cout << "Done\n";
     return closeSocket ? PintResult::Done : PintResult::More;
 }

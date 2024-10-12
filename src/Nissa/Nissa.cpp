@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
     // ThorsLogging: Log level => 9 all messages (exceptions) displayed: Default std::cerr
     loguru::g_stderr_verbosity = 9;
 
-    std::cerr << PACKAGE_STRING << " Server\n";
+    std::cout << PACKAGE_STRING << " Server\n";
 
     // My Certificate to use an HTTPS connection.
     // Remove if you don't have a certificate. The server will default to HTTP connection.

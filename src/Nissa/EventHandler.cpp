@@ -80,7 +80,7 @@ void EventHandler::eventHandle(int fd, EventType type)
          */
         if (info.stream.getSocket().isConnected() && !checkFileDescriptorOK(fd, type))
         {
-            std::cerr << "Remove Socket\n";
+            std::cout << "Remove Socket\n";
             std::unique_lock    lock(updateListMutex);
             updateList.emplace_back(fd, false, EventTask::Remove, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
             return;
