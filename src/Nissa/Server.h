@@ -28,8 +28,6 @@ class Server
 {
     using SocketServer  = ThorsAnvil::ThorsSocket::Server;
     using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
-    using Certificate   = ThorsAnvil::ThorsSocket::CertificateInfo;
-    using SSLctx        = ThorsAnvil::ThorsSocket::SSLctx;
     struct Listener
     {
         SocketServer    server;
@@ -37,16 +35,16 @@ class Server
     };
     using Listeners     = std::vector<Listener>;
 
-    SSLctx                          ctx;
     Listeners                       listeners;
     JobQueue                        jobQueue;
     EventHandler                    eventHandler;
 
     public:
-        Server(Certificate certificate, int workerCount = 1);
+        Server(int workerCount = 1);
 
         void run();
-        void listen(int port, Pint& pint);
+        template<typename T>
+        void listen(T listenerInit, Pint& pint);
 
     private:
         SocketStream getNextStream();

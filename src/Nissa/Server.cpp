@@ -3,9 +3,8 @@
 
 using namespace ThorsAnvil::Nissa;
 
-Server::Server(Certificate certificate, int workerCount)
-    : ctx{ThorsAnvil::ThorsSocket::SSLMethodType::Server, certificate}
-    , jobQueue(workerCount)
+Server::Server(int workerCount)
+    : jobQueue(workerCount)
     , eventHandler(jobQueue)
 {}
 
@@ -57,12 +56,16 @@ EventAction Server::createAcceptJob(int serverId)
     };
 }
 
-void Server::listen(int port, Pint& pint)
+template<typename T>
+void Server::listen(T listenerInit, Pint& pint)
 {
     // This is not safe to use after run() is called.
     // While the background workers can accesses listeners this should not be called.
     using ThorsAnvil::ThorsSocket::SServerInfo;
-    listeners.emplace_back(SServerInfo{port, ctx}, pint);
+    listeners.emplace_back(listenerInit, pint);
 
     eventHandler.add(listeners.back().server.socketId(), ThorsAnvil::ThorsSocket::SocketStream{}, createAcceptJob(listeners.size() - 1));
 }
+
+template void Server::listen<ThorsAnvil::ThorsSocket::SServerInfo>(ThorsAnvil::ThorsSocket::SServerInfo listenerInit, Pint& pint);
+template void Server::listen<ThorsAnvil::ThorsSocket::ServerInfo>(ThorsAnvil::ThorsSocket::ServerInfo listenerInit, Pint& pint);
