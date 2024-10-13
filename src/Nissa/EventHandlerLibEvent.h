@@ -47,6 +47,9 @@ class Event
         Event(EventBase& eventBase, EventHandler& eventHandler);
         Event(EventBase& eventBase, int fd, short type, EventHandler& eventHandler);
 
+        Event()
+            : event(nullptr)
+        {}
         Event(Event&& move)
             : event(std::exchange(move.event, nullptr))
         {}
