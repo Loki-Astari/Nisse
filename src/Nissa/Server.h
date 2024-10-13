@@ -12,6 +12,7 @@
 
 #include "NissaConfig.h"
 #include "EventHandler.h"
+#include "StreamStore.h"
 #include "JobQueue.h"
 #include "Pint.h"
 #include <ThorsSocket/Server.h>
@@ -37,6 +38,7 @@ class Server
 
     Listeners                       listeners;
     JobQueue                        jobQueue;
+    StreamStore                     streamStore;
     EventHandler                    eventHandler;
 
     public:
@@ -50,8 +52,8 @@ class Server
         SocketStream getNextStream();
         void         connectionHandler();
 
-        EventAction createAcceptJob(int serverId);
-        EventAction createStreamJob(Pint& pint);
+        Task createAcceptJob(int serverId);
+        Task createStreamJob(Pint& pint);
 };
 
 }

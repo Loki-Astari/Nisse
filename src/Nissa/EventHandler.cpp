@@ -1,5 +1,6 @@
 #include "EventHandler.h"
 #include "JobQueue.h"
+#include "StreamStore.h"
 
 /*
  * C Callback functions.
@@ -30,16 +31,12 @@ Event::Event(EventBase& eventBase, EventHandler& eventHandler)
     : event{evtimer_new(eventBase.eventBase, controlTimerCallback, &eventHandler)}
 {}
 
-// No co-routine object.
-// Used to simplify initialization.
-CoRoutine EventInfo::invalid{[](Yield&){}};
-
-
-EventHandler::EventHandler(JobQueue& jobQueue)
+EventHandler::EventHandler(JobQueue& jobQueue, StreamStore& streamStore)
     : jobQueue(jobQueue)
+    , streamStore(streamStore)
     , timer(eventBase, *this)
 {
-    timer.add(ControlTimerPause);
+    timer.add(controlTimerPause);
 }
 
 void EventHandler::run()
@@ -47,10 +44,15 @@ void EventHandler::run()
     eventBase.run();
 }
 
-void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, EventAction&& action)
+void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, Task&& task)
 {
-    std::unique_lock    lock(updateListMutex);
-    updateList.emplace_back(fd, true, EventTask::RestoreRead, std::move(action), std::move(stream));
+    streamStore.requestChange(StateUpdateCreate{fd,
+                                                std::move(stream),
+                                                std::move(task),
+                                                [&](StreamData& info){return buildCoRoutine(info);},
+                                                Event{eventBase, fd, EV_READ, *this},
+                                                Event{eventBase, fd, EV_WRITE, *this},
+                                               });
 }
 
 bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
@@ -69,49 +71,54 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 
 void EventHandler::eventHandle(int fd, EventType type)
 {
-    auto find = tracking.find(fd);
-    if (find != tracking.end())
-    {
-        EventInfo& info = find->second;
+    StreamData& info = streamStore.getStreamData(fd);
 
-        /*
-         * If the socket was cloes.
-         * Then remove it and all its data.
-         */
-        if (info.stream.getSocket().isConnected() && !checkFileDescriptorOK(fd, type))
-        {
-            std::cout << "Remove Socket\n";
-            std::unique_lock    lock(updateListMutex);
-            updateList.emplace_back(fd, false, EventTask::Remove, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
-            return;
-        }
-        /*
-         * Add a lamda to the JobQueue to read/write data from the stream
-         * using the stored "EventAction via the CoRoutine.
-         */
-        jobQueue.addJob([&]()
-        {
-            EventTask task = EventTask::Remove;
-            if (info.state()) {
-                task = info.state.get();
-            }
-            std::unique_lock    lock(updateListMutex);
-            updateList.emplace_back(fd, false, task, EventAction{}, ThorsAnvil::ThorsSocket::SocketStream{});
-        });
+    /*
+     * If the socket was closed on the other end.
+     * Then remove it and all its data.
+     */
+    if (info.stream.getSocket().isConnected() && !checkFileDescriptorOK(fd, type))
+    {
+        std::cout << "Remove Socket\n";
+        streamStore.requestChange(StateUpdateRemove{fd});
+        return;
     }
+    /*
+     * Add a lamda to the JobQueue to read/write data from the stream
+     * using the stored "Task via the CoRoutine.
+     */
+    jobQueue.addJob([&]()
+    {
+        TaskYieldState task = TaskYieldState::Remove;
+        if (info.coRoutine()) {
+            task = info.coRoutine.get();
+        }
+        switch (task)
+        {
+            case TaskYieldState::Remove:
+                streamStore.requestChange(StateUpdateRemove{fd});
+                break;
+            case TaskYieldState::RestoreRead:
+                info.readEvent.add();
+                break;
+            case TaskYieldState::RestoreWrite:
+                info.writeEvent.add();
+                break;
+        }
+    });
 }
 
-CoRoutine EventHandler::buildCoRoutine(EventInfo& info)
+CoRoutine EventHandler::buildCoRoutine(StreamData& info)
 {
     return CoRoutine
     {
         [&info](Yield& yield)
         {
-            info.stream.getSocket().setReadYield([&yield](){yield(EventTask::RestoreRead);return true;});
-            info.stream.getSocket().setWriteYield([&yield](){yield(EventTask::RestoreWrite);return true;});
-            yield(EventTask::RestoreRead);
-            info.action(info.stream, yield);
-            yield(EventTask::Remove);
+            info.stream.getSocket().setReadYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
+            info.stream.getSocket().setWriteYield([&yield](){yield(TaskYieldState::RestoreWrite);return true;});
+            yield(TaskYieldState::RestoreRead);
+            info.task(info.stream, yield);
+            yield(TaskYieldState::Remove);
         }
     };
 }
@@ -124,53 +131,7 @@ CoRoutine EventHandler::buildCoRoutine(EventInfo& info)
  */
 void EventHandler::controlTimerAction()
 {
-    std::unique_lock    lock(updateListMutex);
-    for (auto& eventUpdate: updateList)
-    {
-        auto find = tracking.find(eventUpdate.fd);
-        // If this is a create then set up all the data.
-        if (eventUpdate.create)
-        {
-            if (find == tracking.end())
-            {
-                Event readEvent(eventBase, eventUpdate.fd, EV_READ, *this);
-                Event writeEvent(eventBase, eventUpdate.fd, EV_WRITE, *this);
-                auto const [iter, ok] = tracking.insert({eventUpdate.fd, EventInfo{std::move(readEvent), std::move(writeEvent), std::move(eventUpdate.action), std::move(eventUpdate.stream)}});
-                find = iter;
-            }
-            else
-            {
-                find->second.action = std::move(eventUpdate.action);
-                find->second.stream = std::move(eventUpdate.stream);
-            }
-
-            find->second.state = buildCoRoutine(find->second);
-        }
-        if (find == tracking.end()) {
-            continue;
-        }
-
-        // Now set any listeners.
-        switch (eventUpdate.task)
-        {
-            case EventTask::RestoreRead:
-            {
-                find->second.readEvent.add();
-                break;
-            }
-            case EventTask::RestoreWrite:
-            {
-                find->second.writeEvent.add();
-                break;
-            }
-            case EventTask::Remove:
-            {
-                tracking.erase(find);
-                break;
-            }
-        }
-    }
-    updateList.clear();
+    streamStore.processUpdateRequest();
     // Put the timer back.
-    timer.add(ControlTimerPause);
+    timer.add(controlTimerPause);
 }

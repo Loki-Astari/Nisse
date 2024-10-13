@@ -4,8 +4,9 @@
 using namespace ThorsAnvil::Nissa;
 
 Server::Server(int workerCount)
-    : jobQueue(workerCount)
-    , eventHandler(jobQueue)
+    : jobQueue{workerCount}
+    , streamStore{}
+    , eventHandler{jobQueue, streamStore}
 {}
 
 void Server::run()
@@ -13,7 +14,7 @@ void Server::run()
     eventHandler.run();
 }
 
-EventAction Server::createStreamJob(Pint& pint)
+Task Server::createStreamJob(Pint& pint)
 {
     // When an accepted socket is available.
     // Run this function. Which simply delegates the work to the pint.
@@ -25,13 +26,13 @@ EventAction Server::createStreamJob(Pint& pint)
         PintResult result = pint.handleRequest(stream);
         while (result == PintResult::More)
         {
-            yield(EventTask::RestoreRead);
+            yield(TaskYieldState::RestoreRead);
             result = pint.handleRequest(stream);
         }
     };
 }
 
-EventAction Server::createAcceptJob(int serverId)
+Task Server::createAcceptJob(int serverId)
 {
     // When a connection is accepted
     // This method is run.
@@ -51,7 +52,7 @@ EventAction Server::createAcceptJob(int serverId)
                 // Note: The "Pint" functionality is not run yet. The socket must be available to use.
                 eventHandler.add(socketId, ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, createStreamJob(listeners[serverId].pint));
             }
-            yield(EventTask::RestoreRead);
+            yield(TaskYieldState::RestoreRead);
         }
     };
 }
