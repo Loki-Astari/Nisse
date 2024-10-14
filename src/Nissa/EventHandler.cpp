@@ -75,6 +75,11 @@ void EventHandler::eventHandle(int fd, EventType type)
     std::visit(ApplyEvent{*this, fd, type},  info);
 }
 
+void EventHandler::operator()(int fd, EventType type, ServerData& info)
+{
+    // TODO
+}
+
 void EventHandler::operator()(int fd, EventType type, StreamData& info)
 {
     /*

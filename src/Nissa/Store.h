@@ -4,6 +4,7 @@
 #include "NissaConfig.h"
 #include "Action.h"
 #include "EventHandlerLibEvent.h"
+#include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
 #include <map>
 #include <variant>
@@ -13,6 +14,14 @@
 namespace ThorsAnvil::Nissa
 {
 
+struct ServerData
+{
+    using Server = ThorsAnvil::ThorsSocket::Server;
+    Server              server;
+    Task                task;
+    CoRoutine           coRoutine;
+    Event               readEvent;
+};
 struct StreamData
 {
     using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
@@ -23,9 +32,20 @@ struct StreamData
     Event               writeEvent;
 };
 
-using StoreData = std::variant<StreamData>;
+using StoreData = std::variant<ServerData, StreamData>;
 
+using CoRoutineServerCreator = std::function<CoRoutine(ServerData& state)>;
 using CoRoutineStreamCreator = std::function<CoRoutine(StreamData& state)>;
+
+struct StateUpdateCreateServer
+{
+    using Server = ThorsAnvil::ThorsSocket::Server;
+    int                     fd;
+    Server                  server;
+    Task                    task;
+    CoRoutineServerCreator  coRoutineCreator;
+    Event                   readEvent;
+};
 
 struct StateUpdateCreateStream
 {
@@ -54,7 +74,7 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 class Store
 {
@@ -75,11 +95,13 @@ class Store
             ApplyUpdate(Store& store)
                 : store(store)
             {}
+            void operator()(StateUpdateCreateServer& update){store(update);}
             void operator()(StateUpdateCreateStream& update){store(update);}
             void operator()(StateUpdateRemove& update)      {store(update);}
             void operator()(StateUpdateRestoreRead& update) {store(update);}
             void operator()(StateUpdateRestoreWrite& update){store(update);}
         };
+        void operator()(StateUpdateCreateServer& update);
         void operator()(StateUpdateCreateStream& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);

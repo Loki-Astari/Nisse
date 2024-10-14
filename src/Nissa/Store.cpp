@@ -19,6 +19,7 @@ void Store::requestChange(T&& update)
     updates.emplace_back(std::move(update));
 }
 
+template void Store::requestChange<StateUpdateCreateServer>(StateUpdateCreateServer&& update);
 template void Store::requestChange<StateUpdateCreateStream>(StateUpdateCreateStream&& update);
 template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
@@ -34,6 +35,22 @@ void Store::processUpdateRequest()
     }
     updates.clear();
 }
+
+void Store::operator()(StateUpdateCreateServer& update)
+{
+    static CoRoutine    invalid{[](Yield&){}};
+
+    auto [iter, ok] = streamData.insert_or_assign(update.fd,
+                                                  ServerData{std::move(update.server),
+                                                             std::move(update.task),
+                                                             std::move(invalid),
+                                                             std::move(update.readEvent),
+                                                            });
+
+    ServerData& data = std::get<ServerData>(iter->second);
+    data.coRoutine = update.coRoutineCreator(data);
+    data.readEvent.add();
+};
 
 void Store::operator()(StateUpdateCreateStream& update)
 {
@@ -61,6 +78,7 @@ void Store::operator()(StateUpdateRestoreRead& update)
 {
     struct RestoreRead
     {
+        void operator()(ServerData& update) {update.readEvent.add();}
         void operator()(StreamData& update) {update.readEvent.add();}
     };
     auto find = streamData.find(update.fd);
@@ -73,6 +91,7 @@ void Store::operator()(StateUpdateRestoreWrite& update)
 {
     struct RestoreRead
     {
+        void operator()(ServerData& update) {}
         void operator()(StreamData& update) {update.writeEvent.add();}
     };
     auto find = streamData.find(update.fd);

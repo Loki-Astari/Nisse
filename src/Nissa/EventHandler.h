@@ -48,6 +48,7 @@ namespace ThorsAnvil::Nissa
 class JobQueue;
 class Store;
 struct StreamData;
+struct ServerData;
 
 enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
 
@@ -89,8 +90,10 @@ class EventHandler
                 , fd(fd)
                 , type(type)
             {}
-            void operator()(StreamData& info) {handler(fd, type,info);}
+            void operator()(ServerData& info) {handler(fd, type, info);}
+            void operator()(StreamData& info) {handler(fd, type, info);}
         };
+        void operator()(int fd, EventType type, ServerData& info);
         void operator()(int fd, EventType type, StreamData& info);
 };
 
