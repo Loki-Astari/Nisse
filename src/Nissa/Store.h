@@ -78,7 +78,7 @@ using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStrea
 
 class Store
 {
-    std::map<int, StoreData>   streamData;
+    std::map<int, StoreData>    data;
     std::vector<StateUpdate>    updates;
     std::mutex                  updateMutex;
 
