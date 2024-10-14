@@ -1,6 +1,7 @@
 #include "EventHandler.h"
 #include "JobQueue.h"
 #include "Store.h"
+#include "Action.h"
 
 /*
  * C Callback functions.
@@ -67,6 +68,12 @@ void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTas
                                                });
 }
 
+void EventHandler::eventHandle(int fd, EventType type)
+{
+    StoreData& info = store.getStoreData(fd);
+    std::visit(ApplyEvent{*this, fd, type},  info);
+}
+
 bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 {
     /*
@@ -78,63 +85,22 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
     }
     char buffer;
     ssize_t result = recv(fd, &buffer, 1, MSG_PEEK);
-    return !(result == 0 || (result == -1 && errno != EAGAIN && errno != EWOULDBLOCK));
-}
-
-void EventHandler::eventHandle(int fd, EventType type)
-{
-    StoreData& info = store.getStoreData(fd);
-    std::visit(ApplyEvent{*this, fd, type},  info);
-}
-
-void EventHandler::operator()(int fd, EventType type, ServerData& info)
-{
-    /*
-     * Add a lamda to the JobQueue to read/write data from the stream
-     * using the stored "Task via the CoRoutine.
-     */
-    jobQueue.addJob([&]()
-    {
-        TaskYieldState task = TaskYieldState::Remove;
-        if (info.coRoutine()) {
-            task = info.coRoutine.get();
-        }
-        switch (task)
-        {
-            case TaskYieldState::Remove:
-                store.requestChange(StateUpdateRemove{fd});
-                break;
-            case TaskYieldState::RestoreRead:
-                store.requestChange(StateUpdateRestoreRead{fd});
-                break;
-            case TaskYieldState::RestoreWrite:
-                store.requestChange(StateUpdateRestoreWrite{fd});
-                break;
-        }
-    });
-}
-
-void EventHandler::operator()(int fd, EventType type, StreamData& info)
-{
-    /*
-     * If the socket was closed on the other end.
-     * Then remove it and all its data.
-     */
-    if (info.stream.getSocket().isConnected() && !checkFileDescriptorOK(fd, type))
+    if (result == 0 || (result == -1 && errno != EAGAIN && errno != EWOULDBLOCK))
     {
         std::cout << "Remove Socket\n";
         store.requestChange(StateUpdateRemove{fd});
-        return;
+        return false;
     }
-    /*
-     * Add a lamda to the JobQueue to read/write data from the stream
-     * using the stored "Task via the CoRoutine.
-     */
-    jobQueue.addJob([&]()
+    return true;
+}
+
+void EventHandler::addJob(CoRoutine& work, int fd)
+{
+    jobQueue.addJob([&work, fd, &store = this->store]()
     {
         TaskYieldState task = TaskYieldState::Remove;
-        if (info.coRoutine()) {
-            task = info.coRoutine.get();
+        if (work()) {
+            task = work.get();
         }
         switch (task)
         {

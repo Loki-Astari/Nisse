@@ -30,6 +30,7 @@
 #include "NissaConfig.h"
 #include "Action.h"
 #include "EventHandlerLibEvent.h"
+#include "Store.h"
 #include <event2/event.h>
 #include <map>
 #include <tuple>
@@ -77,7 +78,6 @@ class EventHandler
         void controlTimerAction();
 
     private:
-        bool checkFileDescriptorOK(int fd, EventType type);
         CoRoutine buildCoRoutineServer(ServerData& info);
         CoRoutine buildCoRoutineStream(StreamData& info);
 
@@ -92,11 +92,12 @@ class EventHandler
                 , fd(fd)
                 , type(type)
             {}
-            void operator()(ServerData& info) {handler(fd, type, info);}
-            void operator()(StreamData& info) {handler(fd, type, info);}
+            void operator()(ServerData& info) {handler.addJob(info.coRoutine, fd);}
+            void operator()(StreamData& info) {if (handler.checkFileDescriptorOK(fd, type)) {handler.addJob(info.coRoutine, fd);}}
+
         };
-        void operator()(int fd, EventType type, ServerData& info);
-        void operator()(int fd, EventType type, StreamData& info);
+        bool checkFileDescriptorOK(int fd, EventType type);
+        void addJob(CoRoutine& work, int fd);
 };
 
 }
