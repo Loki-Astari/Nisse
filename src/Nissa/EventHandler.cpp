@@ -45,24 +45,24 @@ void EventHandler::run()
     eventBase.run();
 }
 
-void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerTask&& task)
+void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerTask&& task, ServerCreator&& serverCreator)
 {
     int fd = server.socketId();
     store.requestChange(StateUpdateCreateServer{fd,
                                                 std::move(server),
                                                 std::move(task),
-                                                [&](ServerData& info){return buildCoRoutineServer(info);},
+                                                std::move(serverCreator),
                                                 Event{eventBase, fd, EV_READ, *this},
                                                });
 }
 
-void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task)
+void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task, StreamCreator&& streamCreator)
 {
     int fd = stream.getSocket().socketId();
     store.requestChange(StateUpdateCreateStream{fd,
                                                 std::move(stream),
                                                 std::move(task),
-                                                [&](StreamData& info){return buildCoRoutineStream(info);},
+                                                std::move(streamCreator),
                                                 Event{eventBase, fd, EV_READ, *this},
                                                 Event{eventBase, fd, EV_WRITE, *this},
                                                });
@@ -115,63 +115,6 @@ void EventHandler::addJob(CoRoutine& work, int fd)
                 break;
         }
     });
-}
-
-CoRoutine EventHandler::buildCoRoutineServer(ServerData& info)
-{
-    return CoRoutine
-    {
-        [&info](Yield& yield)
-        {
-            // Set the socket to work asynchronously.
-            info.server.setYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
-
-            // Return control to the creator.
-            // The next call will happen when there is data available on the file descriptor.
-            yield(TaskYieldState::RestoreRead);
-
-            try
-            {
-                info.task(info.server, yield);
-            }
-            catch (...)
-            {
-                std::cerr << "Pint Exception:\n";
-            }
-            // We are all done
-            // So indicate that we should tidy up state.
-            yield(TaskYieldState::Remove);
-        }
-    };
-}
-
-CoRoutine EventHandler::buildCoRoutineStream(StreamData& info)
-{
-    return CoRoutine
-    {
-        [&info](Yield& yield)
-        {
-            // Set the socket to work asynchronously.
-            info.stream.getSocket().setReadYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
-            info.stream.getSocket().setWriteYield([&yield](){yield(TaskYieldState::RestoreWrite);return true;});
-
-            // Return control to the creator.
-            // The next call will happen when there is data available on the file descriptor.
-            yield(TaskYieldState::RestoreRead);
-
-            try
-            {
-                info.task(info.stream, yield);
-            }
-            catch (...)
-            {
-                std::cerr << "Pint Exception:\n";
-            }
-            // We are all done
-            // So indicate that we should tidy up state.
-            yield(TaskYieldState::Remove);
-        }
-    };
 }
 
 /*

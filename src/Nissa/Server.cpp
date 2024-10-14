@@ -14,6 +14,35 @@ void Server::run()
     eventHandler.run();
 }
 
+CoRoutine Server::buildCoRoutineStream(StreamData& info)
+{
+    return CoRoutine
+    {
+        [&info](Yield& yield)
+        {
+            // Set the socket to work asynchronously.
+            info.stream.getSocket().setReadYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
+            info.stream.getSocket().setWriteYield([&yield](){yield(TaskYieldState::RestoreWrite);return true;});
+
+            // Return control to the creator.
+            // The next call will happen when there is data available on the file descriptor.
+            yield(TaskYieldState::RestoreRead);
+
+            try
+            {
+                info.task(info.stream, yield);
+            }
+            catch (...)
+            {
+                std::cerr << "Pint Exception:\n";
+            }
+            // We are all done
+            // So indicate that we should tidy up state.
+            yield(TaskYieldState::Remove);
+        }
+    };
+}
+
 StreamTask Server::createStreamJob(Pint& pint)
 {
     // When an accepted socket is available.
@@ -28,6 +57,34 @@ StreamTask Server::createStreamJob(Pint& pint)
         {
             yield(TaskYieldState::RestoreRead);
             result = pint.handleRequest(stream);
+        }
+    };
+}
+
+CoRoutine Server::buildCoRoutineServer(ServerData& info)
+{
+    return CoRoutine
+    {
+        [&info](Yield& yield)
+        {
+            // Set the socket to work asynchronously.
+            info.server.setYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
+
+            // Return control to the creator.
+            // The next call will happen when there is data available on the file descriptor.
+            yield(TaskYieldState::RestoreRead);
+
+            try
+            {
+                info.task(info.server, yield);
+            }
+            catch (...)
+            {
+                std::cerr << "Pint Exception:\n";
+            }
+            // We are all done
+            // So indicate that we should tidy up state.
+            yield(TaskYieldState::Remove);
         }
     };
 }
@@ -49,7 +106,7 @@ ServerTask Server::createAcceptJob(Pint& pint)
                 // If everything worked then create a stream connection (see above)
                 // Passing the "Pint" as the object that will handle the request.
                 // Note: The "Pint" functionality is not run yet. The socket must be available to use.
-                eventHandler.add(ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, createStreamJob(pint));
+                eventHandler.add(ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, createStreamJob(pint), [&](StreamData& info){return buildCoRoutineStream(info);});
             }
             yield(TaskYieldState::RestoreRead);
         }
@@ -62,7 +119,7 @@ void Server::listen(T listenerInit, Pint& pint)
     using ThorsAnvil::ThorsSocket::Server;
     Server  server{listenerInit};
 
-    eventHandler.add(std::move(server), createAcceptJob(pint));
+    eventHandler.add(std::move(server), createAcceptJob(pint), [&](ServerData& info){return buildCoRoutineServer(info);});
 }
 
 template void Server::listen<ThorsAnvil::ThorsSocket::SServerInfo>(ThorsAnvil::ThorsSocket::SServerInfo listenerInit, Pint& pint);

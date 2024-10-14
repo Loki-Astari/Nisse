@@ -66,8 +66,8 @@ class EventHandler
         EventHandler(JobQueue& jobQueue, Store& store);
 
         void run();
-        void add(ThorsAnvil::ThorsSocket::Server&& stream, ServerTask&& task);
-        void add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task);
+        void add(ThorsAnvil::ThorsSocket::Server&& stream, ServerTask&& task, ServerCreator&& creator);
+        void add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task, StreamCreator&& creator);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
@@ -76,10 +76,6 @@ class EventHandler
     private:
         friend void ::controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
         void controlTimerAction();
-
-    private:
-        CoRoutine buildCoRoutineServer(ServerData& info);
-        CoRoutine buildCoRoutineStream(StreamData& info);
 
     private:
         struct ApplyEvent
