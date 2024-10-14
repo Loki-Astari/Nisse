@@ -14,7 +14,7 @@ void Server::run()
     eventHandler.run();
 }
 
-Task Server::createStreamJob(Pint& pint)
+StreamTask Server::createStreamJob(Pint& pint)
 {
     // When an accepted socket is available.
     // Run this function. Which simply delegates the work to the pint.
@@ -32,7 +32,7 @@ Task Server::createStreamJob(Pint& pint)
     };
 }
 
-Task Server::createAcceptJob(int serverId)
+StreamTask Server::createAcceptJob(int serverId)
 {
     // When a connection is accepted
     // This method is run.

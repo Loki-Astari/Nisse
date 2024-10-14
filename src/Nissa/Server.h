@@ -52,8 +52,8 @@ class Server
         SocketStream getNextStream();
         void         connectionHandler();
 
-        Task createAcceptJob(int serverId);
-        Task createStreamJob(Pint& pint);
+        StreamTask createAcceptJob(int serverId);
+        StreamTask createStreamJob(Pint& pint);
 };
 
 }

@@ -44,12 +44,12 @@ void EventHandler::run()
     eventBase.run();
 }
 
-void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, Task&& task)
+void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task)
 {
     store.requestChange(StateUpdateCreateStream{fd,
                                                 std::move(stream),
                                                 std::move(task),
-                                                [&](StreamData& info){return buildCoRoutine(info);},
+                                                [&](StreamData& info){return buildCoRoutineStream(info);},
                                                 Event{eventBase, fd, EV_READ, *this},
                                                 Event{eventBase, fd, EV_WRITE, *this},
                                                });
@@ -117,7 +117,7 @@ void EventHandler::operator()(int fd, EventType type, StreamData& info)
     });
 }
 
-CoRoutine EventHandler::buildCoRoutine(StreamData& info)
+CoRoutine EventHandler::buildCoRoutineStream(StreamData& info)
 {
     return CoRoutine
     {
