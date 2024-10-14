@@ -21,6 +21,8 @@ void StreamStore::requestChange(T&& update)
 
 template void StreamStore::requestChange<StateUpdateCreate>(StateUpdateCreate&& update);
 template void StreamStore::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
+template void StreamStore::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
+template void StreamStore::requestChange<StateUpdateRestoreWrite>(StateUpdateRestoreWrite&& update);
 
 void StreamStore::processUpdateRequest()
 {

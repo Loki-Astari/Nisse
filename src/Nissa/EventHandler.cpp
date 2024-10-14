@@ -114,10 +114,24 @@ CoRoutine EventHandler::buildCoRoutine(StreamData& info)
     {
         [&info](Yield& yield)
         {
+            // Set the socket to work asynchronously.
             info.stream.getSocket().setReadYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
             info.stream.getSocket().setWriteYield([&yield](){yield(TaskYieldState::RestoreWrite);return true;});
+
+            // Return control to the creator.
+            // The next call will happen when there is data available on the file descriptor.
             yield(TaskYieldState::RestoreRead);
-            info.task(info.stream, yield);
+
+            try
+            {
+                info.task(info.stream, yield);
+            }
+            catch (...)
+            {
+                std::cerr << "Pint Exception:\n";
+            }
+            // We are all done
+            // So indicate that we should tidy up state.
             yield(TaskYieldState::Remove);
         }
     };
@@ -131,6 +145,7 @@ CoRoutine EventHandler::buildCoRoutine(StreamData& info)
  */
 void EventHandler::controlTimerAction()
 {
+    // Update all the state information.
     streamStore.processUpdateRequest();
     // Put the timer back.
     timer.add(controlTimerPause);
