@@ -32,25 +32,24 @@ StreamTask Server::createStreamJob(Pint& pint)
     };
 }
 
-StreamTask Server::createAcceptJob(int serverId)
+ServerTask Server::createAcceptJob(Pint& pint)
 {
     // When a connection is accepted
     // This method is run.
-    return [&, serverId](ThorsAnvil::ThorsSocket::SocketStream&, Yield& yield)
+    return [&](ThorsAnvil::ThorsSocket::Server& server, Yield& yield)
     {
         while (true)
         {
             using ThorsAnvil::ThorsSocket::Socket;
             using ThorsAnvil::ThorsSocket::Blocking;
 
-            Socket          accept = listeners[serverId].server.accept(Blocking::No);
+            Socket          accept = server.accept(Blocking::No);
             if (accept.isConnected())
             {
-                int socketId = accept.socketId();
                 // If everything worked then create a stream connection (see above)
                 // Passing the "Pint" as the object that will handle the request.
                 // Note: The "Pint" functionality is not run yet. The socket must be available to use.
-                eventHandler.add(socketId, ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, createStreamJob(listeners[serverId].pint));
+                eventHandler.add(ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, createStreamJob(pint));
             }
             yield(TaskYieldState::RestoreRead);
         }
@@ -60,12 +59,10 @@ StreamTask Server::createAcceptJob(int serverId)
 template<typename T>
 void Server::listen(T listenerInit, Pint& pint)
 {
-    // This is not safe to use after run() is called.
-    // While the background workers can accesses listeners this should not be called.
-    using ThorsAnvil::ThorsSocket::SServerInfo;
-    listeners.emplace_back(listenerInit, pint);
+    using ThorsAnvil::ThorsSocket::Server;
+    Server  server{listenerInit};
 
-    eventHandler.add(listeners.back().server.socketId(), ThorsAnvil::ThorsSocket::SocketStream{}, createAcceptJob(listeners.size() - 1));
+    eventHandler.add(std::move(server), createAcceptJob(pint));
 }
 
 template void Server::listen<ThorsAnvil::ThorsSocket::SServerInfo>(ThorsAnvil::ThorsSocket::SServerInfo listenerInit, Pint& pint);

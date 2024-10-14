@@ -18,7 +18,7 @@ struct ServerData
 {
     using Server = ThorsAnvil::ThorsSocket::Server;
     Server              server;
-    StreamTask          task;
+    ServerTask          task;
     CoRoutine           coRoutine;
     Event               readEvent;
 };
@@ -42,7 +42,7 @@ struct StateUpdateCreateServer
     using Server = ThorsAnvil::ThorsSocket::Server;
     int                     fd;
     Server                  server;
-    StreamTask              task;
+    ServerTask              task;
     CoRoutineServerCreator  coRoutineCreator;
     Event                   readEvent;
 };

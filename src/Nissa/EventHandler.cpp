@@ -44,8 +44,20 @@ void EventHandler::run()
     eventBase.run();
 }
 
-void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task)
+void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerTask&& task)
 {
+    int fd = server.socketId();
+    store.requestChange(StateUpdateCreateServer{fd,
+                                                std::move(server),
+                                                std::move(task),
+                                                [&](ServerData& info){return buildCoRoutineServer(info);},
+                                                Event{eventBase, fd, EV_READ, *this},
+                                               });
+}
+
+void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task)
+{
+    int fd = stream.getSocket().socketId();
     store.requestChange(StateUpdateCreateStream{fd,
                                                 std::move(stream),
                                                 std::move(task),
@@ -77,7 +89,29 @@ void EventHandler::eventHandle(int fd, EventType type)
 
 void EventHandler::operator()(int fd, EventType type, ServerData& info)
 {
-    // TODO
+    /*
+     * Add a lamda to the JobQueue to read/write data from the stream
+     * using the stored "Task via the CoRoutine.
+     */
+    jobQueue.addJob([&]()
+    {
+        TaskYieldState task = TaskYieldState::Remove;
+        if (info.coRoutine()) {
+            task = info.coRoutine.get();
+        }
+        switch (task)
+        {
+            case TaskYieldState::Remove:
+                store.requestChange(StateUpdateRemove{fd});
+                break;
+            case TaskYieldState::RestoreRead:
+                store.requestChange(StateUpdateRestoreRead{fd});
+                break;
+            case TaskYieldState::RestoreWrite:
+                store.requestChange(StateUpdateRestoreWrite{fd});
+                break;
+        }
+    });
 }
 
 void EventHandler::operator()(int fd, EventType type, StreamData& info)
@@ -115,6 +149,34 @@ void EventHandler::operator()(int fd, EventType type, StreamData& info)
                 break;
         }
     });
+}
+
+CoRoutine EventHandler::buildCoRoutineServer(ServerData& info)
+{
+    return CoRoutine
+    {
+        [&info](Yield& yield)
+        {
+            // Set the socket to work asynchronously.
+            info.server.setYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
+
+            // Return control to the creator.
+            // The next call will happen when there is data available on the file descriptor.
+            yield(TaskYieldState::RestoreRead);
+
+            try
+            {
+                info.task(info.server, yield);
+            }
+            catch (...)
+            {
+                std::cerr << "Pint Exception:\n";
+            }
+            // We are all done
+            // So indicate that we should tidy up state.
+            yield(TaskYieldState::Remove);
+        }
+    };
 }
 
 CoRoutine EventHandler::buildCoRoutineStream(StreamData& info)

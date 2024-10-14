@@ -27,16 +27,8 @@ namespace ThorsAnvil::Nissa
 
 class Server
 {
-    using SocketServer  = ThorsAnvil::ThorsSocket::Server;
     using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
-    struct Listener
-    {
-        SocketServer    server;
-        Pint&           pint;
-    };
-    using Listeners     = std::vector<Listener>;
 
-    Listeners                       listeners;
     JobQueue                        jobQueue;
     Store                           store;
     EventHandler                    eventHandler;
@@ -52,7 +44,7 @@ class Server
         SocketStream getNextStream();
         void         connectionHandler();
 
-        StreamTask createAcceptJob(int serverId);
+        ServerTask createAcceptJob(Pint& pint);
         StreamTask createStreamJob(Pint& pint);
 };
 

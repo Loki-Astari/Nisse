@@ -65,7 +65,8 @@ class EventHandler
         EventHandler(JobQueue& jobQueue, Store& store);
 
         void run();
-        void add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task);
+        void add(ThorsAnvil::ThorsSocket::Server&& stream, ServerTask&& task);
+        void add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
@@ -77,6 +78,7 @@ class EventHandler
 
     private:
         bool checkFileDescriptorOK(int fd, EventType type);
+        CoRoutine buildCoRoutineServer(ServerData& info);
         CoRoutine buildCoRoutineStream(StreamData& info);
 
     private:
