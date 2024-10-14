@@ -13,7 +13,7 @@
 namespace ThorsAnvil::Nissa
 {
 
-struct StreamData
+struct SocketStreamData
 {
     using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
     SocketStream        stream;
@@ -23,7 +23,9 @@ struct StreamData
     Event               writeEvent;
 };
 
-using CoRoutineCreator = std::function<CoRoutine(StreamData& state)>;
+using StreamData = std::variant<SocketStreamData>;
+
+using CoRoutineCreator = std::function<CoRoutine(SocketStreamData& state)>;
 
 struct StateUpdateCreate
 {

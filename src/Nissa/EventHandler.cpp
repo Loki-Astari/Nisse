@@ -49,7 +49,7 @@ void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, T
     streamStore.requestChange(StateUpdateCreate{fd,
                                                 std::move(stream),
                                                 std::move(task),
-                                                [&](StreamData& info){return buildCoRoutine(info);},
+                                                [&](SocketStreamData& info){return buildCoRoutine(info);},
                                                 Event{eventBase, fd, EV_READ, *this},
                                                 Event{eventBase, fd, EV_WRITE, *this},
                                                });
@@ -72,7 +72,11 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 void EventHandler::eventHandle(int fd, EventType type)
 {
     StreamData& info = streamStore.getStreamData(fd);
+    std::visit(ApplyEvent{*this, fd, type},  info);
+}
 
+void EventHandler::operator()(int fd, EventType type, SocketStreamData& info)
+{
     /*
      * If the socket was closed on the other end.
      * Then remove it and all its data.
@@ -108,7 +112,7 @@ void EventHandler::eventHandle(int fd, EventType type)
     });
 }
 
-CoRoutine EventHandler::buildCoRoutine(StreamData& info)
+CoRoutine EventHandler::buildCoRoutine(SocketStreamData& info)
 {
     return CoRoutine
     {

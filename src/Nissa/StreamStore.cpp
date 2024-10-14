@@ -40,15 +40,16 @@ void StreamStore::operator()(StateUpdateCreate& update)
     static CoRoutine    invalid{[](Yield&){}};
 
     auto [iter, ok] = streamData.insert_or_assign(update.fd,
-                                                  StreamData{std::move(update.stream),
-                                                             std::move(update.task),
-                                                             std::move(invalid),
-                                                             std::move(update.readEvent),
-                                                             std::move(update.writeEvent)
-                                                            });
+                                                  SocketStreamData{std::move(update.stream),
+                                                                   std::move(update.task),
+                                                                   std::move(invalid),
+                                                                   std::move(update.readEvent),
+                                                                   std::move(update.writeEvent)
+                                                                  });
 
-    iter->second.coRoutine = update.coRoutineCreator(iter->second);
-    iter->second.readEvent.add();
+    SocketStreamData& data = std::get<SocketStreamData>(iter->second);
+    data.coRoutine = update.coRoutineCreator(data);
+    data.readEvent.add();
 };
 
 void StreamStore::operator()(StateUpdateRemove& update)
@@ -58,16 +59,24 @@ void StreamStore::operator()(StateUpdateRemove& update)
 
 void StreamStore::operator()(StateUpdateRestoreRead& update)
 {
+    struct RestoreRead
+    {
+        void operator()(SocketStreamData& update) {update.readEvent.add();}
+    };
     auto find = streamData.find(update.fd);
     if (find != streamData.end()) {
-        find->second.readEvent.add();
+        std::visit(RestoreRead{}, find->second);
     }
 }
 
 void StreamStore::operator()(StateUpdateRestoreWrite& update)
 {
+    struct RestoreRead
+    {
+        void operator()(SocketStreamData& update) {update.writeEvent.add();}
+    };
     auto find = streamData.find(update.fd);
     if (find != streamData.end()) {
-        find->second.writeEvent.add();
+        std::visit(RestoreRead{}, find->second);
     }
 }
