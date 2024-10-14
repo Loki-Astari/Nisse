@@ -3,6 +3,7 @@
 
 #include "NissaConfig.h"
 #include "Action.h"
+#include "Pint.h"
 #include "EventHandlerLibEvent.h"
 #include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
@@ -42,18 +43,18 @@ struct ServerData
 {
     using Server = ThorsAnvil::ThorsSocket::Server;
     Server              server;
-    ServerTask          task;
     CoRoutine           coRoutine;
     Event               readEvent;
+    Pint*               pint;
 };
 struct StreamData
 {
     using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
     SocketStream        stream;
-    StreamTask          task;
     CoRoutine           coRoutine;
     Event               readEvent;
     Event               writeEvent;
+    Pint*               pint;
 };
 
 using StoreData = std::variant<ServerData, StreamData>;
@@ -68,9 +69,9 @@ struct StateUpdateCreateServer
     using Server = ThorsAnvil::ThorsSocket::Server;
     int             fd;
     Server          server;
-    ServerTask      task;
     ServerCreator   coRoutineCreator;
     Event           readEvent;
+    Pint&           pint;
 };
 
 struct StateUpdateCreateStream
@@ -78,10 +79,10 @@ struct StateUpdateCreateStream
     using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
     int             fd;
     SocketStream    stream;
-    StreamTask      task;
     StreamCreator   coRoutineCreator;
     Event           readEvent;
     Event           writeEvent;
+    Pint&           pint;
 };
 
 struct StateUpdateRemove

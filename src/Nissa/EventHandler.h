@@ -53,8 +53,8 @@ class EventHandler
         EventHandler(JobQueue& jobQueue, Store& store);
 
         void run();
-        void add(ThorsAnvil::ThorsSocket::Server&& stream, ServerTask&& task, ServerCreator&& creator);
-        void add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task, StreamCreator&& creator);
+        void add(ThorsAnvil::ThorsSocket::Server&& stream, ServerCreator&& creator, Pint& pint);
+        void add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamCreator&& creator, Pint& pint);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);

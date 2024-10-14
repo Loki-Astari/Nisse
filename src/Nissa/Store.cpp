@@ -49,9 +49,9 @@ void Store::operator()(StateUpdateCreateServer& update)
 {
     auto [iter, ok] = data.insert_or_assign(update.fd,
                                             ServerData{std::move(update.server),
-                                                       std::move(update.task),
                                                        std::move(invalid),
                                                        std::move(update.readEvent),
+                                                       &update.pint
                                                       });
 
     ServerData& data = std::get<ServerData>(iter->second);
@@ -63,10 +63,10 @@ void Store::operator()(StateUpdateCreateStream& update)
 {
     auto [iter, ok] = data.insert_or_assign(update.fd,
                                             StreamData{std::move(update.stream),
-                                                       std::move(update.task),
                                                        std::move(invalid),
                                                        std::move(update.readEvent),
-                                                       std::move(update.writeEvent)
+                                                       std::move(update.writeEvent),
+                                                       &update.pint
                                                       });
 
     StreamData& data = std::get<StreamData>(iter->second);

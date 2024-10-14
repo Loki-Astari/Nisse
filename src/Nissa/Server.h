@@ -43,11 +43,8 @@ class Server
         SocketStream getNextStream();
         void         connectionHandler();
 
-        CoRoutine  buildCoRoutineStream(StreamData& info);
-        ServerTask createAcceptJob(Pint& pint);
-
-        CoRoutine  buildCoRoutineServer(ServerData& info);
-        StreamTask createStreamJob(Pint& pint);
+        CoRoutine  createStreamJob(StreamData& info);
+        CoRoutine  createAcceptJob(ServerData& info);
 };
 
 }

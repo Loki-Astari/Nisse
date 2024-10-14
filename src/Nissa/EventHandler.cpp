@@ -45,26 +45,26 @@ void EventHandler::run()
     eventBase.run();
 }
 
-void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerTask&& task, ServerCreator&& serverCreator)
+void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerCreator&& serverCreator, Pint& pint)
 {
     int fd = server.socketId();
     store.requestChange(StateUpdateCreateServer{fd,
                                                 std::move(server),
-                                                std::move(task),
                                                 std::move(serverCreator),
                                                 Event{eventBase, fd, EventType::Read, *this},
+                                                pint
                                                });
 }
 
-void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTask&& task, StreamCreator&& streamCreator)
+void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamCreator&& streamCreator, Pint& pint)
 {
     int fd = stream.getSocket().socketId();
     store.requestChange(StateUpdateCreateStream{fd,
                                                 std::move(stream),
-                                                std::move(task),
                                                 std::move(streamCreator),
                                                 Event{eventBase, fd, EventType::Read, *this},
                                                 Event{eventBase, fd, EventType::Write, *this},
+                                                pint
                                                });
 }
 
