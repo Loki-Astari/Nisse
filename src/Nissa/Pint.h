@@ -25,7 +25,6 @@
 
 #include "NissaConfig.h"
 #include <ThorsSocket/SocketStream.h>
-#include <functional>
 
 namespace ThorsAnvil::Nissa
 {
@@ -36,7 +35,6 @@ class Pint
 {
     public:
         using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
-        using ServerAction = std::function<bool(SocketStream&&)>;
 
         virtual ~Pint() {}
         virtual PintResult handleRequest(SocketStream& stream)    = 0;

@@ -2,12 +2,20 @@
 
 using namespace ThorsAnvil::Nissa;
 
+/*
+ * There is no default constructor for CoRoutine.
+ * But a non-coroutine object is allowed to exist.
+ * So we have a single invalid co-routine that can be used
+ * to initialize non-coroutine objects until we are ready to initialize them.
+ */
+CoRoutine Store::invalid{[](Yield&){}};
+
 StoreData& Store::getStoreData(int fd)
 {
     auto find = data.find(fd);
     if (find == data.end())
     {
-        throw std::runtime_error("BAD");
+        throw std::runtime_error("Invalid Request: Exit applications");
     }
     return find->second;
 }
@@ -32,14 +40,13 @@ void Store::processUpdateRequest()
     for (auto& update: updates)
     {
         std::visit(updater, update);
+        /* This visit calls one of the operators below based on the type of the request */
     }
     updates.clear();
 }
 
 void Store::operator()(StateUpdateCreateServer& update)
 {
-    static CoRoutine    invalid{[](Yield&){}};
-
     auto [iter, ok] = data.insert_or_assign(update.fd,
                                             ServerData{std::move(update.server),
                                                        std::move(update.task),
@@ -54,8 +61,6 @@ void Store::operator()(StateUpdateCreateServer& update)
 
 void Store::operator()(StateUpdateCreateStream& update)
 {
-    static CoRoutine    invalid{[](Yield&){}};
-
     auto [iter, ok] = data.insert_or_assign(update.fd,
                                             StreamData{std::move(update.stream),
                                                        std::move(update.task),

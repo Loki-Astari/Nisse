@@ -5,22 +5,21 @@
  * Server:
  *  Holds
  *      JobQueue:       This is a set of background thread to do any work set by the user.
+ *      Store:          All stage information needed by the server.
+ *                      Storage is thread safe assuming:
+ *                          Only main thread adds new data.
+ *                          Each thread only reads the object that it is acting on.
  *      EventHandler:   LibEvent wrapper.
- *                      It holdes all the information neeeded to processes a connection.
+ *                      It hold's all the information needed to processes a connection.
  *  The server puts appropriate "lambdas" into the Event Handler to processes a socket.
  */
 
 #include "NissaConfig.h"
-#include "EventHandler.h"
-#include "Store.h"
 #include "JobQueue.h"
+#include "Store.h"
+#include "EventHandler.h"
 #include "Pint.h"
-#include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
-#include <functional>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 
 namespace ThorsAnvil::Nissa
 {

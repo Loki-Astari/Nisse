@@ -1,6 +1,13 @@
 #ifndef THORSANVIL_NISSA_EVENT_HANDLER_LIBEVENT_H
 #define THORSANVIL_NISSA_EVENT_HANDLER_LIBEVENT_H
 
+/*
+ * Wrapper class to give LibEvent types proper RIAA characteristics.
+ *
+ * EventBase is not copyable or movable.    libEvent    event_base
+ * Event     is moveable.                   libEvent    event
+ */
+
 #include "NissaConfig.h"
 #include <event2/event.h>
 #include <utility>
@@ -13,6 +20,8 @@ using LibEventEvent         = ::event;
 using LibEventTimeOut       = ::timeval;
 
 class EventHandler;
+enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
+
 
 class Event;
 class EventBase
@@ -45,7 +54,7 @@ class Event
 
     public:
         Event(EventBase& eventBase, EventHandler& eventHandler);
-        Event(EventBase& eventBase, int fd, short type, EventHandler& eventHandler);
+        Event(EventBase& eventBase, int fd, EventType type, EventHandler& eventHandler);
 
         Event()
             : event(nullptr)

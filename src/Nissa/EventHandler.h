@@ -4,16 +4,10 @@
 /*
  * A thin wrapper on libEvent to C++ it.
  *
- * For each socket track:
- *  1: SocketStream             std::iostream for reading/writting to socket.
- *  2: Task                     A lambda that will be execute when the SocketStream is not blocking.
- *  3: CoRoutine                A boost CoRoutine2 allows code to yield if the socket blocks.
- *                              ThorsSocket can be used with yielding so no extra code is needed.
+ * When an socket listener is first created via add() we store all data in the Store object.
+ * When this has been created it adds the `ReadEvent` to libEvent to listen for any data.
  *
- * When an Event listener is first created we also add an event listener on libEvent and a
- * coroutine to track the state of Task and installs the yield object on the sockets.
- *
- * When (if) a socket event is triggered we save a lambda on the JobQueue that will be
+ * When (if) a socket event is triggered we save a lambda on the JobQueue addJob() that will be
  * executed by a thread. The lambda restarts the CoRoutine which will either yield one of
  * three values.
  *
@@ -22,20 +16,15 @@
  *      * TaskYieldState::RestoreWrite   We restore the write listener waiting for space to write.
  *      * TaskYieldState::Remove         We destroy the socket and all associated data.
  *
- * Note: This action is not done immediately the action is added to "updateList" which will
- *       be processed by the main thread every couple of milliseconds.
- *
+ * Note: This data is never destroyed immediately because the code may be executing on any thread.
+ *       Instead a request is queued on the `Store` object. The main thread will then be used
+ *       to clean up data (See Store for details).
  */
 
 #include "NissaConfig.h"
 #include "Action.h"
 #include "EventHandlerLibEvent.h"
 #include "Store.h"
-#include <event2/event.h>
-#include <map>
-#include <tuple>
-#include <functional>
-#include <mutex>
 
 /*
  * C-Callback registered with LibEvent
@@ -51,11 +40,9 @@ class Store;
 struct StreamData;
 struct ServerData;
 
-enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
-
 class EventHandler
 {
-    static constexpr int controlTimerPause = 1000;  // microsends between iterations.
+    static constexpr int controlTimerPause = 1000;  // microseconds between iterations.
 
     JobQueue&       jobQueue;
     Store&          store;

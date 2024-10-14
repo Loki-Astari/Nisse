@@ -2,6 +2,7 @@
 #include "PintHTTP.h"
 
 #include <ThorsLogging/ThorsLogging.h>
+#include <ThorsSocket/Server.h>
 #include <string>
 #include <iostream>
 

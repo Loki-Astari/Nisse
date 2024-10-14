@@ -15,7 +15,6 @@ namespace ThorsAnvil::Nissa
 class PintHTTP: public Pint
 {
     using SocketStream = Pint::SocketStream;
-    using ServerAction = Pint::ServerAction;
 
     public:
         virtual PintResult handleRequest(SocketStream& stream) override;

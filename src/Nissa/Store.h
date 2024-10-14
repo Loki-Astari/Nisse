@@ -6,14 +6,38 @@
 #include "EventHandlerLibEvent.h"
 #include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
-#include <map>
 #include <variant>
+#include <functional>
+#include <map>
 #include <vector>
 #include <mutex>
+
+/*
+ * The store can hold two types of object:
+ *      ServerData:             Data needed by the listeners.
+ *                              The ThorsSocket::Server object.
+ *      StreamData:             Data needed by a connected socket that is communicating.
+ *                              The ThorsSocket::SocketStream object.
+ *
+ * Addition both types hold the following information.
+ *  2: Task                     A lambda that is executed.
+ *  3: CoRoutine                A boost CoRoutine2 that allows code to yield if the socket blocks.
+ *  4: LibEvent objects         These interact with the EventHandler to make sure that
+ *                              callbacks activate the Co-Routine.
+ *
+ * When an object is first created we also active the LibEvent read Listener of that object.
+ *
+ * To make sure that this object is thread safe state change is only done by the master thread
+ * via the method `processUpdateRequest()`. All other threads request state change
+ * via the `requestChange()` method that enqueues a request to be done by the main thread.
+ */
 
 namespace ThorsAnvil::Nissa
 {
 
+/*
+ * Data that can be stored.
+ */
 struct ServerData
 {
     using Server = ThorsAnvil::ThorsSocket::Server;
@@ -34,28 +58,30 @@ struct StreamData
 
 using StoreData = std::variant<ServerData, StreamData>;
 
-using CoRoutineServerCreator = std::function<CoRoutine(ServerData& state)>;
-using CoRoutineStreamCreator = std::function<CoRoutine(StreamData& state)>;
 
+/*
+ * Change request objects.
+ * The following are objects that can be enqueued by requestChange()
+ */
 struct StateUpdateCreateServer
 {
     using Server = ThorsAnvil::ThorsSocket::Server;
-    int                     fd;
-    Server                  server;
-    ServerTask              task;
-    CoRoutineServerCreator  coRoutineCreator;
-    Event                   readEvent;
+    int             fd;
+    Server          server;
+    ServerTask      task;
+    ServerCreator   coRoutineCreator;
+    Event           readEvent;
 };
 
 struct StateUpdateCreateStream
 {
     using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
-    int                     fd;
-    SocketStream            stream;
-    StreamTask              task;
-    CoRoutineStreamCreator  coRoutineCreator;
-    Event                   readEvent;
-    Event                   writeEvent;
+    int             fd;
+    SocketStream    stream;
+    StreamTask      task;
+    StreamCreator   coRoutineCreator;
+    Event           readEvent;
+    Event           writeEvent;
 };
 
 struct StateUpdateRemove
@@ -76,8 +102,13 @@ struct StateUpdateRestoreWrite
 
 using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
+/*
+ * The store data
+ */
 class Store
 {
+    static CoRoutine    invalid;
+
     std::map<int, StoreData>    data;
     std::vector<StateUpdate>    updates;
     std::mutex                  updateMutex;

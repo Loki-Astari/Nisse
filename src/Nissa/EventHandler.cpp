@@ -24,8 +24,8 @@ using namespace ThorsAnvil::Nissa;
 /*
  * EventLib wrapper. Set up C-Function callbacks
  */
-Event::Event(EventBase& eventBase, int fd, short type, EventHandler& eventHandler)
-    : event{event_new(eventBase.eventBase, fd, type, &eventCallback, &eventHandler)}
+Event::Event(EventBase& eventBase, int fd, EventType type, EventHandler& eventHandler)
+    : event{event_new(eventBase.eventBase, fd, static_cast<short>(type), &eventCallback, &eventHandler)}
 {}
 
 Event::Event(EventBase& eventBase, EventHandler& eventHandler)
@@ -52,7 +52,7 @@ void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerTask&& ta
                                                 std::move(server),
                                                 std::move(task),
                                                 std::move(serverCreator),
-                                                Event{eventBase, fd, EV_READ, *this},
+                                                Event{eventBase, fd, EventType::Read, *this},
                                                });
 }
 
@@ -63,8 +63,8 @@ void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamTas
                                                 std::move(stream),
                                                 std::move(task),
                                                 std::move(streamCreator),
-                                                Event{eventBase, fd, EV_READ, *this},
-                                                Event{eventBase, fd, EV_WRITE, *this},
+                                                Event{eventBase, fd, EventType::Read, *this},
+                                                Event{eventBase, fd, EventType::Write, *this},
                                                });
 }
 
@@ -72,13 +72,15 @@ void EventHandler::eventHandle(int fd, EventType type)
 {
     StoreData& info = store.getStoreData(fd);
     std::visit(ApplyEvent{*this, fd, type},  info);
+    /* The std::visit ApplyEvent object to call checkFileDescriptorOK()/addJob() below */
 }
 
 bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 {
     /*
      * This function detects if the socket has been closed at the other end.
-     * This will induce a read event but there will be no data on the stream.
+     * If the other end of the socket was closed this will induce a read event.
+     * But no data will be available.
      */
     if (type == EventType::Write) {
         return true;
@@ -87,6 +89,7 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
     ssize_t result = recv(fd, &buffer, 1, MSG_PEEK);
     if (result == 0 || (result == -1 && errno != EAGAIN && errno != EWOULDBLOCK))
     {
+        // Remove a socket if the other end has been closed.
         std::cout << "Remove Socket\n";
         store.requestChange(StateUpdateRemove{fd});
         return false;
@@ -96,6 +99,11 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 
 void EventHandler::addJob(CoRoutine& work, int fd)
 {
+    /*
+     * Add a job to the task queue.
+     * This calls the passed CoRoutine and then updates the state of the object.
+     * Note: The update is done via requestChange() as it can be called by any thread.
+     */
     jobQueue.addJob([&work, fd, &store = this->store]()
     {
         TaskYieldState task = TaskYieldState::Remove;

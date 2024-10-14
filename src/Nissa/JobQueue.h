@@ -9,6 +9,8 @@
  */
 
 #include "NissaConfig.h"
+#include <queue>
+#include <vector>
 #include <functional>
 #include <thread>
 #include <mutex>
