@@ -12,7 +12,7 @@
 
 #include "NissaConfig.h"
 #include "EventHandler.h"
-#include "StreamStore.h"
+#include "Store.h"
 #include "JobQueue.h"
 #include "Pint.h"
 #include <ThorsSocket/Server.h>
@@ -38,7 +38,7 @@ class Server
 
     Listeners                       listeners;
     JobQueue                        jobQueue;
-    StreamStore                     streamStore;
+    Store                           store;
     EventHandler                    eventHandler;
 
     public:

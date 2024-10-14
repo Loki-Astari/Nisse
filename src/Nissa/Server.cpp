@@ -5,8 +5,8 @@ using namespace ThorsAnvil::Nissa;
 
 Server::Server(int workerCount)
     : jobQueue{workerCount}
-    , streamStore{}
-    , eventHandler{jobQueue, streamStore}
+    , store{}
+    , eventHandler{jobQueue, store}
 {}
 
 void Server::run()

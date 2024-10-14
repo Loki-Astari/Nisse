@@ -1,6 +1,6 @@
 #include "EventHandler.h"
 #include "JobQueue.h"
-#include "StreamStore.h"
+#include "Store.h"
 
 /*
  * C Callback functions.
@@ -31,9 +31,9 @@ Event::Event(EventBase& eventBase, EventHandler& eventHandler)
     : event{evtimer_new(eventBase.eventBase, controlTimerCallback, &eventHandler)}
 {}
 
-EventHandler::EventHandler(JobQueue& jobQueue, StreamStore& streamStore)
+EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
     : jobQueue(jobQueue)
-    , streamStore(streamStore)
+    , store(store)
     , timer(eventBase, *this)
 {
     timer.add(controlTimerPause);
@@ -46,10 +46,10 @@ void EventHandler::run()
 
 void EventHandler::add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, Task&& task)
 {
-    streamStore.requestChange(StateUpdateCreate{fd,
+    store.requestChange(StateUpdateCreateStream{fd,
                                                 std::move(stream),
                                                 std::move(task),
-                                                [&](SocketStreamData& info){return buildCoRoutine(info);},
+                                                [&](StreamData& info){return buildCoRoutine(info);},
                                                 Event{eventBase, fd, EV_READ, *this},
                                                 Event{eventBase, fd, EV_WRITE, *this},
                                                });
@@ -71,11 +71,11 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 
 void EventHandler::eventHandle(int fd, EventType type)
 {
-    StreamData& info = streamStore.getStreamData(fd);
+    StoreData& info = store.getStoreData(fd);
     std::visit(ApplyEvent{*this, fd, type},  info);
 }
 
-void EventHandler::operator()(int fd, EventType type, SocketStreamData& info)
+void EventHandler::operator()(int fd, EventType type, StreamData& info)
 {
     /*
      * If the socket was closed on the other end.
@@ -84,7 +84,7 @@ void EventHandler::operator()(int fd, EventType type, SocketStreamData& info)
     if (info.stream.getSocket().isConnected() && !checkFileDescriptorOK(fd, type))
     {
         std::cout << "Remove Socket\n";
-        streamStore.requestChange(StateUpdateRemove{fd});
+        store.requestChange(StateUpdateRemove{fd});
         return;
     }
     /*
@@ -100,19 +100,19 @@ void EventHandler::operator()(int fd, EventType type, SocketStreamData& info)
         switch (task)
         {
             case TaskYieldState::Remove:
-                streamStore.requestChange(StateUpdateRemove{fd});
+                store.requestChange(StateUpdateRemove{fd});
                 break;
             case TaskYieldState::RestoreRead:
-                streamStore.requestChange(StateUpdateRestoreRead{fd});
+                store.requestChange(StateUpdateRestoreRead{fd});
                 break;
             case TaskYieldState::RestoreWrite:
-                streamStore.requestChange(StateUpdateRestoreWrite{fd});
+                store.requestChange(StateUpdateRestoreWrite{fd});
                 break;
         }
     });
 }
 
-CoRoutine EventHandler::buildCoRoutine(SocketStreamData& info)
+CoRoutine EventHandler::buildCoRoutine(StreamData& info)
 {
     return CoRoutine
     {
@@ -150,7 +150,7 @@ CoRoutine EventHandler::buildCoRoutine(SocketStreamData& info)
 void EventHandler::controlTimerAction()
 {
     // Update all the state information.
-    streamStore.processUpdateRequest();
+    store.processUpdateRequest();
     // Put the timer back.
     timer.add(controlTimerPause);
 }

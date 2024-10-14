@@ -46,8 +46,8 @@ namespace ThorsAnvil::Nissa
 {
 
 class JobQueue;
-class StreamStore;
-struct SocketStreamData;
+class Store;
+struct StreamData;
 
 enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
 
@@ -56,12 +56,12 @@ class EventHandler
     static constexpr int controlTimerPause = 1000;  // microsends between iterations.
 
     JobQueue&       jobQueue;
-    StreamStore&    streamStore;
+    Store&          store;
     EventBase       eventBase;
     Event           timer;
 
     public:
-        EventHandler(JobQueue& jobQueue, StreamStore& streamStore);
+        EventHandler(JobQueue& jobQueue, Store& store);
 
         void run();
         void add(int fd, ThorsAnvil::ThorsSocket::SocketStream&& stream, Task&& task);
@@ -76,7 +76,7 @@ class EventHandler
 
     private:
         bool checkFileDescriptorOK(int fd, EventType type);
-        CoRoutine buildCoRoutine(SocketStreamData& info);
+        CoRoutine buildCoRoutine(StreamData& info);
 
     private:
         struct ApplyEvent
@@ -89,9 +89,9 @@ class EventHandler
                 , fd(fd)
                 , type(type)
             {}
-            void operator()(SocketStreamData& info) {handler(fd, type,info);}
+            void operator()(StreamData& info) {handler(fd, type,info);}
         };
-        void operator()(int fd, EventType type, SocketStreamData& info);
+        void operator()(int fd, EventType type, StreamData& info);
 };
 
 }

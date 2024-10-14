@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSA_STREAM_STORE_H
-#define THORSANVIL_NISSA_STREAM_STORE_H
+#ifndef THORSANVIL_NISSA_STORE_H
+#define THORSANVIL_NISSA_STORE_H
 
 #include "NissaConfig.h"
 #include "Action.h"
@@ -13,7 +13,7 @@
 namespace ThorsAnvil::Nissa
 {
 
-struct SocketStreamData
+struct StreamData
 {
     using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
     SocketStream        stream;
@@ -23,19 +23,19 @@ struct SocketStreamData
     Event               writeEvent;
 };
 
-using StreamData = std::variant<SocketStreamData>;
+using StoreData = std::variant<StreamData>;
 
-using CoRoutineCreator = std::function<CoRoutine(SocketStreamData& state)>;
+using CoRoutineStreamCreator = std::function<CoRoutine(StreamData& state)>;
 
-struct StateUpdateCreate
+struct StateUpdateCreateStream
 {
     using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
-    int                 fd;
-    SocketStream        stream;
-    Task                task;
-    CoRoutineCreator    coRoutineCreator;
-    Event               readEvent;
-    Event               writeEvent;
+    int                     fd;
+    SocketStream            stream;
+    Task                    task;
+    CoRoutineStreamCreator  coRoutineCreator;
+    Event                   readEvent;
+    Event                   writeEvent;
 };
 
 struct StateUpdateRemove
@@ -54,16 +54,16 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreate, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
-class StreamStore
+class Store
 {
-    std::map<int, StreamData>   streamData;
+    std::map<int, StoreData>   streamData;
     std::vector<StateUpdate>    updates;
     std::mutex                  updateMutex;
 
     public:
-        StreamData&     getStreamData(int fd);
+        StoreData&      getStoreData(int fd);
         void            processUpdateRequest();
 
         template<typename T>
@@ -71,16 +71,16 @@ class StreamStore
     private:
         struct ApplyUpdate
         {
-            StreamStore& store;
-            ApplyUpdate(StreamStore& store)
+            Store& store;
+            ApplyUpdate(Store& store)
                 : store(store)
             {}
-            void operator()(StateUpdateCreate& update)      {store(update);}
+            void operator()(StateUpdateCreateStream& update){store(update);}
             void operator()(StateUpdateRemove& update)      {store(update);}
             void operator()(StateUpdateRestoreRead& update) {store(update);}
             void operator()(StateUpdateRestoreWrite& update){store(update);}
         };
-        void operator()(StateUpdateCreate& update);
+        void operator()(StateUpdateCreateStream& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);
         void operator()(StateUpdateRestoreWrite& update);
