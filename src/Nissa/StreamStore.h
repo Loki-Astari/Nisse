@@ -41,6 +41,16 @@ struct StateUpdateRemove
     int     fd;
 };
 
+struct StateUpdateRestoreRead
+{
+    int fd;
+};
+
+struct StateUpdateRestoreWrite
+{
+    int fd;
+};
+
 
 using StateUpdate = std::variant<StateUpdateCreate, StateUpdateRemove>;
 
@@ -63,11 +73,15 @@ class StreamStore
             ApplyUpdate(StreamStore& store)
                 : store(store)
             {}
-            void operator()(StateUpdateCreate& update)   {store(update);}
-            void operator()(StateUpdateRemove& update)   {store(update);}
+            void operator()(StateUpdateCreate& update)      {store(update);}
+            void operator()(StateUpdateRemove& update)      {store(update);}
+            void operator()(StateUpdateRestoreRead& update) {stroe(update);}
+            void operator()(StateUpdateRestoreWrite& update){store(update);}
         };
         void operator()(StateUpdateCreate& update);
         void operator()(StateUpdateRemove& update);
+        void operator()(StateUpdateRestoreRead& update);
+        void operator()(StateUpdateRestoreWrite& update);
 };
 
 }

@@ -53,3 +53,19 @@ void StreamStore::operator()(StateUpdateRemove& update)
 {
     streamData.erase(update.fd);
 }
+
+void StreamStore::operator()(StateUpdateRestoreRead& update)
+{
+    auto find = streamData.find(update.fd);
+    if (find != streamData.end()) {
+        find->second.readEvent.add();
+    }
+}
+
+void StreamStore::operator()(StateUpdateRestoreWrite& update)
+{
+    auto find = streamData.find(update.fd);
+    if (find != streamData.end()) {
+        find->second.writeEvent.add();
+    }
+}

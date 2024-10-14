@@ -99,10 +99,10 @@ void EventHandler::eventHandle(int fd, EventType type)
                 streamStore.requestChange(StateUpdateRemove{fd});
                 break;
             case TaskYieldState::RestoreRead:
-                info.readEvent.add();
+                streamStore.requestChange(StateUpdateRestoreRead{fd});
                 break;
             case TaskYieldState::RestoreWrite:
-                info.writeEvent.add();
+                streamStore.requestChange(StateUpdateRestoreWrite{fd});
                 break;
         }
     });
