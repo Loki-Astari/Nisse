@@ -35,10 +35,8 @@ enum class PyntResult {Done, More};
 class Pynt
 {
     public:
-        using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
-
         virtual ~Pynt() {}
-        virtual PyntResult handleRequest(SocketStream& stream)    = 0;
+        virtual PyntResult handleRequest(TAS::SocketStream& stream)    = 0;
 };
 
 }

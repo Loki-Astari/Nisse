@@ -24,16 +24,12 @@ int main(int argc, char* argv[])
 #ifdef CERTIFICATE_INFO
     // If you have site certificate set CERTIFICATE_INFO to the path
     // This will then create the server to create SSL connections (i.e. HTTPS)
-    using ThorsAnvil::ThorsSocket::CertificateInfo;
-    using ThorsAnvil::ThorsSocket::SSLctx;
-    using ThorsAnvil::ThorsSocket::SServerInfo;
-    using ThorsAnvil::ThorsSocket::SSLMethodType;
 
-    CertificateInfo certificate{CERTIFICATE_INFO "fullchain.pem",
-                                CERTIFICATE_INFO "privkey.pem"
-                               };
-    SSLctx          ctx{SSLMethodType::Server, certificate};
-    SServerInfo     initPort{port, ctx};
+    TAS::CertificateInfo certificate{CERTIFICATE_INFO "fullchain.pem",
+                                     CERTIFICATE_INFO "privkey.pem"
+                                    };
+    TAS::SSLctx         ctx{TAS::SSLMethodType::Server, certificate};
+    TAS::SServerInfo    initPort{port, ctx};
 
 #else
     // Without a site certificate you should only use an normal socket (i.e. HTTP)
@@ -42,17 +38,14 @@ int main(int argc, char* argv[])
     //
     // See: https://letsencrypt.org/getting-started/
     //      On how to get a free signed site certificate.
-    using ThorsAnvil::ThorsSocket::ServerInfo;
-    ServerInfo      initPort{port};
+    TAS::ServerInfo      initPort{port};
 #endif
 
     // Set up the server
-    using ThorsAnvil::Nisse::NisseServer;
-    NisseServer     server;
+    ThorsAnvil::Nisse::NisseServer  server;
 
     // Processes HTTP connection on port.
-    using ThorsAnvil::Nisse::PyntHTTP;
-    PyntHTTP        http;
+    ThorsAnvil::Nisse::PyntHTTP     http;
     server.listen(initPort, http);
     server.run();
 }

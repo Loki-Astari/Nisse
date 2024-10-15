@@ -15,10 +15,8 @@ namespace ThorsAnvil::Nisse
 
 class PyntHTTP: public Pynt
 {
-    using SocketStream = Pynt::SocketStream;
-
     public:
-        virtual PyntResult handleRequest(SocketStream& stream) override;
+        virtual PyntResult handleRequest(TAS::SocketStream& stream) override;
 };
 
 }

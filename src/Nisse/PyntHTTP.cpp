@@ -3,7 +3,7 @@
 
 using namespace ThorsAnvil::Nisse;
 
-PyntResult PyntHTTP::handleRequest(SocketStream& stream)
+PyntResult PyntHTTP::handleRequest(TAS::SocketStream& stream)
 {
     std::size_t bodySize = 0;
     bool        closeSocket = true;

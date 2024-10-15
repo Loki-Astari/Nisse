@@ -41,16 +41,14 @@ namespace ThorsAnvil::Nisse
  */
 struct ServerData
 {
-    using Server = ThorsAnvil::ThorsSocket::Server;
-    Server              server;
+    TAS::Server         server;
     CoRoutine           coRoutine;
     Event               readEvent;
     Pynt*               pynt;
 };
 struct StreamData
 {
-    using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
-    SocketStream        stream;
+    TAS::SocketStream   stream;
     CoRoutine           coRoutine;
     Event               readEvent;
     Event               writeEvent;
@@ -66,23 +64,21 @@ using StoreData = std::variant<ServerData, StreamData>;
  */
 struct StateUpdateCreateServer
 {
-    using Server = ThorsAnvil::ThorsSocket::Server;
-    int             fd;
-    Server          server;
-    ServerCreator   coRoutineCreator;
-    Event           readEvent;
-    Pynt&           pynt;
+    int                 fd;
+    TAS::Server         server;
+    ServerCreator       coRoutineCreator;
+    Event               readEvent;
+    Pynt&               pynt;
 };
 
 struct StateUpdateCreateStream
 {
-    using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
-    int             fd;
-    SocketStream    stream;
-    StreamCreator   coRoutineCreator;
-    Event           readEvent;
-    Event           writeEvent;
-    Pynt&           pynt;
+    int                 fd;
+    TAS::SocketStream   stream;
+    StreamCreator       coRoutineCreator;
+    Event               readEvent;
+    Event               writeEvent;
+    Pynt&               pynt;
 };
 
 struct StateUpdateRemove

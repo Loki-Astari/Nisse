@@ -22,12 +22,10 @@ namespace ThorsAnvil::Nisse
 using Work    = std::function<void()>;
 class JobQueue
 {
-    using WorkQueue     = std::queue<Work>;
-
     std::vector<std::thread>        workers;
     std::mutex                      workMutex;
     std::condition_variable         workCV;
-    WorkQueue                       workQueue;
+    std::queue<Work>                workQueue;
     bool                            finished;
 
     public:

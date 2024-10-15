@@ -26,8 +26,6 @@ namespace ThorsAnvil::Nisse
 
 class NisseServer
 {
-    using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
-
     JobQueue                        jobQueue;
     Store                           store;
     EventHandler                    eventHandler;
@@ -40,8 +38,8 @@ class NisseServer
         void listen(T listenerInit, Pynt& pynt);
 
     private:
-        SocketStream getNextStream();
-        void         connectionHandler();
+        TAS::SocketStream   getNextStream();
+        void                connectionHandler();
 
         CoRoutine  createStreamJob(StreamData& info);
         CoRoutine  createAcceptJob(ServerData& info);
