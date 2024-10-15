@@ -1,5 +1,5 @@
 #include "JobQueue.h"
-#include <iostream>
+#include <ThorsLogging/ThorsLogging.h>
 
 using namespace ThorsAnvil::Nisse;
 
@@ -45,11 +45,11 @@ void JobQueue::processWork()
         }
         catch (std::exception const& e)
         {
-            std::cerr << "ThorsAnvil::Nissa::JobQueue::" << "processWork" << "Work Exception: " <<  e.what() << "\n";
+            ThorsLogWarning("ThorsAnvil::Nissa::JobQueue::", "processWork", "Work Exception: ",  e.what());
         }
         catch (...)
         {
-            std::cerr << "ThorsAnvil::Nissa::JobQueue::" << "processWork" << "Work Exception: Unknown\n";
+            ThorsLogWarning("ThorsAnvil::Nissa::JobQueue::", "processWork", "Work Exception: Unknown");
         }
     }
 }

@@ -2,6 +2,7 @@
 #include "NisseUtil.h"
 #include "JobQueue.h"
 #include "Store.h"
+#include <ThorsLogging/ThorsLogging.h>
 
 /*
  * C Callback functions.
@@ -90,7 +91,7 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
     if (result == 0 || (result == -1 && errno != EAGAIN && errno != EWOULDBLOCK))
     {
         // Remove a socket if the other end has been closed.
-        std::cout << "Remove Socket\n";
+        ThorsLogInfo("ThorsAnvil::Nissa::EventHandler::", "checkFileDescriptorOK", "Client closed connection");
         store.requestChange(StateUpdateRemove{fd});
         return false;
     }
@@ -115,11 +116,11 @@ void EventHandler::addJob(CoRoutine& work, int fd)
         }
         catch (std::exception const& e)
         {
-            std::cerr << "ThorsAnvil::Nissa::EventHandler::" << "addJob" <<  "jobQueue::job: Ignoring Exception: " <<  e.what() << "\n";
+            ThorsLogWarning("ThorsAnvil::Nissa::EventHandler::", "addJob", "jobQueue::job: Ignoring Exception: ",  e.what());
         }
         catch (...)
         {
-            std::cerr << "ThorsAnvil::Nissa::EventHandler::" <<  "addJob" << "jobQueue::job: Ignoring Exception: Unknown" << "\n";
+            ThorsLogWarning("ThorsAnvil::Nissa::EventHandler::", "addJob", "jobQueue::job: Ignoring Exception: Unknown");
         }
         switch (task)
         {
