@@ -45,7 +45,7 @@ void EventHandler::run()
     eventBase.run();
 }
 
-void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerCreator&& serverCreator, Pynt& pynt)
+void EventHandler::add(TAS::Server&& server, ServerCreator&& serverCreator, Pynt& pynt)
 {
     int fd = server.socketId();
     store.requestChange(StateUpdateCreateServer{fd,
@@ -56,7 +56,7 @@ void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerCreator&&
                                                });
 }
 
-void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamCreator&& streamCreator, Pynt& pynt)
+void EventHandler::add(TAS::SocketStream&& stream, StreamCreator&& streamCreator, Pynt& pynt)
 {
     int fd = stream.getSocket().socketId();
     store.requestChange(StateUpdateCreateStream{fd,

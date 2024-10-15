@@ -71,7 +71,7 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
                         // If everything worked then create a stream connection (see above)
                         // Passing the "Pynt" as the object that will handle the request.
                         // Note: The "Pynt" functionality is not run yet. The socket must be available to use.
-                        eventHandler.add(ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
+                        eventHandler.add(TAS::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
                     }
                     yield(TaskYieldState::RestoreRead);
                 }
@@ -95,5 +95,5 @@ void NisseServer::listen(T listenerInit, Pynt& pynt)
     eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pynt);
 }
 
-template void NisseServer::listen<ThorsAnvil::ThorsSocket::SServerInfo>(ThorsAnvil::ThorsSocket::SServerInfo listenerInit, Pynt& pynt);
-template void NisseServer::listen<ThorsAnvil::ThorsSocket::ServerInfo>(ThorsAnvil::ThorsSocket::ServerInfo listenerInit, Pynt& pynt);
+template void NisseServer::listen<TAS::SServerInfo>(TAS::SServerInfo listenerInit, Pynt& pynt);
+template void NisseServer::listen<TAS::ServerInfo>(TAS::ServerInfo listenerInit, Pynt& pynt);

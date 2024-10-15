@@ -31,8 +31,8 @@ enum class TaskYieldState        {RestoreRead, RestoreWrite, Remove};
  */
 using CoRoutine     = boost::coroutines2::coroutine<TaskYieldState>::pull_type;
 using Yield         = boost::coroutines2::coroutine<TaskYieldState>::push_type;
-using ServerTask    = std::function<void(ThorsAnvil::ThorsSocket::Server& stream, Yield& yield)>;
-using StreamTask    = std::function<void(ThorsAnvil::ThorsSocket::SocketStream& stream, Yield& yield)>;
+using ServerTask    = std::function<void(TAS::Server& stream, Yield& yield)>;
+using StreamTask    = std::function<void(TAS::SocketStream& stream, Yield& yield)>;
 using ServerCreator = std::function<CoRoutine(ServerData&)>;
 using StreamCreator = std::function<CoRoutine(StreamData&)>;
 
