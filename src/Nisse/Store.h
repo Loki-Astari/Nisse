@@ -1,9 +1,9 @@
-#ifndef THORSANVIL_NISSA_STORE_H
-#define THORSANVIL_NISSA_STORE_H
+#ifndef THORSANVIL_NISSE_STORE_H
+#define THORSANVIL_NISSE_STORE_H
 
-#include "NissaConfig.h"
-#include "Action.h"
-#include "Pint.h"
+#include "NisseConfig.h"
+#include "NisseUtil.h"
+#include "Pynt.h"
 #include "EventHandlerLibEvent.h"
 #include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
@@ -33,7 +33,7 @@
  * via the `requestChange()` method that enqueues a request to be done by the main thread.
  */
 
-namespace ThorsAnvil::Nissa
+namespace ThorsAnvil::Nisse
 {
 
 /*
@@ -45,7 +45,7 @@ struct ServerData
     Server              server;
     CoRoutine           coRoutine;
     Event               readEvent;
-    Pint*               pint;
+    Pynt*               pynt;
 };
 struct StreamData
 {
@@ -54,7 +54,7 @@ struct StreamData
     CoRoutine           coRoutine;
     Event               readEvent;
     Event               writeEvent;
-    Pint*               pint;
+    Pynt*               pynt;
 };
 
 using StoreData = std::variant<ServerData, StreamData>;
@@ -71,7 +71,7 @@ struct StateUpdateCreateServer
     Server          server;
     ServerCreator   coRoutineCreator;
     Event           readEvent;
-    Pint&           pint;
+    Pynt&           pynt;
 };
 
 struct StateUpdateCreateStream
@@ -82,7 +82,7 @@ struct StateUpdateCreateStream
     StreamCreator   coRoutineCreator;
     Event           readEvent;
     Event           writeEvent;
-    Pint&           pint;
+    Pynt&           pynt;
 };
 
 struct StateUpdateRemove

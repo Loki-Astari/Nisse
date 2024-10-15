@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSA_JOB_QUEUE_H
-#define THORSANVIL_NISSA_JOB_QUEUE_H
+#ifndef THORSANVIL_NISSE_JOB_QUEUE_H
+#define THORSANVIL_NISSE_JOB_QUEUE_H
 
 /*
  * The class that holds all the background threads and work that the threads will do.
@@ -8,7 +8,7 @@
  * New jobs added via `addJob()` which will then be executed ASAP by one of the threads.
  */
 
-#include "NissaConfig.h"
+#include "NisseConfig.h"
 #include <queue>
 #include <vector>
 #include <functional>
@@ -16,7 +16,7 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace ThorsAnvil::Nissa
+namespace ThorsAnvil::Nisse
 {
 
 using Work    = std::function<void()>;

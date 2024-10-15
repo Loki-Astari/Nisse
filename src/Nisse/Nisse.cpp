@@ -1,5 +1,6 @@
-#include "Server.h"
-#include "PintHTTP.h"
+#include "NisseServer.h"
+#include "NisseUtil.h"
+#include "PyntHTTP.h"
 
 #include <ThorsLogging/ThorsLogging.h>
 #include <ThorsSocket/Server.h>
@@ -11,7 +12,7 @@ int main(int argc, char* argv[])
     // ThorsLogging: Log level => 9 all messages (exceptions) displayed: Default std::cerr
     loguru::g_stderr_verbosity = 9;
 
-    std::cout << "Nissa Server\n";
+    std::cout << "Nisse Server\n";
 
     int             port = 8080;
     if (argc > 1) {
@@ -46,12 +47,12 @@ int main(int argc, char* argv[])
 #endif
 
     // Set up the server
-    using ThorsAnvil::Nissa::Server;
-    Server          server;
+    using ThorsAnvil::Nisse::NisseServer;
+    NisseServer     server;
 
     // Processes HTTP connection on port.
-    using ThorsAnvil::Nissa::PintHTTP;
-    PintHTTP        http;
+    using ThorsAnvil::Nisse::PyntHTTP;
+    PyntHTTP        http;
     server.listen(initPort, http);
     server.run();
 }

@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSA_EVENT_HANDLER_LIBEVENT_H
-#define THORSANVIL_NISSA_EVENT_HANDLER_LIBEVENT_H
+#ifndef THORSANVIL_NISSE_EVENT_HANDLER_LIBEVENT_H
+#define THORSANVIL_NISSE_EVENT_HANDLER_LIBEVENT_H
 
 /*
  * Wrapper class to give LibEvent types proper RIAA characteristics.
@@ -8,11 +8,11 @@
  * Event     is moveable.                   libEvent    event
  */
 
-#include "NissaConfig.h"
+#include "NisseConfig.h"
 #include <event2/event.h>
 #include <utility>
 
-namespace ThorsAnvil::Nissa
+namespace ThorsAnvil::Nisse
 {
 
 using LibEventEventBase     = ::event_base;

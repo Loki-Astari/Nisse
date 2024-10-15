@@ -1,13 +1,13 @@
-#ifndef THORSANVIL_NISSA_ACTION_H
-#define THORSANVIL_NISSA_ACTION_H
+#ifndef THORSANVIL_NISSE_NISSE_UTIL_H
+#define THORSANVIL_NISSE_NISSE_UTIL_H
 
-#include "NissaConfig.h"
+#include "NisseConfig.h"
 #include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
 #include <boost/coroutine2/all.hpp>
 #include <functional>
 
-namespace ThorsAnvil::Nissa
+namespace ThorsAnvil::Nisse
 {
 /*
  * Forward declare Store objects.

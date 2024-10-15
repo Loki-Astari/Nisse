@@ -1,20 +1,20 @@
-#include "Server.h"
+#include "NisseServer.h"
 #include "EventHandler.h"
 
-using namespace ThorsAnvil::Nissa;
+using namespace ThorsAnvil::Nisse;
 
-Server::Server(int workerCount)
+NisseServer::NisseServer(int workerCount)
     : jobQueue{workerCount}
     , store{}
     , eventHandler{jobQueue, store}
 {}
 
-void Server::run()
+void NisseServer::run()
 {
     eventHandler.run();
 }
 
-CoRoutine Server::createStreamJob(StreamData& info)
+CoRoutine NisseServer::createStreamJob(StreamData& info)
 {
     return CoRoutine
     {
@@ -30,16 +30,16 @@ CoRoutine Server::createStreamJob(StreamData& info)
 
             try
             {
-                PintResult result = info.pint->handleRequest(info.stream);
-                while (result == PintResult::More)
+                PyntResult result = info.pynt->handleRequest(info.stream);
+                while (result == PyntResult::More)
                 {
                     yield(TaskYieldState::RestoreRead);
-                    result = info.pint->handleRequest(info.stream);
+                    result = info.pynt->handleRequest(info.stream);
                 }
             }
             catch (...)
             {
-                std::cerr << "Pint Exception:\n";
+                std::cerr << "Pynt Exception:\n";
             }
             // We are all done
             // So indicate that we should tidy up state.
@@ -48,7 +48,7 @@ CoRoutine Server::createStreamJob(StreamData& info)
     };
 }
 
-CoRoutine Server::createAcceptJob(ServerData& info)
+CoRoutine NisseServer::createAcceptJob(ServerData& info)
 {
     return CoRoutine
     {
@@ -72,16 +72,16 @@ CoRoutine Server::createAcceptJob(ServerData& info)
                     if (accept.isConnected())
                     {
                         // If everything worked then create a stream connection (see above)
-                        // Passing the "Pint" as the object that will handle the request.
-                        // Note: The "Pint" functionality is not run yet. The socket must be available to use.
-                        eventHandler.add(ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pint);
+                        // Passing the "Pynt" as the object that will handle the request.
+                        // Note: The "Pynt" functionality is not run yet. The socket must be available to use.
+                        eventHandler.add(ThorsAnvil::ThorsSocket::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
                     }
                     yield(TaskYieldState::RestoreRead);
                 }
             }
             catch (...)
             {
-                std::cerr << "Pint Exception:\n";
+                std::cerr << "Pynt Exception:\n";
             }
             // We are all done
             // So indicate that we should tidy up state.
@@ -91,13 +91,13 @@ CoRoutine Server::createAcceptJob(ServerData& info)
 }
 
 template<typename T>
-void Server::listen(T listenerInit, Pint& pint)
+void NisseServer::listen(T listenerInit, Pynt& pynt)
 {
     using ThorsAnvil::ThorsSocket::Server;
     Server  server{listenerInit};
 
-    eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pint);
+    eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pynt);
 }
 
-template void Server::listen<ThorsAnvil::ThorsSocket::SServerInfo>(ThorsAnvil::ThorsSocket::SServerInfo listenerInit, Pint& pint);
-template void Server::listen<ThorsAnvil::ThorsSocket::ServerInfo>(ThorsAnvil::ThorsSocket::ServerInfo listenerInit, Pint& pint);
+template void NisseServer::listen<ThorsAnvil::ThorsSocket::SServerInfo>(ThorsAnvil::ThorsSocket::SServerInfo listenerInit, Pynt& pynt);
+template void NisseServer::listen<ThorsAnvil::ThorsSocket::ServerInfo>(ThorsAnvil::ThorsSocket::ServerInfo listenerInit, Pynt& pynt);

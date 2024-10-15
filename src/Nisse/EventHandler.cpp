@@ -1,7 +1,7 @@
 #include "EventHandler.h"
+#include "NisseUtil.h"
 #include "JobQueue.h"
 #include "Store.h"
-#include "Action.h"
 
 /*
  * C Callback functions.
@@ -9,17 +9,17 @@
  */
 void eventCallback(evutil_socket_t fd, short eventType, void* data)
 {
-    ThorsAnvil::Nissa::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nissa::EventHandler*>(data);
-    eventHandler.eventHandle(fd, static_cast<ThorsAnvil::Nissa::EventType>(eventType));
+    ThorsAnvil::Nisse::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::EventHandler*>(data);
+    eventHandler.eventHandle(fd, static_cast<ThorsAnvil::Nisse::EventType>(eventType));
 }
 
 void controlTimerCallback(evutil_socket_t, short, void* data)
 {
-    ThorsAnvil::Nissa::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nissa::EventHandler*>(data);
+    ThorsAnvil::Nisse::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::EventHandler*>(data);
     eventHandler.controlTimerAction();
 }
 
-using namespace ThorsAnvil::Nissa;
+using namespace ThorsAnvil::Nisse;
 
 /*
  * EventLib wrapper. Set up C-Function callbacks
@@ -45,18 +45,18 @@ void EventHandler::run()
     eventBase.run();
 }
 
-void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerCreator&& serverCreator, Pint& pint)
+void EventHandler::add(ThorsAnvil::ThorsSocket::Server&& server, ServerCreator&& serverCreator, Pynt& pynt)
 {
     int fd = server.socketId();
     store.requestChange(StateUpdateCreateServer{fd,
                                                 std::move(server),
                                                 std::move(serverCreator),
                                                 Event{eventBase, fd, EventType::Read, *this},
-                                                pint
+                                                pynt
                                                });
 }
 
-void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamCreator&& streamCreator, Pint& pint)
+void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamCreator&& streamCreator, Pynt& pynt)
 {
     int fd = stream.getSocket().socketId();
     store.requestChange(StateUpdateCreateStream{fd,
@@ -64,7 +64,7 @@ void EventHandler::add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamCre
                                                 std::move(streamCreator),
                                                 Event{eventBase, fd, EventType::Read, *this},
                                                 Event{eventBase, fd, EventType::Write, *this},
-                                                pint
+                                                pynt
                                                });
 }
 

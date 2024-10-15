@@ -1,10 +1,10 @@
-#ifndef THORSANVIL_NISSA_PINT_H
-#define THORSANVIL_NISSA_PINT_H
+#ifndef THORSANVIL_NISSE_PYNT_H
+#define THORSANVIL_NISSE_PYNT_H
 
 /*
  * Virtual base class for representing different protocols.
  *
- * You can add a Pint to a port on a Nissa server.
+ * You can add a Pynt to a port on a Nisse server.
  * Any connections that come to this port will result in a call to the 'handleRequest' method.
  *
  * The 'handleRequest' has a single parameter 'stream'.
@@ -17,27 +17,28 @@
  *       Your code does not have to do anything special to handle this simply write the
  *       code as if the stream were blocking.
  *
- * Return:  PintResult::Done    Indicates all communication is done and the server should close the socket.
- *          PintResult::More    Indicates this request has completed but there may be another.
+ * Return:  PyntResult::Done    Indicates all communication is done and the server should close the socket.
+ *          PyntResult::More    Indicates this request has completed but there may be another.
  *                              So keep the socket open to see if the client makes another request.
  *                              Example: HTTP with header 'Connection: keep-alive'
  */
 
-#include "NissaConfig.h"
+#include "NisseConfig.h"
+#include "NisseUtil.h"
 #include <ThorsSocket/SocketStream.h>
 
-namespace ThorsAnvil::Nissa
+namespace ThorsAnvil::Nisse
 {
 
-enum class PintResult {Done, More};
+enum class PyntResult {Done, More};
 
-class Pint
+class Pynt
 {
     public:
         using SocketStream = ThorsAnvil::ThorsSocket::SocketStream;
 
-        virtual ~Pint() {}
-        virtual PintResult handleRequest(SocketStream& stream)    = 0;
+        virtual ~Pynt() {}
+        virtual PyntResult handleRequest(SocketStream& stream)    = 0;
 };
 
 }

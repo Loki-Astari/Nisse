@@ -1,6 +1,6 @@
 #include "Store.h"
 
-using namespace ThorsAnvil::Nissa;
+using namespace ThorsAnvil::Nisse;
 
 /*
  * There is no default constructor for CoRoutine.
@@ -51,7 +51,7 @@ void Store::operator()(StateUpdateCreateServer& update)
                                             ServerData{std::move(update.server),
                                                        std::move(invalid),
                                                        std::move(update.readEvent),
-                                                       &update.pint
+                                                       &update.pynt
                                                       });
 
     ServerData& data = std::get<ServerData>(iter->second);
@@ -66,7 +66,7 @@ void Store::operator()(StateUpdateCreateStream& update)
                                                        std::move(invalid),
                                                        std::move(update.readEvent),
                                                        std::move(update.writeEvent),
-                                                       &update.pint
+                                                       &update.pynt
                                                       });
 
     StreamData& data = std::get<StreamData>(iter->second);

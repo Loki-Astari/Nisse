@@ -1,8 +1,8 @@
-#ifndef THORSANVIL_NISSA_SERVER_H
-#define THORSANVIL_NISSA_SERVER_H
+#ifndef THORSANVIL_NISSE_SERVER_H
+#define THORSANVIL_NISSE_SERVER_H
 
 /*
- * Server:
+ * NisseServer:
  *  Holds
  *      JobQueue:       This is a set of background thread to do any work set by the user.
  *      Store:          All stage information needed by the server.
@@ -14,17 +14,17 @@
  *  The server puts appropriate "lambdas" into the Event Handler to processes a socket.
  */
 
-#include "NissaConfig.h"
+#include "NisseConfig.h"
 #include "JobQueue.h"
 #include "Store.h"
 #include "EventHandler.h"
-#include "Pint.h"
+#include "Pynt.h"
 #include <ThorsSocket/SocketStream.h>
 
-namespace ThorsAnvil::Nissa
+namespace ThorsAnvil::Nisse
 {
 
-class Server
+class NisseServer
 {
     using SocketStream  = ThorsAnvil::ThorsSocket::SocketStream;
 
@@ -33,11 +33,11 @@ class Server
     EventHandler                    eventHandler;
 
     public:
-        Server(int workerCount = 1);
+        NisseServer(int workerCount = 1);
 
         void run();
         template<typename T>
-        void listen(T listenerInit, Pint& pint);
+        void listen(T listenerInit, Pynt& pynt);
 
     private:
         SocketStream getNextStream();

@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSA_EVENT_HANDLER_H
-#define THORSANVIL_NISSA_EVENT_HANDLER_H
+#ifndef THORSANVIL_NISSE_EVENT_HANDLER_H
+#define THORSANVIL_NISSE_EVENT_HANDLER_H
 
 /*
  * A thin wrapper on libEvent to C++ it.
@@ -21,8 +21,8 @@
  *       to clean up data (See Store for details).
  */
 
-#include "NissaConfig.h"
-#include "Action.h"
+#include "NisseConfig.h"
+#include "NisseUtil.h"
 #include "EventHandlerLibEvent.h"
 #include "Store.h"
 
@@ -32,7 +32,7 @@
 extern "C" void eventCallback(evutil_socket_t fd, short eventType, void* data);
 extern "C" void controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
 
-namespace ThorsAnvil::Nissa
+namespace ThorsAnvil::Nisse
 {
 
 class JobQueue;
@@ -53,8 +53,8 @@ class EventHandler
         EventHandler(JobQueue& jobQueue, Store& store);
 
         void run();
-        void add(ThorsAnvil::ThorsSocket::Server&& stream, ServerCreator&& creator, Pint& pint);
-        void add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamCreator&& creator, Pint& pint);
+        void add(ThorsAnvil::ThorsSocket::Server&& stream, ServerCreator&& creator, Pynt& pynt);
+        void add(ThorsAnvil::ThorsSocket::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);

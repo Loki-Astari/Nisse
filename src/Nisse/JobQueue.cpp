@@ -1,6 +1,6 @@
 #include "JobQueue.h"
 
-using namespace ThorsAnvil::Nissa;
+using namespace ThorsAnvil::Nisse;
 
 JobQueue::JobQueue(int workerCount)
     : finished(false)

@@ -1,9 +1,9 @@
-#include "PintHTTP.h"
+#include "PyntHTTP.h"
 #include <charconv>
 
-using namespace ThorsAnvil::Nissa;
+using namespace ThorsAnvil::Nisse;
 
-PintResult PintHTTP::handleRequest(SocketStream& stream)
+PyntResult PyntHTTP::handleRequest(SocketStream& stream)
 {
     std::size_t bodySize = 0;
     bool        closeSocket = true;
@@ -30,11 +30,11 @@ PintResult PintHTTP::handleRequest(SocketStream& stream)
                << "\r\n"
                << R"(<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html>
-<head><title>Nissa server 1.1</title></head>
+<head><title>Nisse server 1.1</title></head>
 <body>Hello world</body>
 </html>)";
         stream.flush();
     }
     std::cout << "Done\n";
-    return closeSocket ? PintResult::Done : PintResult::More;
+    return closeSocket ? PyntResult::Done : PyntResult::More;
 }

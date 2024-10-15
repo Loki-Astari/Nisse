@@ -1,5 +1,5 @@
 THORSANVIL_ROOT             = $(realpath ../)
 
-TARGET                      = Nissa
+TARGET                      = Nisse
 
 include $(THORSANVIL_ROOT)/build/tools/Project.Makefile
