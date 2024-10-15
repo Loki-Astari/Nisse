@@ -16,6 +16,8 @@ void NisseServer::run()
 
 CoRoutine NisseServer::createStreamJob(StreamData& info)
 {
+    // Exceptions here will be caught
+    // By the `EventHandler::addJob()` function.
     return CoRoutine
     {
         [&info](Yield& yield)
@@ -28,18 +30,11 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             // The next call will happen when there is data available on the file descriptor.
             yield(TaskYieldState::RestoreRead);
 
-            try
+            PyntResult result = info.pynt->handleRequest(info.stream);
+            while (result == PyntResult::More)
             {
-                PyntResult result = info.pynt->handleRequest(info.stream);
-                while (result == PyntResult::More)
-                {
-                    yield(TaskYieldState::RestoreRead);
-                    result = info.pynt->handleRequest(info.stream);
-                }
-            }
-            catch (...)
-            {
-                std::cerr << "Pynt Exception:\n";
+                yield(TaskYieldState::RestoreRead);
+                result = info.pynt->handleRequest(info.stream);
             }
             // We are all done
             // So indicate that we should tidy up state.
@@ -50,6 +45,8 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
 
 CoRoutine NisseServer::createAcceptJob(ServerData& info)
 {
+    // Exceptions here will be caught
+    // By the `EventHandler::addJob()` function.
     return CoRoutine
     {
         [&](Yield& yield)
@@ -61,24 +58,17 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
             // The next call will happen when there is data available on the file descriptor.
             yield(TaskYieldState::RestoreRead);
 
-            try
+            while (true)
             {
-                while (true)
+                TAS::Socket     accept = info.server.accept(TAS::Blocking::No);
+                if (accept.isConnected())
                 {
-                    TAS::Socket     accept = info.server.accept(TAS::Blocking::No);
-                    if (accept.isConnected())
-                    {
-                        // If everything worked then create a stream connection (see above)
-                        // Passing the "Pynt" as the object that will handle the request.
-                        // Note: The "Pynt" functionality is not run yet. The socket must be available to use.
-                        eventHandler.add(TAS::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
-                    }
-                    yield(TaskYieldState::RestoreRead);
+                    // If everything worked then create a stream connection (see above)
+                    // Passing the "Pynt" as the object that will handle the request.
+                    // Note: The "Pynt" functionality is not run yet. The socket must be available to use.
+                    eventHandler.add(TAS::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
                 }
-            }
-            catch (...)
-            {
-                std::cerr << "Pynt Exception:\n";
+                yield(TaskYieldState::RestoreRead);
             }
             // We are all done
             // So indicate that we should tidy up state.

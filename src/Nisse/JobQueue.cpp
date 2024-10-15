@@ -1,4 +1,5 @@
 #include "JobQueue.h"
+#include <iostream>
 
 using namespace ThorsAnvil::Nisse;
 
@@ -38,6 +39,17 @@ void JobQueue::processWork()
     while (!finished)
     {
         Work work   = getNextJob();
-        work();
+        try
+        {
+            work();
+        }
+        catch (std::exception const& e)
+        {
+            std::cerr << "ThorsAnvil::Nissa::JobQueue::" << "processWork" << "Work Exception: " <<  e.what() << "\n";
+        }
+        catch (...)
+        {
+            std::cerr << "ThorsAnvil::Nissa::JobQueue::" << "processWork" << "Work Exception: Unknown\n";
+        }
     }
 }

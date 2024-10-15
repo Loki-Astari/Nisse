@@ -107,8 +107,19 @@ void EventHandler::addJob(CoRoutine& work, int fd)
     jobQueue.addJob([&work, fd, &store = this->store]()
     {
         TaskYieldState task = TaskYieldState::Remove;
-        if (work()) {
-            task = work.get();
+        try
+        {
+            if (work()) {
+                task = work.get();
+            }
+        }
+        catch (std::exception const& e)
+        {
+            std::cerr << "ThorsAnvil::Nissa::EventHandler::" << "addJob" <<  "jobQueue::job: Ignoring Exception: " <<  e.what() << "\n";
+        }
+        catch (...)
+        {
+            std::cerr << "ThorsAnvil::Nissa::EventHandler::" <<  "addJob" << "jobQueue::job: Ignoring Exception: Unknown" << "\n";
         }
         switch (task)
         {
