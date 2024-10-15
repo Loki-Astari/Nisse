@@ -65,10 +65,7 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
             {
                 while (true)
                 {
-                    using ThorsAnvil::ThorsSocket::Socket;
-                    using ThorsAnvil::ThorsSocket::Blocking;
-
-                    Socket          accept = info.server.accept(Blocking::No);
+                    TAS::Socket     accept = info.server.accept(TAS::Blocking::No);
                     if (accept.isConnected())
                     {
                         // If everything worked then create a stream connection (see above)
@@ -93,8 +90,7 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
 template<typename T>
 void NisseServer::listen(T listenerInit, Pynt& pynt)
 {
-    using ThorsAnvil::ThorsSocket::Server;
-    Server  server{listenerInit};
+    TAS::Server  server{listenerInit, TAS::Blocking::No};
 
     eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pynt);
 }

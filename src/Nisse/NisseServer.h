@@ -38,9 +38,6 @@ class NisseServer
         void listen(T listenerInit, Pynt& pynt);
 
     private:
-        TAS::SocketStream   getNextStream();
-        void                connectionHandler();
-
         CoRoutine  createStreamJob(StreamData& info);
         CoRoutine  createAcceptJob(ServerData& info);
 };
