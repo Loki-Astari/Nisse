@@ -94,13 +94,13 @@ void Store::operator()(StateUpdateRestoreRead& update)
 
 void Store::operator()(StateUpdateRestoreWrite& update)
 {
-    struct RestoreRead
+    struct RestoreWrite
     {
         void operator()(ServerData& update) {}
         void operator()(StreamData& update) {update.writeEvent.add();}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {
-        std::visit(RestoreRead{}, find->second);
+        std::visit(RestoreWrite{}, find->second);
     }
 }
