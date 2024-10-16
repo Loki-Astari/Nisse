@@ -69,7 +69,7 @@ void EventHandler::add(TAS::SocketStream&& stream, StreamCreator&& streamCreator
                                                });
 }
 
-void EventHandler::eventHandle(int fd, EventType type)
+void EventHandler::eventAction(int fd, EventType type)
 {
     StoreData& info = store.getStoreData(fd);
     std::visit(ApplyEvent{*this, fd, type},  info);

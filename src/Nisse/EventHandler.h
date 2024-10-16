@@ -58,7 +58,7 @@ class EventHandler
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
-        void eventHandle(int fd, EventType type);
+        void eventAction(int fd, EventType type);
 
     private:
         friend void ::controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
