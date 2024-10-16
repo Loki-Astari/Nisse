@@ -593,7 +593,7 @@ PACKAGE_STRING='Nisse 0.1'
 PACKAGE_BUGREPORT='Loki.Astari+Nisse@gmail.com'
 PACKAGE_URL=''
 
-ac_unique_file="src/Nisse/Nisse.cpp"
+ac_unique_file="src/NisseServer/NisseServer.cpp"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stddef.h>
@@ -3821,7 +3821,7 @@ fi
 
 
 
-    if test "src/Nisse/Nisse.cpp" != ""
+    if test "src/NisseServer/NisseServer.cpp" != ""
 then :
 
 
@@ -18265,7 +18265,7 @@ fi
 
 
 
-    ac_config_headers="$ac_config_headers config.h src/Nisse/NisseConfig.h:config.h.in"
+    ac_config_headers="$ac_config_headers config.h src/NisseServer/NisseConfig.h:config.h.in src/PyntHTTP/PyntHTTPConfig.h:config.h.in"
 
     ac_config_files="$ac_config_files Makefile.extra Makefile.config:build/autotools/build/Makefile.config.in:Makefile.config.in"
 
@@ -19384,7 +19384,8 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
-    "src/Nisse/NisseConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/Nisse/NisseConfig.h:config.h.in" ;;
+    "src/NisseServer/NisseConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/NisseServer/NisseConfig.h:config.h.in" ;;
+    "src/PyntHTTP/PyntHTTPConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/PyntHTTP/PyntHTTPConfig.h:config.h.in" ;;
     "Makefile.extra") CONFIG_FILES="$CONFIG_FILES Makefile.extra" ;;
     "Makefile.config") CONFIG_FILES="$CONFIG_FILES Makefile.config:build/autotools/build/Makefile.config.in:Makefile.config.in" ;;
 

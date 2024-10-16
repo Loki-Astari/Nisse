@@ -24,10 +24,8 @@
  */
 
 #include "NisseConfig.h"
-#include "NisseUtil.h"
-#include <ThorsSocket/SocketStream.h>
+#include <iostream>
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse
 {
 
@@ -37,7 +35,7 @@ class Pynt
 {
     public:
         virtual ~Pynt() {}
-        virtual PyntResult handleRequest(TAS::SocketStream& stream)    = 0;
+        virtual PyntResult handleRequest(std::iostream& stream)    = 0;
 };
 
 }
