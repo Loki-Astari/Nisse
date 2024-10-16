@@ -27,6 +27,7 @@
 #include "NisseUtil.h"
 #include <ThorsSocket/SocketStream.h>
 
+namespace TAS   = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse
 {
 

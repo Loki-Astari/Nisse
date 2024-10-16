@@ -8,7 +8,6 @@
 #include <functional>
 
 namespace TAS   = ThorsAnvil::ThorsSocket;
-
 namespace ThorsAnvil::Nisse
 {
 /*

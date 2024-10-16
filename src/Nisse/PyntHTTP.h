@@ -10,6 +10,7 @@
 #include "NisseUtil.h"
 #include "Pynt.h"
 
+namespace TAS   = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse
 {
 

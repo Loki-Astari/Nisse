@@ -1,6 +1,7 @@
 #include "PyntHTTP.h"
 #include <charconv>
 
+namespace TAS   = ThorsAnvil::ThorsSocket;
 using namespace ThorsAnvil::Nisse;
 
 PyntResult PyntHTTP::handleRequest(TAS::SocketStream& stream)

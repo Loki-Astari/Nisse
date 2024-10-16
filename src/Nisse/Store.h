@@ -33,6 +33,7 @@
  * via the `requestChange()` method that enqueues a request to be done by the main thread.
  */
 
+namespace TAS   = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse
 {
 

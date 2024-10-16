@@ -32,6 +32,7 @@
 extern "C" void eventCallback(evutil_socket_t fd, short eventType, void* data);
 extern "C" void controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
 
+namespace TAS   = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse
 {
 

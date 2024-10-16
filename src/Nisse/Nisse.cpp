@@ -1,11 +1,12 @@
 #include "NisseServer.h"
-#include "NisseUtil.h"
 #include "PyntHTTP.h"
 
 #include <ThorsLogging/ThorsLogging.h>
 #include <ThorsSocket/Server.h>
 #include <string>
 #include <iostream>
+
+namespace TAS   = ThorsAnvil::ThorsSocket;
 
 int main(int argc, char* argv[])
 {

@@ -20,6 +20,7 @@ void controlTimerCallback(evutil_socket_t, short, void* data)
     eventHandler.controlTimerAction();
 }
 
+namespace TAS   = ThorsAnvil::ThorsSocket;
 using namespace ThorsAnvil::Nisse;
 
 /*

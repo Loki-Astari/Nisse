@@ -1,6 +1,7 @@
 #include "NisseServer.h"
 #include "EventHandler.h"
 
+namespace TAS   = ThorsAnvil::ThorsSocket;
 using namespace ThorsAnvil::Nisse;
 
 NisseServer::NisseServer(int workerCount)
