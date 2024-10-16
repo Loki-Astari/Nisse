@@ -12,6 +12,7 @@
 #include <queue>
 #include <vector>
 #include <functional>
+#include <optional>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -33,10 +34,12 @@ class JobQueue
         ~JobQueue();
 
         void addJob(Work&& action);
+        void stop();
 
     private:
-        Work     getNextJob();
-        void     processWork();
+        std::optional<Work> getNextJob();
+        void                processWork();
+        void                markFinished();
 };
 
 }

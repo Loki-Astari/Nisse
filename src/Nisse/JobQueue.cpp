@@ -6,16 +6,22 @@ using namespace ThorsAnvil::Nisse;
 JobQueue::JobQueue(int workerCount)
     : finished(false)
 {
-    for (int loop = 0; loop < workerCount; ++loop) {
-        workers.emplace_back(&JobQueue::processWork, this);
+    try
+    {
+        for (int loop = 0; loop < workerCount; ++loop) {
+            workers.emplace_back(&JobQueue::processWork, this);
+        }
+    }
+    catch (...)
+    {
+        stop();
+        throw;
     }
 }
 
 JobQueue::~JobQueue()
 {
-    for (auto& worker:  workers) {
-        worker.join();
-    }
+    stop();
 }
 
 void JobQueue::addJob(Work&& action)
@@ -25,10 +31,31 @@ void JobQueue::addJob(Work&& action)
     workCV.notify_one();
 }
 
-Work JobQueue::getNextJob()
+void JobQueue::markFinished()
 {
     std::unique_lock    lock(workMutex);
-    workCV.wait(lock, [&](){return !workQueue.empty();});
+    finished = true;
+}
+
+void JobQueue::stop()
+{
+    markFinished();
+    workCV.notify_all();
+    for (auto& w: workers) {
+        w.join();
+    }
+    workers.clear();
+}
+
+std::optional<Work> JobQueue::getNextJob()
+{
+    std::unique_lock    lock(workMutex);
+    workCV.wait(lock, [&](){return !workQueue.empty() || finished;});
+
+    if (workQueue.empty() || finished) {
+        return {};
+    }
+
     Work work = std::move(workQueue.front());
     workQueue.pop();
     return work;
@@ -38,10 +65,12 @@ void JobQueue::processWork()
 {
     while (!finished)
     {
-        Work work   = getNextJob();
+        std::optional<Work> work   = getNextJob();
         try
         {
-            work();
+            if (work.has_value()) {
+                (*work)();
+            }
         }
         catch (std::exception const& e)
         {
