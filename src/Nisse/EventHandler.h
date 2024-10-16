@@ -49,11 +49,13 @@ class EventHandler
     Store&          store;
     EventBase       eventBase;
     Event           timer;
+    bool            finished;
 
     public:
         EventHandler(JobQueue& jobQueue, Store& store);
 
         void run();
+        void stop();
         void add(TAS::Server&& stream, ServerCreator&& creator, Pynt& pynt);
         void add(TAS::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
 

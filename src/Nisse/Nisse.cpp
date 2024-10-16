@@ -1,5 +1,6 @@
 #include "NisseServer.h"
 #include "PyntHTTP.h"
+#include "PyntControl.h"
 
 #include <ThorsLogging/ThorsLogging.h>
 #include <ThorsSocket/Server.h>
@@ -20,7 +21,7 @@ int main(int argc, char* argv[])
         port = std::stoi(argv[1]);
     }
 
-#define CERTIFICATE_INFO    "/etc/letsencrypt/live/thorsanvil.dev/"
+#define XCERTIFICATE_INFO    "/etc/letsencrypt/live/thorsanvil.dev/"
 
 #ifdef CERTIFICATE_INFO
     // If you have site certificate set CERTIFICATE_INFO to the path
@@ -48,5 +49,8 @@ int main(int argc, char* argv[])
     // Processes HTTP connection on port.
     ThorsAnvil::Nisse::PyntHTTP     http;
     server.listen(initPort, http);
+
+    ThorsAnvil::Nisse::PyntControl  control(server);
+    server.listen(TAS::ServerInfo{port+1}, control);
     server.run();
 }

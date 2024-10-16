@@ -15,6 +15,11 @@ void NisseServer::run()
     eventHandler.run();
 }
 
+void NisseServer::stop()
+{
+    eventHandler.stop();
+}
+
 CoRoutine NisseServer::createStreamJob(StreamData& info)
 {
     // Exceptions here will be caught

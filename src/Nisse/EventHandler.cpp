@@ -38,13 +38,20 @@ EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
     : jobQueue(jobQueue)
     , store(store)
     , timer(eventBase, *this)
+    , finished(false)
 {
     timer.add(controlTimerPause);
 }
 
 void EventHandler::run()
 {
+    finished = false;
     eventBase.run();
+}
+
+void EventHandler::stop()
+{
+    finished = true;
 }
 
 void EventHandler::add(TAS::Server&& server, ServerCreator&& serverCreator, Pynt& pynt)
@@ -146,6 +153,12 @@ void EventHandler::addJob(CoRoutine& work, int fd)
  */
 void EventHandler::controlTimerAction()
 {
+    if (finished)
+    {
+        eventBase.loopBreak();
+        return;
+    }
+
     // Update all the state information.
     store.processUpdateRequest();
     // Put the timer back.

@@ -34,6 +34,7 @@ class NisseServer
         NisseServer(int workerCount = 1);
 
         void run();
+        void stop();
         template<typename T>
         void listen(T listenerInit, Pynt& pynt);
 

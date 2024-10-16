@@ -46,6 +46,10 @@ class EventBase
         {
             event_base_loop(eventBase, EVLOOP_NO_EXIT_ON_EMPTY);
         }
+        void loopBreak()
+        {
+            event_base_loopbreak(eventBase);
+        }
 };
 
 class Event
