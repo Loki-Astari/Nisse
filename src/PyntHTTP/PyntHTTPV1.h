@@ -18,11 +18,10 @@ namespace ThorsAnvil::Nisse::PyntHTTP
 class Request;
 class Response;
 
-class PyntHTTP: public Pynt
+class PyntHTTPV1: public Pynt
 {
     public:
-        virtual PyntResult handleRequest(TAS::SocketStream& stream);
-        virtual void       processRequest(Request const& request, Response& response) = 0;
+        virtual PyntResult handleRequest(TAS::SocketStream& stream) override;
 };
 
 }

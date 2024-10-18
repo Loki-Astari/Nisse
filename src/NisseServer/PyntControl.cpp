@@ -6,7 +6,7 @@ PyntControl::PyntControl(NisseServer& server)
     : server(server)
 {}
 
-PyntResult PyntControl::handleRequest(std::iostream& stream)
+PyntResult PyntControl::handleRequest(TAS::SocketStream& stream)
 {
     server.stop();
     return PyntResult::Done;

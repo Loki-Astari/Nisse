@@ -1,6 +1,6 @@
 #include "NisseServer/NisseServer.h"
 #include "NisseServer/PyntControl.h"
-#include "PyntHTTP/PyntHTTP.h"
+#include "PyntHTTP/PyntHTTPV1.h"
 
 #include <ThorsLogging/ThorsLogging.h>
 #include <ThorsSocket/Server.h>
@@ -31,26 +31,26 @@ int main(int argc, char* argv[])
                                      CERTIFICATE_INFO "privkey.pem"
                                     };
     TAS::SSLctx         ctx{TAS::SSLMethodType::Server, certificate};
-    TAS::SServerInfo    initPort{port, ctx};
+    TAS::SServerInfo    initPortSSL{port, ctx};
 
-#else
+#endif
     // Without a site certificate you should only use an normal socket (i.e. HTTP)
     // Note: Most modern browsers are going to complain if you use HTTP.
     //       Though if you are using `curl` or other tools it will work fine.
     //
     // See: https://letsencrypt.org/getting-started/
     //      On how to get a free signed site certificate.
-    TAS::ServerInfo      initPort{port};
-#endif
+    TAS::ServerInfo      initPort{port+1};
 
     // Set up the server
     ThorsAnvil::Nisse::NisseServer  server;
 
     // Processes HTTP connection on port.
-    ThorsAnvil::Nisse::PyntHTTP     http;
+    ThorsAnvil::Nisse::PyntHTTP::PyntHTTPV1 http;
+    server.listen(initPortSSL, http);
     server.listen(initPort, http);
 
     ThorsAnvil::Nisse::PyntControl  control(server);
-    server.listen(TAS::ServerInfo{port+1}, control);
+    server.listen(TAS::ServerInfo{port+2}, control);
     server.run();
 }
