@@ -3,6 +3,7 @@
 
 #include "PyntHTTPConfig.h"
 #include "Util.h"
+#include "StreamInput.h"
 #include <istream>
 
 namespace ThorsAnvil::Nisse::PyntHTTP
@@ -16,6 +17,10 @@ class Request
     URL         url;
     Header      head;
     Header      tail;
+
+    StreamInput input;
+
+    std::unique_ptr<std::streambuf> streamBuf;
     public:
         Request(std::string_view proto, std::istream& stream);
         Version             getVersion()    const   {return version;}
@@ -39,6 +44,7 @@ class Request
         Version             findVersion(std::string_view pv);
         Method              findMethod(std::string_view method);
         void                buildURL(std::string_view proto, std::string_view path);
+        void                buildStream(std::istream& stream);
 
         std::string_view    getValue(std::string_view input);
 };

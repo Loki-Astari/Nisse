@@ -1,4 +1,5 @@
 #include "Request.h"
+#include "StreamInput.h"
 #include <ThorsLogging/ThorsLogging.h>
 #include <map>
 #include <iostream>
@@ -6,12 +7,14 @@
 using namespace ThorsAnvil::Nisse::PyntHTTP;
 
 Request::Request(std::string_view proto, std::istream& stream)
-    : version(Version::Unknown)
-    , method(Method::Other)
+    : version{Version::Unknown}
+    , method{Method::Other}
+    , input{}
 {
     std::string_view path = readFirstLine(stream);
     readHeaders(head, stream);
     buildURL(proto, path);
+    buildStream(stream);
 }
 
 std::string_view Request::readFirstLine(std::istream& stream)
@@ -69,18 +72,15 @@ void Request::readHeaders(Header& dst, std::istream& stream)
         if (split == std::string::npos) {   // Log BAD Header.
             continue;
         }
-        std::string_view header = getValue({&line[0], &line[0] + split});
-        std::string_view value  = getValue({&line[0] + split + 1, &line[0] + line.size()});
-
-        dst.add(header, value);
+        dst.add({&line[0], &line[0] + split}, {&line[0] + split + 1, &line[0] + line.size()});
     }
 }
 
 void Request::buildURL(std::string_view proto, std::string_view path)
 {
     using std::literals::operator""sv;
-std::vector<std::string>& hostValues = head.getHeader("host"sv);
-std::string_view          hostValue  = hostValues.size() == 0 ? ""sv : hostValues[0];
+    std::vector<std::string> const& hostValues = head.getHeader("host"sv);
+    std::string_view                hostValue  = hostValues.size() == 0 ? ""sv : hostValues[0];
     url = URL{proto, hostValue, path};
 }
 
@@ -117,15 +117,24 @@ Method Request::findMethod(std::string_view method)
     return Method::Other;
 }
 
-std::string_view Request::getValue(std::string_view input)
+void Request::buildStream(std::istream& stream)
 {
-    // Remove leading and trailing white space.
-    input.remove_prefix(std::min(input.size(), input.find_first_not_of(" \r\t\v")));
-    input.remove_suffix(input.size() - std::min(input.size(), input.find_last_not_of(" \r\t\v")) - 1);
-    return input;
+    auto&   contentLength = head.getHeader("content-length");
+    if (contentLength.size() != 0)
+    {
+        input.addBuffer(StreamBufInput(stream, std::stoi(contentLength[0])));
+        return;
+    }
+    auto&   transferEncoding = head.getHeader("transfer-encoding");
+    if (transferEncoding.size() != 0 && transferEncoding[0] == "chunked")
+    {
+        input.addBuffer(StreamBufInput(stream,
+                                       EncodingChunked::Yes,
+                                       [&](){readHeaders(tail, stream);}));
+    }
 }
 
 std::istream& Request::body()
 {
-    return std::cin;
+    return input;
 }

@@ -297,3 +297,39 @@ TEST(HeaderTest, Iterate)
     EXPECT_EQ(expectedSize, size);
 }
 
+TEST(HeaderTest, SplitOnComma)
+{
+    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+
+    header.add("head1", "1, 2,3,  4");
+    EXPECT_EQ(4, header.getHeader("head1").size());
+    EXPECT_EQ("1", header.getHeader("head1")[0]);
+    EXPECT_EQ("2", header.getHeader("head1")[1]);
+    EXPECT_EQ("3", header.getHeader("head1")[2]);
+    EXPECT_EQ("4", header.getHeader("head1")[3]);
+}
+
+TEST(HeaderTest, SplitOnCommaMultipleLines)
+{
+    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+
+    header.add("head1", "1, 2,3,  4");
+    header.add("head1", "ace,  plan");
+    EXPECT_EQ(6, header.getHeader("head1").size());
+    EXPECT_EQ("1", header.getHeader("head1")[0]);
+    EXPECT_EQ("2", header.getHeader("head1")[1]);
+    EXPECT_EQ("3", header.getHeader("head1")[2]);
+    EXPECT_EQ("4", header.getHeader("head1")[3]);
+    EXPECT_EQ("ace", header.getHeader("head1")[4]);
+    EXPECT_EQ("plan", header.getHeader("head1")[5]);
+}
+
+TEST(HeaderTest, NoSplitValue)
+{
+    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+
+    header.add("accept-datetime", "Stuff, Comma No Split, done");
+    EXPECT_EQ(1, header.getHeader("accept-datetime").size());
+    EXPECT_EQ("Stuff, Comma No Split, done", header.getHeader("accept-datetime")[0]);
+}
+

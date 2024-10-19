@@ -14,6 +14,7 @@ namespace ThorsAnvil::Nisse::PyntHTTP
 
 enum class Version {HTTP1_0, HTTP1_1, HTTP2, HTTP3, Unknown};
 enum class Method  {GET, HEAD, OPTIONS, TRACE, PUT, DELETE, POST, PATCH, CONNECT, Other};
+enum class EncodingChunked {Yes};
 
 class URL
 {
@@ -77,9 +78,6 @@ class Header
         CIterator                       end()                                   const   {return std::end(headers);}
         bool                            hasHeader(std::string_view header)      const   {return hasHeader(std::string(header));}
         bool                            hasHeader(std::string const& header)    const   {return headers.find(header) != headers.end();}
-        std::vector<std::string>&       getHeader(char const* header)                   {return getHeader(std::string(header));}
-        std::vector<std::string>&       getHeader(std::string_view header)              {return getHeader(std::string(header));}
-        std::vector<std::string>&       getHeader(std::string const& header)            {return headers[header];}
         std::vector<std::string> const& getHeader(char const* header)           const   {return getHeader(std::string(header));}
         std::vector<std::string> const& getHeader(std::string_view header)      const   {return getHeader(std::string(header));}
         std::vector<std::string> const& getHeader(std::string const& header)    const;
@@ -90,6 +88,8 @@ class Header
         void add(std::string_view header, std::string_view value);
     private:
         bool dedupHeader(std::string_view header);
+        bool splitOnComma(std::string_view header);
+        std::string_view getValue(std::string_view input);
 };
 
 }
