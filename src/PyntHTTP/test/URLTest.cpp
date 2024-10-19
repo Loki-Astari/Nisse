@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "Util.h"
+#include "URL.h"
 
 TEST(URLTest, URLDefaultConstruct)
 {
