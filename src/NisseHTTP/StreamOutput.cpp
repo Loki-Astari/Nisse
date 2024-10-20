@@ -1,6 +1,6 @@
 #include "StreamOutput.h"
 
-using namespace ThorsAnvil::Nisse::HTTP;
+using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 StreamBufOutput::~StreamBufOutput()
 {

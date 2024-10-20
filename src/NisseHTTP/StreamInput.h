@@ -1,11 +1,11 @@
-#ifndef THORSANVIL_NISSE_HTTP_STREAMINPUT_H
-#define THORSANVIL_NISSE_HTTP_STREAMINPUT_H
+#ifndef THORSANVIL_NISSE_NISSEHTTP_STREAMINPUT_H
+#define THORSANVIL_NISSE_NISSEHTTP_STREAMINPUT_H
 
-#include "HTTPConfig.h"
+#include "NisseHTTPConfig.h"
 #include "Util.h"
 #include <iostream>
 
-namespace ThorsAnvil::Nisse::HTTP
+namespace ThorsAnvil::Nisse::NisseHTTP
 {
 
 class StreamBufInput: public std::streambuf

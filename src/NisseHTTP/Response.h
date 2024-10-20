@@ -1,7 +1,7 @@
-#ifndef THORSANVIL_NISSE_HTTP_RESPONSE_H
-#define THORSANVIL_NISSE_HTTP_RESPONSE_H
+#ifndef THORSANVIL_NISSE_NISSEHTTP_RESPONSE_H
+#define THORSANVIL_NISSE_NISSEHTTP_RESPONSE_H
 
-#include "HTTPConfig.h"
+#include "NisseHTTPConfig.h"
 #include "Util.h"
 #include "HeaderResponse.h"
 #include "StreamOutput.h"
@@ -9,7 +9,7 @@
 #include <ostream>
 #include <functional>
 
-namespace ThorsAnvil::Nisse::HTTP
+namespace ThorsAnvil::Nisse::NisseHTTP
 {
 
 struct StatusCode

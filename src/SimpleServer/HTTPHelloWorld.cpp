@@ -1,8 +1,8 @@
 #include "HTTPHelloWorld.h"
-#include "HTTP/Response.h"
+#include "NisseHTTP/Response.h"
 #include <string_view>
 
-void HTTPHelloWorld::processRequest(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response)
+void HTTPHelloWorld::processRequest(ThorsAnvil::Nisse::NisseHTTP::Request const& request, ThorsAnvil::Nisse::NisseHTTP::Response& response)
 {
     std::string_view page = R"(
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -12,6 +12,6 @@ void HTTPHelloWorld::processRequest(ThorsAnvil::Nisse::HTTP::Request const& requ
 </html>
 )";
 
-    ThorsAnvil::Nisse::HTTP::HeaderResponse   header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderResponse   header;
     response.addHeaders(header, page.size()) << page;
 }

@@ -4,12 +4,12 @@
 
 TEST(HeaderRequestTest, Costruct)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header{};
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header{};
 }
 
 TEST(HeaderRequestTest, AddHeadderStringLiteral)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("Content-Length", "56");
     using std::literals::operator""sv;
@@ -21,7 +21,7 @@ TEST(HeaderRequestTest, AddHeadderStringLiteral)
 
 TEST(HeaderRequestTest, AddHeadderString)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("Content-Length", "56");
     using std::literals::operator""s;
@@ -33,7 +33,7 @@ TEST(HeaderRequestTest, AddHeadderString)
 
 TEST(HeaderRequestTest, AddHeadderCharArray)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("Content-Length", "56");
     EXPECT_EQ(1, header.getHeader("content-length").size());
@@ -44,8 +44,8 @@ TEST(HeaderRequestTest, AddHeadderCharArray)
 
 TEST(HeaderRequestTest, AddHeadderConstStringLiteral)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     headerBase;
-    ThorsAnvil::Nisse::HTTP::HeaderRequest const& header = headerBase;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     headerBase;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest const& header = headerBase;
 
     headerBase.add("Content-Length", "56");
     using std::literals::operator""sv;
@@ -57,8 +57,8 @@ TEST(HeaderRequestTest, AddHeadderConstStringLiteral)
 
 TEST(HeaderRequestTest, AddHeadderConstString)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     headerBase;
-    ThorsAnvil::Nisse::HTTP::HeaderRequest const& header = headerBase;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     headerBase;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest const& header = headerBase;
 
     headerBase.add("Content-Length", "56");
     using std::literals::operator""s;
@@ -70,8 +70,8 @@ TEST(HeaderRequestTest, AddHeadderConstString)
 
 TEST(HeaderRequestTest, AddHeadderConstCharArray)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     headerBase;
-    ThorsAnvil::Nisse::HTTP::HeaderRequest const& header = headerBase;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     headerBase;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest const& header = headerBase;
 
     headerBase.add("Content-Length", "56");
     EXPECT_EQ(1, header.getHeader("content-length").size());
@@ -82,20 +82,20 @@ TEST(HeaderRequestTest, AddHeadderConstCharArray)
 
 TEST(HeaderRequestTest, GetInvalidHeader)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
     EXPECT_EQ(0, header.getHeader("content-length").size());
 }
 
 TEST(HeaderRequestTest, ConstGetInvalidHeader)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     headerBase;
-    ThorsAnvil::Nisse::HTTP::HeaderRequest const& header = headerBase;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     headerBase;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest const& header = headerBase;
     EXPECT_EQ(0, header.getHeader("content-length").size());
 }
 
 TEST(HeaderRequestTest, DeDupAge)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("age", "14");
     header.add("age", "15");
@@ -105,7 +105,7 @@ TEST(HeaderRequestTest, DeDupAge)
 
 TEST(HeaderRequestTest, DeDupAuthorization)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("authorization", "14");
     header.add("authorization", "15");
@@ -115,7 +115,7 @@ TEST(HeaderRequestTest, DeDupAuthorization)
 
 TEST(HeaderRequestTest, DeDupContentLength)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("content-length", "14");
     header.add("content-length", "15");
@@ -125,7 +125,7 @@ TEST(HeaderRequestTest, DeDupContentLength)
 
 TEST(HeaderRequestTest, DeDupContentType)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("content-type", "14");
     header.add("content-type", "15");
@@ -135,7 +135,7 @@ TEST(HeaderRequestTest, DeDupContentType)
 
 TEST(HeaderRequestTest, DeDupETag)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("etag", "14");
     header.add("etag", "15");
@@ -145,7 +145,7 @@ TEST(HeaderRequestTest, DeDupETag)
 
 TEST(HeaderRequestTest, DeDupExpires)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("expires", "14");
     header.add("expires", "15");
@@ -155,7 +155,7 @@ TEST(HeaderRequestTest, DeDupExpires)
 
 TEST(HeaderRequestTest, DeDupFrom)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("from", "14");
     header.add("from", "15");
@@ -165,7 +165,7 @@ TEST(HeaderRequestTest, DeDupFrom)
 
 TEST(HeaderRequestTest, DeDupHost)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("host", "14");
     header.add("host", "15");
@@ -175,7 +175,7 @@ TEST(HeaderRequestTest, DeDupHost)
 
 TEST(HeaderRequestTest, DeDupIfModifiedSince)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("if-modified-since", "14");
     header.add("if-modified-since", "15");
@@ -185,7 +185,7 @@ TEST(HeaderRequestTest, DeDupIfModifiedSince)
 
 TEST(HeaderRequestTest, DeDupifUnmodifiedSince)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("if-unmodified-since", "14");
     header.add("if-unmodified-since", "15");
@@ -195,7 +195,7 @@ TEST(HeaderRequestTest, DeDupifUnmodifiedSince)
 
 TEST(HeaderRequestTest, DeDupLastModified)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("last-modified", "14");
     header.add("last-modified", "15");
@@ -205,7 +205,7 @@ TEST(HeaderRequestTest, DeDupLastModified)
 
 TEST(HeaderRequestTest, DeDupLocation)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("location", "14");
     header.add("location", "15");
@@ -215,7 +215,7 @@ TEST(HeaderRequestTest, DeDupLocation)
 
 TEST(HeaderRequestTest, DeDupMaxForwards)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("max-forwards", "14");
     header.add("max-forwards", "15");
@@ -225,7 +225,7 @@ TEST(HeaderRequestTest, DeDupMaxForwards)
 
 TEST(HeaderRequestTest, DeDupProxyAuthorization)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("proxy-authorization", "14");
     header.add("proxy-authorization", "15");
@@ -235,7 +235,7 @@ TEST(HeaderRequestTest, DeDupProxyAuthorization)
 
 TEST(HeaderRequestTest, DeDupReferer)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("referer", "14");
     header.add("referer", "15");
@@ -245,7 +245,7 @@ TEST(HeaderRequestTest, DeDupReferer)
 
 TEST(HeaderRequestTest, DeDupRetryAfter)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("retry-after", "14");
     header.add("retry-after", "15");
@@ -255,7 +255,7 @@ TEST(HeaderRequestTest, DeDupRetryAfter)
 
 TEST(HeaderRequestTest, DeDupServer)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("server", "14");
     header.add("server", "15");
@@ -265,7 +265,7 @@ TEST(HeaderRequestTest, DeDupServer)
 
 TEST(HeaderRequestTest, DeDupUserAgent)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("user-agent", "14");
     header.add("user-agent", "15");
@@ -275,7 +275,7 @@ TEST(HeaderRequestTest, DeDupUserAgent)
 
 TEST(HeaderRequestTest, Iterate)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("head1", "14");
     header.add("head1", "15");
@@ -299,7 +299,7 @@ TEST(HeaderRequestTest, Iterate)
 
 TEST(HeaderRequestTest, SplitOnComma)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("head1", "1, 2,3,  4");
     EXPECT_EQ(4, header.getHeader("head1").size());
@@ -311,7 +311,7 @@ TEST(HeaderRequestTest, SplitOnComma)
 
 TEST(HeaderRequestTest, SplitOnCommaMultipleLines)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("head1", "1, 2,3,  4");
     header.add("head1", "ace,  plan");
@@ -326,7 +326,7 @@ TEST(HeaderRequestTest, SplitOnCommaMultipleLines)
 
 TEST(HeaderRequestTest, NoSplitValue)
 {
-    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    ThorsAnvil::Nisse::NisseHTTP::HeaderRequest     header;
 
     header.add("accept-datetime", "Stuff, Comma No Split, done");
     EXPECT_EQ(1, header.getHeader("accept-datetime").size());

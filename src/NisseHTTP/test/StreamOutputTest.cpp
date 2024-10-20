@@ -3,7 +3,7 @@
 #include "Util.h"
 #include <string>
 
-using namespace ThorsAnvil::Nisse::HTTP;
+using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 TEST(StreamOutputTest, ConstructBuf)
 {

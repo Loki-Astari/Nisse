@@ -1,6 +1,6 @@
 #include "URL.h"
 
-using namespace ThorsAnvil::Nisse::HTTP;
+using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 URL::URL(std::string_view href)
     : hrefValue(href)

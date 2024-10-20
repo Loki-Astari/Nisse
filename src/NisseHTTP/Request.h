@@ -1,14 +1,14 @@
-#ifndef THORSANVIL_NISSE_HTTP_REQUEST_H
-#define THORSANVIL_NISSE_HTTP_REQUEST_H
+#ifndef THORSANVIL_NISSE_NISSEHTTP_REQUEST_H
+#define THORSANVIL_NISSE_NISSEHTTP_REQUEST_H
 
-#include "HTTPConfig.h"
+#include "NisseHTTPConfig.h"
 #include "URL.h"
 #include "HeaderRequest.h"
 #include "HeaderResponse.h"
 #include "StreamInput.h"
 #include <istream>
 
-namespace ThorsAnvil::Nisse::HTTP
+namespace ThorsAnvil::Nisse::NisseHTTP
 {
 
 class Request

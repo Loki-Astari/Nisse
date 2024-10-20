@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-using namespace ThorsAnvil::Nisse::HTTP;
+using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 using std::literals::string_literals::operator""s;
 using std::literals::string_view_literals::operator""sv;

@@ -1,8 +1,8 @@
 THORSANVIL_ROOT             = $(realpath ../../)
 
-TARGET						= HTTP.defer
-NAMESPACE					= ThorsAnvil::Nissa
-DEFER_NAME					= Nissa
+TARGET						= NisseHTTP.defer
+NAMESPACE					= ThorsAnvil::Nisse::NisseHTTP
+DEFER_NAME					= Nisse
 LINK_LIBS					+= ThorsLogging
 
 

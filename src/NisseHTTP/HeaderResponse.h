@@ -1,13 +1,13 @@
-#ifndef THORSANVIL_NISSE_HTTP_HEADER_RESPONSE_H
-#define THORSANVIL_NISSE_HTTP_HEADER_RESPONSE_H
+#ifndef THORSANVIL_NISSE_NISSEHTTP_HEADER_RESPONSE_H
+#define THORSANVIL_NISSE_NISSEHTTP_HEADER_RESPONSE_H
 
-#include "HTTPConfig.h"
+#include "NisseHTTPConfig.h"
 #include <string_view>
 #include <string>
 #include <map>
 #include <iostream>
 
-namespace ThorsAnvil::Nisse::HTTP
+namespace ThorsAnvil::Nisse::NisseHTTP
 {
 
 inline bool ichar_equals(char a, char b)

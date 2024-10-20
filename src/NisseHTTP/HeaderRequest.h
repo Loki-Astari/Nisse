@@ -1,13 +1,13 @@
-#ifndef THORSANVIL_NISSE_HTTP_HEADER_REQUEST_H
-#define THORSANVIL_NISSE_HTTP_HEADER_REQUEST_H
+#ifndef THORSANVIL_NISSE_NISSEHTTP_HEADER_REQUEST_H
+#define THORSANVIL_NISSE_NISSEHTTP_HEADER_REQUEST_H
 
-#include "HTTPConfig.h"
+#include "NisseHTTPConfig.h"
 #include <map>
 #include <vector>
 #include <string>
 #include <string_view>
 
-namespace ThorsAnvil::Nisse::HTTP
+namespace ThorsAnvil::Nisse::NisseHTTP
 {
 
 class HeaderRequest

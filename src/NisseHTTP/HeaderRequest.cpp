@@ -2,7 +2,7 @@
 #include <set>
 #include <sstream>
 
-using namespace ThorsAnvil::Nisse::HTTP;
+using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 std::vector<std::string> const& HeaderRequest::getHeader(std::string const& header) const
 {

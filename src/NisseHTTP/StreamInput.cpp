@@ -1,6 +1,6 @@
 #include "StreamInput.h"
 
-using namespace ThorsAnvil::Nisse::HTTP;
+using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 StreamBufInput::StreamBufInput(Complete&& complete)
     : remaining(0)

@@ -4,7 +4,7 @@
 #include <map>
 #include <iostream>
 
-using namespace ThorsAnvil::Nisse::HTTP;
+using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 Request::Request(std::string_view proto, std::istream& stream)
     : version{Version::Unknown}
