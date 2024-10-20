@@ -1,18 +1,18 @@
-#ifndef THORSANVIL_NISSE_PYNTHTTP_PYNTHTTP_H
-#define THORSANVIL_NISSE_PYNTHTTP_PYNTHTTP_H
+#ifndef THORSANVIL_NISSE_HTTP_PYNTHTTP_H
+#define THORSANVIL_NISSE_HTTP_PYNTHTTP_H
 
 /*
  * An HTTP implementation of Pynt
  * Version 1:
  */
 
-#include "PyntHTTPConfig.h"
+#include "HTTPConfig.h"
 #include "NisseServer/Pynt.h"
 #include <ThorsSocket/SocketStream.h>
 #include <string_view>
 
 namespace TAS = ThorsAnvil::ThorsSocket;
-namespace ThorsAnvil::Nisse::PyntHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class Request;

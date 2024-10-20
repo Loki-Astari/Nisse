@@ -1,7 +1,6 @@
-#include "Util.h"
-#include <iostream>
+#include "URL.h"
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 URL::URL(std::string_view href)
     : hrefValue(href)
@@ -140,40 +139,4 @@ std::string_view URL::param(std::string_view /*param*/)
 {
     // TODO
     return "";
-}
-
-std::vector<std::string> const& Header::getHeader(std::string const& header) const
-{
-    static const std::vector<std::string>   empty;
-    auto find = headers.find(header);
-    if (find == headers.end()) {
-        return empty;
-    }
-    return find->second;
-}
-
-void Header::add(std::string_view header, std::string_view value)
-{
-    std::string key(header.size(), ' ');
-    std::transform(std::begin(header), std::end(header), std::begin(key), [](unsigned char c){ return std::tolower(c);});
-
-    if (key == "set-cookie")
-    {
-        // SPECIAL HANDLING for Cookies.
-        // TODO
-        return;
-    }
-
-    auto& headerValue   = headers[key];
-    if (dedupHeader(key) && headerValue.size() == 1) {
-        return;
-    }
-    headerValue.emplace_back(value);
-}
-
-bool Header::dedupHeader(std::string_view header)
-{
-    // See RFC 9110 Section 5.3 for more information.
-    static const std::set<std::string_view> singleValueHeaders = {"age", "authorization", "content-length", "content-type", "etag", "expires", "from", "host", "if-modified-since", "if-unmodified-since", "last-modified", "location", "max-forwards", "proxy-authorization", "referer", "retry-after", "server", "user-agent"};
-    return singleValueHeaders.find(header) != singleValueHeaders.end();
 }

@@ -1,6 +1,6 @@
 #include "NisseServer/NisseServer.h"
 #include "NisseServer/PyntControl.h"
-#include "PyntHTTP/PyntHTTPV1.h"
+#include "HTTP/PyntHTTPV1.h"
 
 #include <ThorsLogging/ThorsLogging.h>
 #include <ThorsSocket/Server.h>
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     ThorsAnvil::Nisse::NisseServer  server;
 
     // Processes HTTP connection on port.
-    ThorsAnvil::Nisse::PyntHTTP::PyntHTTPV1 http;
+    ThorsAnvil::Nisse::HTTP::PyntHTTPV1 http;
     server.listen(initPortSSL, http);
     server.listen(initPort, http);
 

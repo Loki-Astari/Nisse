@@ -1,19 +1,12 @@
-#ifndef THORSANVIL_NISSE_PYNTHTTP_UTIL_H
-#define THORSANVIL_NISSE_PYNTHTTP_UTIL_H
+#ifndef THORSANVIL_NISSE_HTTP_URL_H
+#define THORSANVIL_NISSE_HTTP_URL_H
 
-#include "PyntHTTPConfig.h"
-#include <set>
-#include <map>
-#include <vector>
+#include "HTTPConfig.h"
 #include <string>
 #include <string_view>
-#include <algorithm>
 
-namespace ThorsAnvil::Nisse::PyntHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
-
-enum class Version {HTTP1_0, HTTP1_1, HTTP2, HTTP3, Unknown};
-enum class Method  {GET, HEAD, OPTIONS, TRACE, PUT, DELETE, POST, PATCH, CONNECT, Other};
 
 class URL
 {
@@ -63,33 +56,6 @@ class URL
         std::string_view findPath(std::string const& src);
         std::string_view findQuery(std::string const& src);
         std::string_view findHash(std::string const& src);
-};
-
-class Header
-{
-    using HeaderMap = std::map<std::string, std::vector<std::string>>;
-    using CIterator = HeaderMap::const_iterator;
-
-    HeaderMap   headers;
-
-    public:
-        CIterator                       begin()                                 const   {return std::begin(headers);}
-        CIterator                       end()                                   const   {return std::end(headers);}
-        bool                            hasHeader(std::string_view header)      const   {return hasHeader(std::string(header));}
-        bool                            hasHeader(std::string const& header)    const   {return headers.find(header) != headers.end();}
-        std::vector<std::string>&       getHeader(char const* header)                   {return getHeader(std::string(header));}
-        std::vector<std::string>&       getHeader(std::string_view header)              {return getHeader(std::string(header));}
-        std::vector<std::string>&       getHeader(std::string const& header)            {return headers[header];}
-        std::vector<std::string> const& getHeader(char const* header)           const   {return getHeader(std::string(header));}
-        std::vector<std::string> const& getHeader(std::string_view header)      const   {return getHeader(std::string(header));}
-        std::vector<std::string> const& getHeader(std::string const& header)    const;
-
-        bool operator==(Header const& rhs)  const {return headers == rhs.headers;}
-        bool operator!=(Header const& rhs)  const {return !(*this == rhs);}
-
-        void add(std::string_view header, std::string_view value);
-    private:
-        bool dedupHeader(std::string_view header);
 };
 
 }

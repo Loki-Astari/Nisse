@@ -1,15 +1,15 @@
 #include "gtest/gtest.h"
 
-#include "Util.h"
+#include "HeaderRequest.h"
 
-TEST(HeaderTest, Costruct)
+TEST(HeaderRequestTest, Costruct)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header{};
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header{};
 }
 
-TEST(HeaderTest, AddHeadderStringLiteral)
+TEST(HeaderRequestTest, AddHeadderStringLiteral)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("Content-Length", "56");
     using std::literals::operator""sv;
@@ -19,9 +19,9 @@ TEST(HeaderTest, AddHeadderStringLiteral)
     EXPECT_EQ(0, header.getHeader("Content-Length"sv).size());
 }
 
-TEST(HeaderTest, AddHeadderString)
+TEST(HeaderRequestTest, AddHeadderString)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("Content-Length", "56");
     using std::literals::operator""s;
@@ -31,9 +31,9 @@ TEST(HeaderTest, AddHeadderString)
     EXPECT_EQ(0, header.getHeader("Content-Length"s).size());
 }
 
-TEST(HeaderTest, AddHeadderCharArray)
+TEST(HeaderRequestTest, AddHeadderCharArray)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("Content-Length", "56");
     EXPECT_EQ(1, header.getHeader("content-length").size());
@@ -42,10 +42,10 @@ TEST(HeaderTest, AddHeadderCharArray)
     EXPECT_EQ(0, header.getHeader("Content-Length").size());
 }
 
-TEST(HeaderTest, AddHeadderConstStringLiteral)
+TEST(HeaderRequestTest, AddHeadderConstStringLiteral)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     headerBase;
-    ThorsAnvil::Nisse::PyntHTTP::Header const& header = headerBase;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     headerBase;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest const& header = headerBase;
 
     headerBase.add("Content-Length", "56");
     using std::literals::operator""sv;
@@ -55,10 +55,10 @@ TEST(HeaderTest, AddHeadderConstStringLiteral)
     EXPECT_EQ(0, header.getHeader("Content-Length"sv).size());
 }
 
-TEST(HeaderTest, AddHeadderConstString)
+TEST(HeaderRequestTest, AddHeadderConstString)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     headerBase;
-    ThorsAnvil::Nisse::PyntHTTP::Header const& header = headerBase;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     headerBase;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest const& header = headerBase;
 
     headerBase.add("Content-Length", "56");
     using std::literals::operator""s;
@@ -68,10 +68,10 @@ TEST(HeaderTest, AddHeadderConstString)
     EXPECT_EQ(0, header.getHeader("Content-Length"s).size());
 }
 
-TEST(HeaderTest, AddHeadderConstCharArray)
+TEST(HeaderRequestTest, AddHeadderConstCharArray)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     headerBase;
-    ThorsAnvil::Nisse::PyntHTTP::Header const& header = headerBase;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     headerBase;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest const& header = headerBase;
 
     headerBase.add("Content-Length", "56");
     EXPECT_EQ(1, header.getHeader("content-length").size());
@@ -80,22 +80,22 @@ TEST(HeaderTest, AddHeadderConstCharArray)
     EXPECT_EQ(0, header.getHeader("Content-Length").size());
 }
 
-TEST(HeaderTest, GetInvalidHeader)
+TEST(HeaderRequestTest, GetInvalidHeader)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
     EXPECT_EQ(0, header.getHeader("content-length").size());
 }
 
-TEST(HeaderTest, ConstGetInvalidHeader)
+TEST(HeaderRequestTest, ConstGetInvalidHeader)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     headerBase;
-    ThorsAnvil::Nisse::PyntHTTP::Header const& header = headerBase;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     headerBase;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest const& header = headerBase;
     EXPECT_EQ(0, header.getHeader("content-length").size());
 }
 
-TEST(HeaderTest, DeDupAge)
+TEST(HeaderRequestTest, DeDupAge)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("age", "14");
     header.add("age", "15");
@@ -103,9 +103,9 @@ TEST(HeaderTest, DeDupAge)
     EXPECT_EQ("14", header.getHeader("age")[0]);
 }
 
-TEST(HeaderTest, DeDupAuthorization)
+TEST(HeaderRequestTest, DeDupAuthorization)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("authorization", "14");
     header.add("authorization", "15");
@@ -113,9 +113,9 @@ TEST(HeaderTest, DeDupAuthorization)
     EXPECT_EQ("14", header.getHeader("authorization")[0]);
 }
 
-TEST(HeaderTest, DeDupContentLength)
+TEST(HeaderRequestTest, DeDupContentLength)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("content-length", "14");
     header.add("content-length", "15");
@@ -123,9 +123,9 @@ TEST(HeaderTest, DeDupContentLength)
     EXPECT_EQ("14", header.getHeader("content-length")[0]);
 }
 
-TEST(HeaderTest, DeDupContentType)
+TEST(HeaderRequestTest, DeDupContentType)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("content-type", "14");
     header.add("content-type", "15");
@@ -133,9 +133,9 @@ TEST(HeaderTest, DeDupContentType)
     EXPECT_EQ("14", header.getHeader("content-type")[0]);
 }
 
-TEST(HeaderTest, DeDupETag)
+TEST(HeaderRequestTest, DeDupETag)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("etag", "14");
     header.add("etag", "15");
@@ -143,9 +143,9 @@ TEST(HeaderTest, DeDupETag)
     EXPECT_EQ("14", header.getHeader("etag")[0]);
 }
 
-TEST(HeaderTest, DeDupExpires)
+TEST(HeaderRequestTest, DeDupExpires)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("expires", "14");
     header.add("expires", "15");
@@ -153,9 +153,9 @@ TEST(HeaderTest, DeDupExpires)
     EXPECT_EQ("14", header.getHeader("expires")[0]);
 }
 
-TEST(HeaderTest, DeDupFrom)
+TEST(HeaderRequestTest, DeDupFrom)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("from", "14");
     header.add("from", "15");
@@ -163,9 +163,9 @@ TEST(HeaderTest, DeDupFrom)
     EXPECT_EQ("14", header.getHeader("from")[0]);
 }
 
-TEST(HeaderTest, DeDupHost)
+TEST(HeaderRequestTest, DeDupHost)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("host", "14");
     header.add("host", "15");
@@ -173,9 +173,9 @@ TEST(HeaderTest, DeDupHost)
     EXPECT_EQ("14", header.getHeader("host")[0]);
 }
 
-TEST(HeaderTest, DeDupIfModifiedSince)
+TEST(HeaderRequestTest, DeDupIfModifiedSince)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("if-modified-since", "14");
     header.add("if-modified-since", "15");
@@ -183,9 +183,9 @@ TEST(HeaderTest, DeDupIfModifiedSince)
     EXPECT_EQ("14", header.getHeader("if-modified-since")[0]);
 }
 
-TEST(HeaderTest, DeDupifUnmodifiedSince)
+TEST(HeaderRequestTest, DeDupifUnmodifiedSince)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("if-unmodified-since", "14");
     header.add("if-unmodified-since", "15");
@@ -193,9 +193,9 @@ TEST(HeaderTest, DeDupifUnmodifiedSince)
     EXPECT_EQ("14", header.getHeader("if-unmodified-since")[0]);
 }
 
-TEST(HeaderTest, DeDupLastModified)
+TEST(HeaderRequestTest, DeDupLastModified)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("last-modified", "14");
     header.add("last-modified", "15");
@@ -203,9 +203,9 @@ TEST(HeaderTest, DeDupLastModified)
     EXPECT_EQ("14", header.getHeader("last-modified")[0]);
 }
 
-TEST(HeaderTest, DeDupLocation)
+TEST(HeaderRequestTest, DeDupLocation)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("location", "14");
     header.add("location", "15");
@@ -213,9 +213,9 @@ TEST(HeaderTest, DeDupLocation)
     EXPECT_EQ("14", header.getHeader("location")[0]);
 }
 
-TEST(HeaderTest, DeDupMaxForwards)
+TEST(HeaderRequestTest, DeDupMaxForwards)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("max-forwards", "14");
     header.add("max-forwards", "15");
@@ -223,9 +223,9 @@ TEST(HeaderTest, DeDupMaxForwards)
     EXPECT_EQ("14", header.getHeader("max-forwards")[0]);
 }
 
-TEST(HeaderTest, DeDupProxyAuthorization)
+TEST(HeaderRequestTest, DeDupProxyAuthorization)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("proxy-authorization", "14");
     header.add("proxy-authorization", "15");
@@ -233,9 +233,9 @@ TEST(HeaderTest, DeDupProxyAuthorization)
     EXPECT_EQ("14", header.getHeader("proxy-authorization")[0]);
 }
 
-TEST(HeaderTest, DeDupReferer)
+TEST(HeaderRequestTest, DeDupReferer)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("referer", "14");
     header.add("referer", "15");
@@ -243,9 +243,9 @@ TEST(HeaderTest, DeDupReferer)
     EXPECT_EQ("14", header.getHeader("referer")[0]);
 }
 
-TEST(HeaderTest, DeDupRetryAfter)
+TEST(HeaderRequestTest, DeDupRetryAfter)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("retry-after", "14");
     header.add("retry-after", "15");
@@ -253,9 +253,9 @@ TEST(HeaderTest, DeDupRetryAfter)
     EXPECT_EQ("14", header.getHeader("retry-after")[0]);
 }
 
-TEST(HeaderTest, DeDupServer)
+TEST(HeaderRequestTest, DeDupServer)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("server", "14");
     header.add("server", "15");
@@ -263,9 +263,9 @@ TEST(HeaderTest, DeDupServer)
     EXPECT_EQ("14", header.getHeader("server")[0]);
 }
 
-TEST(HeaderTest, DeDupUserAgent)
+TEST(HeaderRequestTest, DeDupUserAgent)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("user-agent", "14");
     header.add("user-agent", "15");
@@ -273,9 +273,9 @@ TEST(HeaderTest, DeDupUserAgent)
     EXPECT_EQ("14", header.getHeader("user-agent")[0]);
 }
 
-TEST(HeaderTest, Iterate)
+TEST(HeaderRequestTest, Iterate)
 {
-    ThorsAnvil::Nisse::PyntHTTP::Header     header;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
 
     header.add("head1", "14");
     header.add("head1", "15");
@@ -295,5 +295,41 @@ TEST(HeaderTest, Iterate)
     EXPECT_EQ(2, count);
     std::vector<std::size_t> expectedSize{3,4};
     EXPECT_EQ(expectedSize, size);
+}
+
+TEST(HeaderRequestTest, SplitOnComma)
+{
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+
+    header.add("head1", "1, 2,3,  4");
+    EXPECT_EQ(4, header.getHeader("head1").size());
+    EXPECT_EQ("1", header.getHeader("head1")[0]);
+    EXPECT_EQ("2", header.getHeader("head1")[1]);
+    EXPECT_EQ("3", header.getHeader("head1")[2]);
+    EXPECT_EQ("4", header.getHeader("head1")[3]);
+}
+
+TEST(HeaderRequestTest, SplitOnCommaMultipleLines)
+{
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+
+    header.add("head1", "1, 2,3,  4");
+    header.add("head1", "ace,  plan");
+    EXPECT_EQ(6, header.getHeader("head1").size());
+    EXPECT_EQ("1", header.getHeader("head1")[0]);
+    EXPECT_EQ("2", header.getHeader("head1")[1]);
+    EXPECT_EQ("3", header.getHeader("head1")[2]);
+    EXPECT_EQ("4", header.getHeader("head1")[3]);
+    EXPECT_EQ("ace", header.getHeader("head1")[4]);
+    EXPECT_EQ("plan", header.getHeader("head1")[5]);
+}
+
+TEST(HeaderRequestTest, NoSplitValue)
+{
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+
+    header.add("accept-datetime", "Stuff, Comma No Split, done");
+    EXPECT_EQ(1, header.getHeader("accept-datetime").size());
+    EXPECT_EQ("Stuff, Comma No Split, done", header.getHeader("accept-datetime")[0]);
 }
 
