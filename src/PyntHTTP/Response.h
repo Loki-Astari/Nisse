@@ -31,7 +31,6 @@ class StandardStatusCodeMap
     public:
         StatusCode const& operator[](int code);
 };
-extern StandardStatusCodeMap standardCodes;
 
 
 class Response
@@ -46,7 +45,8 @@ class Response
 
     public:
         Response(std::ostream& stream, Version version, int code = 200);
-        void                setStatus(StatusCode const& code);
+        ~Response();
+        void                setStatus(int code);
 
         std::ostream&       addHeaders(HeaderResponse const& headers, Encoding type);
         std::ostream&       addHeaders(HeaderResponse const& headers, std::size_t length);

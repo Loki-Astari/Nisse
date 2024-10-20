@@ -73,7 +73,7 @@ void StreamBufOutput::swap(StreamBufOutput& other) noexcept
 // Control:
 int StreamBufOutput::sync()
 {
-    std::cerr << "sync\n";
+    //std::cerr << "sync\n";
     checkBuffer();
     dumpBuffer();
     return buffer->pubsync();
@@ -81,7 +81,7 @@ int StreamBufOutput::sync()
 
 void StreamBufOutput::dumpBuffer()
 {
-    std::cerr << "dumpBuffer\n";
+    //std::cerr << "dumpBuffer\n";
     if (chunked)
     {
         std::streamsize     chunkSize = chunkBufferSize - remaining;
@@ -97,13 +97,11 @@ void StreamBufOutput::dumpBuffer()
 
 void StreamBufOutput::done()
 {
-    std::cerr << "Done\n";
+    //std::cerr << "Done\n";
     if (chunked)
     {
         dumpBuffer();
-        std::cerr << "Setting Last\n";
         sendAllData("0\r\n", 3);
-        std::cerr << "Sending Done\n";
         remaining = 0;
         chunked = false;
     }
@@ -111,13 +109,10 @@ void StreamBufOutput::done()
 
 void StreamBufOutput::sendAllData(char const* s, std::streamsize size)
 {
-    std::cerr << "sendAllData\n";
+    //std::cerr << "sendAllData\n";
     while (size != 0)
     {
-        std::cerr << "Sending: " << size << "\n";
-        std::cerr << "Buffer: " << buffer << "\n";
         std::streamsize sent = buffer->sputn(s, size);
-        std::cerr << "Sent: " << sent << "\n";
         s    += sent;
         size -= sent;
     }
@@ -148,7 +143,7 @@ void StreamBufOutput::outputChunkSize(std::streamsize size)
 // Write:
 std::streamsize StreamBufOutput::xsputnChunked(char_type const* s,std::streamsize count)
 {
-    std::cerr << "xsputnChunked\n";
+    //std::cerr << "xsputnChunked\n";
     if (count > remaining)
     {
         std::streamsize     chunkSize = chunkBufferSize - remaining + count;
@@ -168,11 +163,10 @@ std::streamsize StreamBufOutput::xsputnChunked(char_type const* s,std::streamsiz
 
 std::streamsize StreamBufOutput::xsputnLength(char_type const* s,std::streamsize count)
 {
-    std::cerr << "xsputnLength\n";
+    //std::cerr << "xsputnLength\n";
     std::streamsize result = 0;
     while (remaining != 0 && count != 0)
     {
-        std::cerr << "\tPutting More\n";
         std::size_t max = std::min(count, remaining);
         std::streamsize sent = buffer->sputn(s, max);
         s           += sent;
@@ -182,14 +176,13 @@ std::streamsize StreamBufOutput::xsputnLength(char_type const* s,std::streamsize
     }
     if (remaining == 0)
     {
-        std::cerr << "xsputnLength::Sync\n";
         sync();
     }
     return result;
 }
 std::streamsize StreamBufOutput::xsputn(char_type const* s,std::streamsize count)
 {
-    std::cerr << "xsputn\n";
+    //std::cerr << "xsputn\n";
     if (chunked) {
         return xsputnChunked(s, count);
     }
@@ -200,7 +193,7 @@ std::streamsize StreamBufOutput::xsputn(char_type const* s,std::streamsize count
 
 StreamBufOutput::int_type StreamBufOutput::overflowChunked(int_type ch)
 {
-    std::cerr << "overflowChunked\n";
+    //std::cerr << "overflowChunked\n";
     if (ch != traits::eof())
     {
         char_type v = ch;
@@ -211,7 +204,7 @@ StreamBufOutput::int_type StreamBufOutput::overflowChunked(int_type ch)
 
 StreamBufOutput::int_type StreamBufOutput::overflowLength(int_type ch)
 {
-    std::cerr << "overflowLength\n";
+    //std::cerr << "overflowLength\n";
     if (ch == traits::eof()) {
         return remaining == 0 ? traits::eof() : 1;
     }
@@ -230,7 +223,7 @@ StreamBufOutput::int_type StreamBufOutput::overflowLength(int_type ch)
 
 StreamBufOutput::int_type StreamBufOutput::overflow(int_type ch)
 {
-    std::cerr << "overflow\n";
+    //std::cerr << "overflow\n";
     if (chunked) {
         return overflowChunked(ch);
     }

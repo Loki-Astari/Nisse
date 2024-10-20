@@ -5,10 +5,9 @@
 
 using namespace ThorsAnvil::Nisse::PyntHTTP;
 
-extern StandardStatusCodeMap standardCodes;
-
 using std::literals::string_literals::operator""s;
 using std::literals::string_view_literals::operator""sv;
+
 StandardStatusCodeMap::StatusCodeMap const StandardStatusCodeMap::standardCodes
 {
     {
@@ -48,6 +47,7 @@ StatusCode const& StandardStatusCodeMap::operator[](int code)
     return find == standardCodes.end() ? unknown : *find;
 }
 
+StandardStatusCodeMap standardCodes;
 
 Response::Response(std::ostream& stream, Version version, int responseCode)
     : version{version}
@@ -57,19 +57,29 @@ Response::Response(std::ostream& stream, Version version, int responseCode)
     , baseStream{stream}
 {}
 
-void Response::setStatus(StatusCode const& newStatusCode)
+Response::~Response()
 {
-    statusCode = newStatusCode;
+    if (stream.rdbuf() == nullptr)
+    {
+        std::cerr << "\tSending minimum required data\n";
+        baseStream << statusCode
+                   << "\r\n";
+    }
+}
+
+void Response::setStatus(int newStatusCode)
+{
+    statusCode = standardCodes[newStatusCode];
 }
 
 std::ostream& Response::addHeaders(HeaderResponse const& headers, Encoding type)
 {
-    return addHeaders(headers, StreamBufOutput{baseStream, type}, "transfer-encoding: chunked");
+    return addHeaders(headers, StreamBufOutput{baseStream, type}, "transfer-encoding: chunked\r\n");
 }
 
 std::ostream& Response::addHeaders(HeaderResponse const& headers, std::size_t length)
 {
-    return addHeaders(headers, StreamBufOutput{baseStream, length}, "content-length: "s + std::to_string(length));
+    return addHeaders(headers, StreamBufOutput{baseStream, length}, length == 0 ? "" : "content-length: "s + std::to_string(length) + "\r\n");
 }
 
 std::ostream& Response::addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader)
@@ -79,7 +89,7 @@ std::ostream& Response::addHeaders(HeaderResponse const& headers, StreamBufOutpu
     }
     baseStream << statusCode
                << headers
-               << extraHeader << "\r\n"
+               << extraHeader
                << "\r\n"
                << std::flush;
     headerSent = true;

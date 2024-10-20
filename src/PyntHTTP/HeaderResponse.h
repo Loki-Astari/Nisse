@@ -27,10 +27,10 @@ class HeaderResponse
     {
         for (auto header: headersBlock.headers)
         {
-            if (std::ranges::equal(header.first, "content-length", ichar_equals)) {
+            if (std::ranges::equal(std::string_view(header.first), std::string_view("content-length"), ichar_equals)) {
                 continue;
             }
-            if (std::ranges::equal(header.first, "transfer-encoding", ichar_equals)) {
+            if (std::ranges::equal(std::string_view(header.first), std::string_view("transfer-encoding"), ichar_equals)) {
                 continue;
             }
             stream << header.first << ": " << header.second << "\r\n";

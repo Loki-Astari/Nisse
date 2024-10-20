@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "StreamOutput.h"
 #include "Util.h"
+#include <string>
 
 using namespace ThorsAnvil::Nisse::PyntHTTP;
 
@@ -122,5 +123,67 @@ TEST(StreamOutputTest, WriteChunkedStreamWithFlushFlush)
     }
 
     EXPECT_EQ("12\r\nThis is sime test\n\r\n12\r\nOne more line XXX\n\r\n0\r\n", ss.str());
+}
+
+TEST(StreamOutputTest, WriteChunkedWithBufferFill)
+{
+    std::string         block100 = "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
+    std::string         block1000= block100 + block100 + block100 + block100 + block100
+                                 + block100 + block100 + block100 + block100 + block100;
+    std::string         data1 = "This is sime test\n";
+    std::string         data2 = "One more line XXX\n";
+    std::stringstream   ss;
+    {
+        StreamOutput        streamOutput(ss, Encoding::Chunked);
+        streamOutput << block1000 << data1 << data2;
+    }
+
+    using std::literals::string_literals::operator""s;
+    EXPECT_EQ("40C\r\n"s + block1000 + data1 + data2 + "\r\n0\r\n", ss.str());
+}
+
+TEST(StreamOutputTest, LengthWithPut)
+{
+    std::stringstream   ss;
+    {
+        StreamOutput        streamOutput(ss, 5);
+        streamOutput.put('a').put('b').put('c').put('d').put('e');
+    }
+
+    EXPECT_EQ("abcde", ss.str());
+}
+
+TEST(StreamOutputTest, LengthWithPutWithMore)
+{
+    std::stringstream   ss;
+    {
+        StreamOutput        streamOutput(ss, 5);
+        streamOutput.put('a').put('b').put('c').put('d').put('e').put('f');
+    }
+
+    EXPECT_EQ("abcde", ss.str());
+}
+
+TEST(StreamOutputTest, ChunkedWithPut)
+{
+    std::stringstream   ss;
+    {
+        StreamOutput        streamOutput(ss, Encoding::Chunked);
+        streamOutput.put('a').put('b').put('c').put('d').put('e');
+    }
+
+    EXPECT_EQ("5\r\nabcde\r\n0\r\n", ss.str());
+}
+
+TEST(StreamOutputTest, ChunkedWithPutWithMore)
+{
+    std::stringstream   ss;
+    {
+        StreamOutput        streamOutput(ss, Encoding::Chunked);
+        streamOutput.put('a').put('b').put('c').put('d').put('e');
+        streamOutput << 15;
+    }
+
+    EXPECT_EQ("7\r\nabcde15\r\n0\r\n", ss.str());
 }
 
