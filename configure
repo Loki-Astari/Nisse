@@ -18791,7 +18791,7 @@ fi
 
 
 
-    ac_config_headers="$ac_config_headers config.h src/NisseServer/NisseConfig.h:config.h.in src/PyntHTTP/HTTPConfig.h:config.h.in"
+    ac_config_headers="$ac_config_headers config.h src/NisseServer/NisseConfig.h:config.h.in src/HTTP/HTTPConfig.h:config.h.in"
 
     ac_config_files="$ac_config_files Makefile.extra Makefile.config:build/autotools/build/Makefile.config.in:Makefile.config.in"
 
@@ -19911,7 +19911,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "src/NisseServer/NisseConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/NisseServer/NisseConfig.h:config.h.in" ;;
-    "src/PyntHTTP/HTTPConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/PyntHTTP/HTTPConfig.h:config.h.in" ;;
+    "src/HTTP/HTTPConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/HTTP/HTTPConfig.h:config.h.in" ;;
     "Makefile.extra") CONFIG_FILES="$CONFIG_FILES Makefile.extra" ;;
     "Makefile.config") CONFIG_FILES="$CONFIG_FILES Makefile.config:build/autotools/build/Makefile.config.in:Makefile.config.in" ;;
 

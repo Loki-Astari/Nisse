@@ -1,6 +1,6 @@
 #include "NisseServer/NisseServer.h"
 #include "NisseServer/PyntControl.h"
-#include "PyntHTTP/PyntHTTPV1.h"
+#include "HTTP/PyntHTTPV1.h"
 
 #include <ThorsLogging/ThorsLogging.h>
 #include <ThorsSocket/Server.h>
