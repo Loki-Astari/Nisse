@@ -21,6 +21,6 @@ AX_THOR_CHECK_USE_BOOST([1.70], [], [
 
 LT_INIT
 
-AX_THOR_FUNC_TERM_BUILD([NISSE], [src/NisseServer/NisseConfig.h:config.h.in src/HTTP/HTTPConfig.h:config.h.in])
+AX_THOR_FUNC_TERM_BUILD([NISSE], [src/NisseServer/NisseConfig.h:config.h.in src/NisseHTTP/NisseHTTPConfig.h:config.h.in])
 
 AC_OUTPUT
