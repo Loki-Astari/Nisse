@@ -49,11 +49,9 @@ StatusCode const& StandardStatusCodeMap::operator[](int code)
 
 StandardStatusCodeMap standardCodes;
 
-Response::Response(std::ostream& stream, Version version, int responseCode)
-    : version{version}
-    , statusCode{standardCodes[responseCode]}
+Response::Response(std::ostream& stream, int responseCode)
+    : statusCode{standardCodes[responseCode]}
     , headerSent{false}
-    , bodySent{false}
     , baseStream{stream}
 {}
 

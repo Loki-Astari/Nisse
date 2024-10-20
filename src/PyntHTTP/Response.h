@@ -35,16 +35,14 @@ class StandardStatusCodeMap
 
 class Response
 {
-    Version         version;
     StatusCode      statusCode;
     bool            headerSent;
-    bool            bodySent;
 
     std::ostream&   baseStream;
     StreamOutput    stream;
 
     public:
-        Response(std::ostream& stream, Version version, int code = 200);
+        Response(std::ostream& stream, int code = 200);
         ~Response();
         void                setStatus(int code);
 
