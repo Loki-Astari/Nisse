@@ -9,7 +9,9 @@
 #include "NisseConfig.h"
 #include "NisseServer.h"
 #include "Pynt.h"
+#include <ThorsSocket/SocketStream.h>
 
+namespace TAS = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse
 {
 
@@ -18,7 +20,7 @@ class PyntControl: public Pynt
     NisseServer&    server;
     public:
         PyntControl(NisseServer& server);
-        virtual PyntResult handleRequest(std::iostream& stream) override;
+        virtual PyntResult handleRequest(TAS::SocketStream& stream) override;
 };
 
 }

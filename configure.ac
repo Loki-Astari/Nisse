@@ -10,10 +10,17 @@ AX_THOR_FUNC_INIT_BUILD([Nisse], [src/NisseServer/NisseServer.cpp], [20])
 #
 # Add extra configuration here
 #
+AX_THOR_CHECK_USE_EVENT
+AX_THOR_CHECK_USE_BOOST([1.70], [], [
+    AC_MSG_ERROR([
+        Nisse requires boost CoRoutine2
+        The minimum version we support is via boost 1.70 please upgrade your boost libraries to this (or later).
+    ])
+])
 
 
 LT_INIT
 
-AX_THOR_FUNC_TERM_BUILD([NISSE], [src/NisseServer/NisseConfig.h:config.h.in src/PyntHTTP/PyntHTTPConfig.h:config.h.in])
+AX_THOR_FUNC_TERM_BUILD([NISSE], [src/NisseServer/NisseConfig.h:config.h.in src/HTTP/HTTPConfig.h:config.h.in])
 
 AC_OUTPUT

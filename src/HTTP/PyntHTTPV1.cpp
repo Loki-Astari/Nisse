@@ -1,9 +1,9 @@
-#include "PyntHTTP.h"
+#include "PyntHTTPV1.h"
 #include <charconv>
 
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::HTTP;
 
-PyntResult PyntHTTP::handleRequest(std::iostream& stream)
+ThorsAnvil::Nisse::PyntResult PyntHTTPV1::handleRequest(TAS::SocketStream& stream)
 {
     std::size_t bodySize = 0;
     bool        closeSocket = true;
@@ -37,4 +37,5 @@ PyntResult PyntHTTP::handleRequest(std::iostream& stream)
     }
     std::cout << "Done\n";
     return closeSocket ? PyntResult::Done : PyntResult::More;
+    return PyntResult::More;
 }
