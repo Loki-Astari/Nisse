@@ -34,7 +34,7 @@ class Request
         HeaderRequest const&    headers()       const   {return head;}
         HeaderRequest const&    trailers()      const   {return tail;}
         HeaderResponse const&   failHeader()    const   {return failResponse;}
-        bool                    isOk()          const   {return failResponse.empty();}
+        bool                    isValidRequest()const   {return failResponse.empty();}
                                                     // Trailers will return an empty HeaderRequest() if body has not been read.
                                                     // if (body().eof()) Then trailers have been read.
 

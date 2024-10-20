@@ -18,7 +18,7 @@ StreamBufInput::StreamBufInput(std::istream& stream, std::size_t length, Complet
     , complete(std::move(complete))
 {}
 
-StreamBufInput::StreamBufInput(std::istream& stream, EncodingChunked, Complete&& complete)
+StreamBufInput::StreamBufInput(std::istream& stream, Encoding /*encoding*/, Complete&& complete)
     : remaining(0)
     , buffer(stream.rdbuf())
     , chunked(true)
@@ -59,14 +59,6 @@ void StreamBufInput::swap(StreamBufInput& other) noexcept
     swap(complete,  other.complete);
 }
 
-// Control:
-int StreamBufInput::sync()
-{
-    //std::cerr << "sync\n";
-    checkBuffer();
-    return buffer->pubsync();
-}
-
 // Read:
 StreamBufInput::int_type StreamBufInput::uflow()
 {
@@ -105,19 +97,6 @@ std::streamsize StreamBufInput::xsgetn(char_type* s, std::streamsize count)
         }
     }
     return result;
-}
-
-// Write:
-std::streamsize StreamBufInput::xsputn(char_type const*,std::streamsize)
-{
-    //std::cerr << "xsputn\n";
-    return 0;
-}
-
-StreamBufInput::int_type StreamBufInput::overflow(int_type)
-{
-    //std::cerr << "overflow\n";
-    return 0;
 }
 
 void StreamBufInput::checkBuffer()

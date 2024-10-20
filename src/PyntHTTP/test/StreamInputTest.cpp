@@ -16,18 +16,18 @@ TEST(StreamInputTest, ConstrucBuftLength)
 TEST(StreamInputTest, ConstructBufChunked)
 {
     std::stringstream   ss;
-    StreamBufInput      streamInput(ss, EncodingChunked::Yes);
+    StreamBufInput      streamInput(ss, Encoding::Chunked);
 }
 TEST(StreamInputTest, ConstructBufMove)
 {
     std::stringstream   ss;
-    StreamBufInput      streamInput(ss, EncodingChunked::Yes);
+    StreamBufInput      streamInput(ss, Encoding::Chunked);
     StreamBufInput      move(std::move(streamInput));
 }
 TEST(StreamInputTest, ConstructBufMoveAssign)
 {
     std::stringstream   ss;
-    StreamBufInput      streamInput(ss, EncodingChunked::Yes);
+    StreamBufInput      streamInput(ss, Encoding::Chunked);
     StreamBufInput      move;
 
     move = std::move(streamInput);
@@ -47,7 +47,7 @@ TEST(StreamInputTest, ConstructLength)
 TEST(StreamInputTest, ConstructChunked)
 {
     std::stringstream   ss;
-    StreamInput     streamInput(ss, EncodingChunked::Yes);
+    StreamInput     streamInput(ss, Encoding::Chunked);
     EXPECT_TRUE(static_cast<bool>(streamInput));
 }
 TEST(StreamInputTest, ConstructAssignedLength)
@@ -65,7 +65,7 @@ TEST(StreamInputTest, ConstructAssignedChunked)
     EXPECT_FALSE(static_cast<bool>(streamInput));
 
     std::stringstream   ss;
-    streamInput.addBuffer(StreamBufInput(ss, EncodingChunked::Yes));
+    streamInput.addBuffer(StreamBufInput(ss, Encoding::Chunked));
     EXPECT_TRUE(static_cast<bool>(streamInput));
 }
 TEST(StreamInputTest, ReadLengthStream)
@@ -96,7 +96,7 @@ TEST(StreamInputTest, ReadChunkedStream)
                                "0\r\n"
                                "Should not be able to read this"
                               };
-    StreamInput     streamInput(stream, EncodingChunked::Yes);
+    StreamInput     streamInput(stream, Encoding::Chunked);
 
     std::string line;
     std::string expected[3] = {"This is sime test", "One more line XXX", "Protection"};
@@ -131,7 +131,7 @@ TEST(StreamInputTest, ReadBulkChunkedStream)
                                "0\r\n"
                                "Should not be able to read this"
                               };
-    StreamInput     streamInput(stream, EncodingChunked::Yes);
+    StreamInput     streamInput(stream, Encoding::Chunked);
 
     char buffer[100] = {0};
     streamInput.read(buffer, 99);

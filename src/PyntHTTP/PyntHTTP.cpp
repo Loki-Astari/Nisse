@@ -7,11 +7,10 @@ using namespace ThorsAnvil::Nisse::PyntHTTP;
 ThorsAnvil::Nisse::PyntResult PyntHTTP::handleRequest(TAS::SocketStream& stream)
 {
     Request     request(stream.getSocket().protocol(), stream);
-    if (!request.isOk())
+    if (!request.isValidRequest())
     {
-        Response    clientError(stream, request.getVersion(), standardCodes[400]);
-        clientError.addHeaders(request.failHeader());
-        clientError.done();
+        Response    clientError(stream, request.getVersion(), 400);
+        clientError.addHeaders(request.failHeader(), 0);
         return PyntResult::More;
     }
 

@@ -1,10 +1,13 @@
 #include "Response.h"
+#include "ThorsLogging/ThorsLogging.h"
 #include <iostream>
+#include <string>
 
 using namespace ThorsAnvil::Nisse::PyntHTTP;
 
 extern StandardStatusCodeMap standardCodes;
 
+using std::literals::string_literals::operator""s;
 using std::literals::string_view_literals::operator""sv;
 StandardStatusCodeMap::StatusCodeMap const StandardStatusCodeMap::standardCodes
 {
@@ -39,52 +42,48 @@ StandardStatusCodeMap::StatusCodeMap const StandardStatusCodeMap::standardCodes
 
 StatusCode const& StandardStatusCodeMap::operator[](int code)
 {
-    static StatusCode  unknown{0, "Unknonw"sv};
+    static StatusCode  unknown{500, "Internal Server Error"sv};
 
     auto find = standardCodes.find({code, ""sv});
     return find == standardCodes.end() ? unknown : *find;
 }
 
 
-Response::Response(std::ostream& stream, Version version, StatusCode const& responseCode)
+Response::Response(std::ostream& stream, Version version, int responseCode)
     : version{version}
-    , statusCode{responseCode}
-   // , head{}
+    , statusCode{standardCodes[responseCode]}
     , headerSent{false}
     , bodySent{false}
+    , baseStream{stream}
 {}
-
-Response::~Response()
-{
-    done();
-}
 
 void Response::setStatus(StatusCode const& newStatusCode)
 {
     statusCode = newStatusCode;
 }
 
-void Response::done()
+std::ostream& Response::addHeaders(HeaderResponse const& headers, Encoding type)
 {
+    return addHeaders(headers, StreamBufOutput{baseStream, type}, "transfer-encoding: chunked");
 }
 
-#if 0
-void Response::sendHeaders()
+std::ostream& Response::addHeaders(HeaderResponse const& headers, std::size_t length)
 {
+    return addHeaders(headers, StreamBufOutput{baseStream, length}, "content-length: "s + std::to_string(length));
 }
 
-std::ostream& Response::body()
+std::ostream& Response::addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader)
 {
-    return std::cout;
-}
+    if (headerSent) {
+        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers have already been sent");
+    }
+    baseStream << statusCode
+               << headers
+               << extraHeader << "\r\n"
+               << "\r\n"
+               << std::flush;
+    headerSent = true;
 
-bool Response::isHeadersSent() const
-{
-    return headerSent;
+    stream.addBuffer(std::move(buffer));
+    return stream;
 }
-
-bool Response::isDone() const
-{
-    return bodySent;
-}
-#endif

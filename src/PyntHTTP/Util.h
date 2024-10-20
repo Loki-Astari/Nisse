@@ -14,7 +14,7 @@ namespace ThorsAnvil::Nisse::PyntHTTP
 
 enum class Version {HTTP1_0, HTTP1_1, HTTP2, HTTP3, Unknown};
 enum class Method  {GET, HEAD, OPTIONS, TRACE, PUT, DELETE, POST, PATCH, CONNECT, Other};
-enum class EncodingChunked {Yes};
+enum class Encoding{Chunked};
 
 }
 

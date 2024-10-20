@@ -165,7 +165,7 @@ bool Request::buildStream(std::istream& stream)
     if (transferEncoding.size() != 0 && transferEncoding.size() == 1 && transferEncoding[0] == "chunked")
     {
         input.addBuffer(StreamBufInput(stream,
-                                       EncodingChunked::Yes,
+                                       Encoding::Chunked,
                                        [&](){readHeaders(tail, stream);}));
         return true;
     }

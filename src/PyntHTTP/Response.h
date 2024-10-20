@@ -4,6 +4,7 @@
 #include "PyntHTTPConfig.h"
 #include "Util.h"
 #include "HeaderResponse.h"
+#include "StreamOutput.h"
 #include <set>
 #include <ostream>
 #include <functional>
@@ -15,6 +16,11 @@ struct StatusCode
 {
     int                 code;
     std::string_view    message;
+
+    friend std::ostream& operator<<(std::ostream& stream, StatusCode const& statusCode)
+    {
+        return stream << statusCode.code << " " << statusCode.message << "\r\n";
+    }
 };
 
 class StandardStatusCodeMap
@@ -30,33 +36,22 @@ extern StandardStatusCodeMap standardCodes;
 
 class Response
 {
-    Version     version;
-    StatusCode  statusCode;
-    bool        headerSent;
-    bool        bodySent;
+    Version         version;
+    StatusCode      statusCode;
+    bool            headerSent;
+    bool            bodySent;
+
+    std::ostream&   baseStream;
+    StreamOutput    stream;
+
     public:
-        Response(std::ostream& stream, Version version, StatusCode const& code = standardCodes[200]);
-        ~Response();
+        Response(std::ostream& stream, Version version, int code = 200);
         void                setStatus(StatusCode const& code);
 
-        std::ostream        addHeaders(HeaderResponse const& headers);
-        void                done();
-#if 0
-                                                                            // Can be modified anytime up to the headers being sent.
-        //Header&             headers();          // Headers will be locked after they are sent. By default this happens when data is sent to the body stream.
-        void                done();             // Manually indicate complete. Done automatically by destructor.
-                                                // But processes can use this to flush stream immediately if desired.
-
-        std::ostream&       body();             // Format of body is determined by the 'content-encoding/content-length' header fields.
-                                                // User will simply write to the stream the stream will automatically encode the data.
-                                                // Note: Headers will be locked after you start writing to the body stream and thus can
-                                                //       once writing commences the content-encoding/content-length can not be changed.
-
-        bool                isHeadersSent() const;
-        bool                isDone()        const;
+        std::ostream&       addHeaders(HeaderResponse const& headers, Encoding type);
+        std::ostream&       addHeaders(HeaderResponse const& headers, std::size_t length);
     private:
-        void                sendHeaders();
-#endif
+        std::ostream&       addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader);
 };
 
 }

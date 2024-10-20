@@ -81,7 +81,7 @@ TEST(RequestTest, Unknown)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isOk());
+    EXPECT_FALSE(request.isValidRequest());
 }
 
 TEST(RequestTest, GET)
@@ -190,7 +190,7 @@ TEST(RequestTest, Other)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isOk());
+    EXPECT_FALSE(request.isValidRequest());
 }
 
 TEST(RequestTest, CONNECT)
@@ -215,7 +215,7 @@ TEST(RequestTest, BadMessageHeaderNotTerminated)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isOk());
+    EXPECT_FALSE(request.isValidRequest());
 }
 
 TEST(RequestTest, BadMissingField)
@@ -228,7 +228,7 @@ TEST(RequestTest, BadMissingField)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isOk());
+    EXPECT_FALSE(request.isValidRequest());
 }
 
 TEST(RequestTest, BadHeaderLine)
@@ -241,7 +241,7 @@ TEST(RequestTest, BadHeaderLine)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isOk());
+    EXPECT_FALSE(request.isValidRequest());
 }
 
 TEST(RequestTest, BadHeaderSplit)
@@ -254,7 +254,7 @@ TEST(RequestTest, BadHeaderSplit)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isOk());
+    EXPECT_FALSE(request.isValidRequest());
 }
 
 TEST(RequestTest, MissingHost)
@@ -266,7 +266,7 @@ TEST(RequestTest, MissingHost)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isOk());
+    EXPECT_FALSE(request.isValidRequest());
 }
 
 TEST(RequestTest, MissingContentSize)
@@ -278,7 +278,7 @@ TEST(RequestTest, MissingContentSize)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isOk());
+    EXPECT_FALSE(request.isValidRequest());
 }
 
 TEST(RequestTest, ContentLength)
