@@ -1,6 +1,6 @@
 #include "StreamOutput.h"
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 StreamBufOutput::~StreamBufOutput()
 {

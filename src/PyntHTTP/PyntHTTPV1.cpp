@@ -1,7 +1,7 @@
 #include "PyntHTTPV1.h"
 #include <charconv>
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 ThorsAnvil::Nisse::PyntResult PyntHTTPV1::handleRequest(TAS::SocketStream& stream)
 {

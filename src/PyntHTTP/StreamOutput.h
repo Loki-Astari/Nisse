@@ -1,11 +1,11 @@
-#ifndef THORSANVIL_NISSE_PYNTHTTP_STREAMOUTPUT_H
-#define THORSANVIL_NISSE_PYNTHTTP_STREAMOUTPUT_H
+#ifndef THORSANVIL_NISSE_HTTP_STREAMOUTPUT_H
+#define THORSANVIL_NISSE_HTTP_STREAMOUTPUT_H
 
-#include "PyntHTTPConfig.h"
+#include "HTTPConfig.h"
 #include "Util.h"
 #include <iostream>
 
-namespace ThorsAnvil::Nisse::PyntHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class StreamBufOutput: public std::streambuf

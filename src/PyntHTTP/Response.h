@@ -1,7 +1,7 @@
-#ifndef THORSANVIL_NISSE_PYNTHTTP_RESPONSE_H
-#define THORSANVIL_NISSE_PYNTHTTP_RESPONSE_H
+#ifndef THORSANVIL_NISSE_HTTP_RESPONSE_H
+#define THORSANVIL_NISSE_HTTP_RESPONSE_H
 
-#include "PyntHTTPConfig.h"
+#include "HTTPConfig.h"
 #include "Util.h"
 #include "HeaderResponse.h"
 #include "StreamOutput.h"
@@ -9,7 +9,7 @@
 #include <ostream>
 #include <functional>
 
-namespace ThorsAnvil::Nisse::PyntHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 struct StatusCode

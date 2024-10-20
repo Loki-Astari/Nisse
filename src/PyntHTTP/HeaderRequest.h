@@ -1,13 +1,13 @@
-#ifndef THORSANVIL_NISSE_PYNTHTTP_HEADER_REQUEST_H
-#define THORSANVIL_NISSE_PYNTHTTP_HEADER_REQUEST_H
+#ifndef THORSANVIL_NISSE_HTTP_HEADER_REQUEST_H
+#define THORSANVIL_NISSE_HTTP_HEADER_REQUEST_H
 
-#include "PyntHTTPConfig.h"
+#include "HTTPConfig.h"
 #include <map>
 #include <vector>
 #include <string>
 #include <string_view>
 
-namespace ThorsAnvil::Nisse::PyntHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class HeaderRequest

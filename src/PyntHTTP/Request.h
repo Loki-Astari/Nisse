@@ -1,14 +1,14 @@
-#ifndef THORSANVIL_NISSE_PYNTHTTP_REQUEST_H
-#define THORSANVIL_NISSE_PYNTHTTP_REQUEST_H
+#ifndef THORSANVIL_NISSE_HTTP_REQUEST_H
+#define THORSANVIL_NISSE_HTTP_REQUEST_H
 
-#include "PyntHTTPConfig.h"
+#include "HTTPConfig.h"
 #include "URL.h"
 #include "HeaderRequest.h"
 #include "HeaderResponse.h"
 #include "StreamInput.h"
 #include <istream>
 
-namespace ThorsAnvil::Nisse::PyntHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class Request

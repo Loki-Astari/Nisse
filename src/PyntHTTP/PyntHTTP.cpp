@@ -2,7 +2,7 @@
 #include "Response.h"
 #include "Request.h"
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 ThorsAnvil::Nisse::PyntResult PyntHTTP::handleRequest(TAS::SocketStream& stream)
 {

@@ -3,7 +3,7 @@
 #include "Util.h"
 #include <string>
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 TEST(StreamOutputTest, ConstructBuf)
 {

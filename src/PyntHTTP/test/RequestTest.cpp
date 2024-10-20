@@ -3,7 +3,7 @@
 #include "Request.h"
 #include <sstream>
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 TEST(RequestTest, Construct)
 {

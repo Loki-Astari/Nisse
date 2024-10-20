@@ -3,7 +3,7 @@
 #include <sstream>
 #include <ThorsLogging/ThorsLogging.h>
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 TEST(ResponseTest, Construct)
 {

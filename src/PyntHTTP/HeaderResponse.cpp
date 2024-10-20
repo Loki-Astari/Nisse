@@ -1,6 +1,6 @@
 #include "HeaderResponse.h"
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 bool HeaderResponse::empty() const
 {

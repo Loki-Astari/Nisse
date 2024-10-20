@@ -1,6 +1,6 @@
 #include "StreamInput.h"
 
-using namespace ThorsAnvil::Nisse::PyntHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 StreamBufInput::StreamBufInput(Complete&& complete)
     : remaining(0)

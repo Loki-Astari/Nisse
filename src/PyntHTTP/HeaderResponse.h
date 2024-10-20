@@ -1,13 +1,13 @@
-#ifndef THORSANVIL_NISSE_PYNTHTTP_HEADER_RESPONSE_H
-#define THORSANVIL_NISSE_PYNTHTTP_HEADER_RESPONSE_H
+#ifndef THORSANVIL_NISSE_HTTP_HEADER_RESPONSE_H
+#define THORSANVIL_NISSE_HTTP_HEADER_RESPONSE_H
 
-#include "PyntHTTPConfig.h"
+#include "HTTPConfig.h"
 #include <string_view>
 #include <string>
 #include <map>
 #include <iostream>
 
-namespace ThorsAnvil::Nisse::PyntHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 inline bool ichar_equals(char a, char b)

@@ -1,11 +1,11 @@
-#ifndef THORSANVIL_NISSE_PYNTHTTP_URL_H
-#define THORSANVIL_NISSE_PYNTHTTP_URL_H
+#ifndef THORSANVIL_NISSE_HTTP_URL_H
+#define THORSANVIL_NISSE_HTTP_URL_H
 
-#include "PyntHTTPConfig.h"
+#include "HTTPConfig.h"
 #include <string>
 #include <string_view>
 
-namespace ThorsAnvil::Nisse::PyntHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class URL
