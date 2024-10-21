@@ -1,0 +1,95 @@
+# Nisse
+
+![Nisse](img/Nisse.jpg)
+
+A very simple server architecture.
+
+## Nisse:
+### [NisseServer](src/NisseServer/NisseServer.h):
+
+The `NisseService` class provides a server that can listen simultaneously on multiple ports (via `listen()` method). Accepted connections are passed to a thread-pool for processing.
+
+Underneath the hood the thread-pool uses non blocking IO (via ThorsSockets) and cooperative multi-tasking (boost co-routines) to asynchronously handle all connections with only a small pool of working threads. Threads automatically yield IO blocked connections back to the Job-Queue and start work on an alternative non-blocked connections.
+
+To the service writer a socket is materialized as a `std::iostream` that provides a standard blocking interface, thus allowing service to be implement as a standard sync code without needing to explicitly consider how/when to switch threads.
+
+### [Pynt](src/NisseServer/Pynt.h):
+
+The Pynt interface is how service handler are written and provides a simple interface that can be registered with `NisseService::listen()` method.
+
+The implementer must implement the interface `virtual PyntResult handleRequest(TAS::SocketStream& stream)`. The stream implements the `std::iostream` interface but a read/write operation that blocks will result in the server thread executing the interface to yield for another connection.
+
+## HTTP:
+### [PyntHTTP](src/NisseHTTP/PyntHTTP.h):
+
+Provides an implementation of `Pynt` that understands the `HTTP` protocol and provides an intuitive to use interface.
+
+The implementer must implement the interface `virtual void processRequest(Request& request, Response& response)`. The request object contains all the information from the HTTP request and the response object can be used to generate the reply. No action will result in `200 OK` with no message body. Normal usage is simply to add the reply headers the stream the result to the returned stream:
+
+```C++
+    class MyPyntHTTP: public PyntHTTP
+    {
+        public:
+            virtual void processRequest(Request& request, Response& response) override
+            {
+                HeaderResponse      headers;
+                headers.add("my-header", "header-value');
+                response.addHeaders(header, Encoding::Chunked)
+                    << "<html><body>"
+                    << "My Page: " << request.getUrl().href() << "<br>"
+                    << "</body></html>";
+            }
+    };
+```
+
+### [HTTPHandler](src/NisseHTTP/HTTPHandler.h):
+
+Extends the `PyntHTTP` interface. Provides an interface to register lambdas to specific request paths.
+
+```C++
+    HTTPHandler     handler;
+
+    handler.addPath("/content/{file}.html", [](Request& request, Response& response)
+    {
+        HeaderResponse      headers;
+        headers.add("my-header", "header-value');
+        response.addHeaders(header, Encoding::Chunked)
+            << "<html><body>"
+            << "My Page: " << request.getUrl().href() << "<br>"
+            << "File: " << request.variables()["file"] << "<br>"
+            << "</body></html>";
+    });
+```
+
+Note: `{file}` will match any valid URL characters (except '/'). The matched characters are available in the variable `file` that is part of the `request` object.
+
+## Example:
+### [SimpleServer](src/SimpleServer/Nisse.cpp):
+
+Provides a trivial server that listens on port `8080` for an `https://` connection and `8081` for and `http://` connection that will serve an HTML "Hello-World" page for the paths: `/HW{Who}.html` and `/CK{Who}.html`.
+
+## Building:
+
+### Dependencies:
+You will need [boost](https://www.boost.org/) and [ThorsMongo](https://github.com/Loki-Astari/ThorsMongo).  
+
+To install boost libraries `brew install boost` or (check google for you platform).  
+
+To install ThorsMongo the easiest way to install is `brew install thors-mongo` but checkout the above project to see alternative ways to install or build.
+
+### Compile and Run:
+```bash
+> git clone https://github.com/Loki-Astari/Nisse.git
+> cd Nisse
+> ./configure
+> make
+> ./build/bin/Nisse
+```
+
+## Nisse
+
+From the [Scandinavia folklore](https://en.wikipedia.org/wiki/Nisse_\(folklore\)). Small gnome like creatures that live in the farm barn and will help out with tasks in exchange for gifts.
+
+Since `Nisse` like a small drink the interface to them is a `Pynt` (Pint).
+
+
