@@ -22,7 +22,7 @@ class PyntHTTP: public Pynt
 {
     public:
         virtual PyntResult handleRequest(TAS::SocketStream& stream);
-        virtual void       processRequest(Request const& request, Response& response) = 0;
+        virtual void       processRequest(Request& request, Response& response) = 0;
 };
 
 }

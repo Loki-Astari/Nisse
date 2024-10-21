@@ -32,15 +32,15 @@ class URL
         bool operator==(URL const& rhs)     const {return hrefValue == rhs.hrefValue;}
         bool operator!=(URL const& rhs)     const {return !(*this == rhs);}
 
-        std::string_view        href()      {return hrefValue;}     // 'http://localhost:53/status?name=ryan#234'
-        std::string_view        protocol()  {return protocolRef;}   // 'http:'
-        std::string_view        origin()    {return originRef;}     // 'http://localhost:53'
-        std::string_view        host()      {return hostRef;}       // 'localhost:53',
-        std::string_view        hostname()  {return hostnameRef;}   // 'localhost',
-        std::string_view        port()      {return portRef;}       // '53'
-        std::string_view        pathname()  {return pathRef;}       // '/status',
-        std::string_view        query()     {return queryRef;}      // '?name=ryan',
-        std::string_view        hash()      {return hashRef;}       // '#234'
+        std::string_view        href()      const {return hrefValue;}     // 'http://localhost:53/status?name=ryan#234'
+        std::string_view        protocol()  const {return protocolRef;}   // 'http:'
+        std::string_view        origin()    const {return originRef;}     // 'http://localhost:53'
+        std::string_view        host()      const {return hostRef;}       // 'localhost:53',
+        std::string_view        hostname()  const {return hostnameRef;}   // 'localhost',
+        std::string_view        port()      const {return portRef;}       // '53'
+        std::string_view        pathname()  const {return pathRef;}       // '/status',
+        std::string_view        query()     const {return queryRef;}      // '?name=ryan',
+        std::string_view        hash()      const {return hashRef;}       // '#234'
 
         std::string_view        param(std::string_view param);  // parm('name') => 'ryan'
 

@@ -13,13 +13,14 @@ namespace ThorsAnvil::Nisse::NisseHTTP
 
 class Request
 {
-    std::string     messageHeader;
-    Version         version;
-    Method          method;
-    URL             url;
-    HeaderRequest   head;
-    HeaderRequest   tail;
-    HeaderResponse  failResponse;
+    std::string         messageHeader;
+    Version             version;
+    Method              method;
+    URL                 url;
+    HeaderRequest       head;
+    HeaderRequest       tail;
+    HeaderResponse      failResponse;
+    RequestVariables    var;
 
     StreamInput input;
 
@@ -35,6 +36,8 @@ class Request
         HeaderRequest const&    trailers()      const   {return tail;}
         HeaderResponse const&   failHeader()    const   {return failResponse;}
         bool                    isValidRequest()const   {return failResponse.empty();}
+
+        RequestVariables&       variables()             {return var;}
                                                     // Trailers will return an empty HeaderRequest() if body has not been read.
                                                     // if (body().eof()) Then trailers have been read.
 

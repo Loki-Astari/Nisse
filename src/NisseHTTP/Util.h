@@ -18,6 +18,8 @@ enum class Encoding{Chunked};
 
 std::ostream& operator<<(std::ostream&, Version const& v);
 
+using RequestVariables = std::map<std::string, std::string>;
+
 }
 
 #endif
