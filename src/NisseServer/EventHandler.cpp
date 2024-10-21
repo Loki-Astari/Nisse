@@ -35,10 +35,10 @@ Event::Event(EventBase& eventBase, EventHandler& eventHandler)
 {}
 
 EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
-    : jobQueue(jobQueue)
-    , store(store)
-    , timer(eventBase, *this)
-    , finished(false)
+    : jobQueue{jobQueue}
+    , store{store}
+    , timer{eventBase, *this}
+    , finished{false}
 {
     timer.add(controlTimerPause);
 }

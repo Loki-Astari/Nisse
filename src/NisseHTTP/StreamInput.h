@@ -23,7 +23,7 @@ class StreamBufInput: public std::streambuf
         Complete            complete;
     public:
         StreamBufInput(Complete&& complete = [](){});
-        StreamBufInput(std::istream& stream, std::size_t length, Complete&& complete = [](){});
+        StreamBufInput(std::istream& stream, std::streamsize length, Complete&& complete = [](){});
         StreamBufInput(std::istream& stream, Encoding encoding, Complete&& complete = [](){});
         StreamBufInput(StreamBufInput&& move)                   noexcept;
         StreamBufInput& operator=(StreamBufInput&& move)        noexcept;

@@ -3,35 +3,35 @@
 using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 StreamBufInput::StreamBufInput(Complete&& complete)
-    : remaining(0)
-    , buffer(nullptr)
-    , chunked(false)
-    , firstChunk(false)
-    , complete(std::move(complete))
+    : remaining{0}
+    , buffer{nullptr}
+    , chunked{false}
+    , firstChunk{false}
+    , complete{std::move(complete)}
 {}
 
-StreamBufInput::StreamBufInput(std::istream& stream, std::size_t length, Complete&& complete)
-    : remaining(length)
-    , buffer(stream.rdbuf())
-    , chunked(false)
-    , firstChunk(false)
-    , complete(std::move(complete))
+StreamBufInput::StreamBufInput(std::istream& stream, std::streamsize length, Complete&& complete)
+    : remaining{length}
+    , buffer{stream.rdbuf()}
+    , chunked{false}
+    , firstChunk{false}
+    , complete{std::move(complete)}
 {}
 
 StreamBufInput::StreamBufInput(std::istream& stream, Encoding /*encoding*/, Complete&& complete)
-    : remaining(0)
-    , buffer(stream.rdbuf())
-    , chunked(true)
-    , firstChunk(true)
-    , complete(std::move(complete))
+    : remaining{0}
+    , buffer{stream.rdbuf()}
+    , chunked{true}
+    , firstChunk{true}
+    , complete{std::move(complete)}
 {}
 
 StreamBufInput::StreamBufInput(StreamBufInput&& move) noexcept
-    : remaining(std::exchange(move.remaining, 0))
-    , buffer(std::exchange(move.buffer, nullptr))
-    , chunked(std::exchange(move.chunked, false))
-    , firstChunk(std::exchange(move.firstChunk, false))
-    , complete(std::exchange(move.complete, [](){}))
+    : remaining{std::exchange(move.remaining, 0)}
+    , buffer{std::exchange(move.buffer, nullptr)}
+    , chunked{std::exchange(move.chunked, false)}
+    , firstChunk{std::exchange(move.firstChunk, false)}
+    , complete{std::exchange(move.complete, [](){})}
 {}
 
 StreamBufInput& StreamBufInput::operator=(StreamBufInput&& move) noexcept

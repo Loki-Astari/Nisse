@@ -78,7 +78,7 @@ std::ostream& Response::addHeaders(HeaderResponse const& headers, Encoding type)
     return addHeaders(headers, StreamBufOutput{baseStream, type}, "transfer-encoding: chunked\r\n");
 }
 
-std::ostream& Response::addHeaders(HeaderResponse const& headers, std::size_t length)
+std::ostream& Response::addHeaders(HeaderResponse const& headers, std::streamsize length)
 {
     return addHeaders(headers, StreamBufOutput{baseStream, length}, "content-length: "s + std::to_string(length) + "\r\n");
 }

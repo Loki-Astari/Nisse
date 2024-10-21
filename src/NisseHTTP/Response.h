@@ -48,7 +48,7 @@ class Response
         void                setStatus(int code);
 
         std::ostream&       addHeaders(HeaderResponse const& headers, Encoding type);
-        std::ostream&       addHeaders(HeaderResponse const& headers, std::size_t length);
+        std::ostream&       addHeaders(HeaderResponse const& headers, std::streamsize length);
     private:
         std::ostream&       addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader);
 };

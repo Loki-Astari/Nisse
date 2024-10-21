@@ -330,27 +330,3 @@ TEST(ResponseTest, HeadersHeaders)
     );
 }
 
-
-
-#if 0
-class Response
-{
-    Version         version;
-    StatusCode      statusCode;
-    bool            headerSent;
-    bool            bodySent;
-
-    std::ostream&   baseStream;
-    StreamOutput    stream;
-
-    public:
-        Response(std::ostream& stream, Version version, int code = 200);
-        void                setStatus(int code);
-
-        std::ostream&       addHeaders(HeaderResponse const& headers, Encoding type);
-        std::ostream&       addHeaders(HeaderResponse const& headers, std::size_t length);
-    private:
-        std::ostream&       addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader);
-};
-
-#endif

@@ -26,7 +26,7 @@ class StreamBufOutput: public std::streambuf
     public:
         ~StreamBufOutput();
         StreamBufOutput(Complete&& complete = [](){});
-        StreamBufOutput(std::ostream& stream, std::size_t length, Complete&& complete = [](){});
+        StreamBufOutput(std::ostream& stream, std::streamsize length, Complete&& complete = [](){});
         StreamBufOutput(std::ostream& stream, Encoding encoding, Complete&& complete = [](){});
         StreamBufOutput(StreamBufOutput&& move)                   noexcept;
         StreamBufOutput& operator=(StreamBufOutput&& move)        noexcept;

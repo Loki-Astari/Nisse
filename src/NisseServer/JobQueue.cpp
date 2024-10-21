@@ -4,7 +4,7 @@
 using namespace ThorsAnvil::Nisse;
 
 JobQueue::JobQueue(int workerCount)
-    : finished(false)
+    : finished{false}
 {
     try
     {

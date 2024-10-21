@@ -8,39 +8,41 @@ StreamBufOutput::~StreamBufOutput()
 }
 
 StreamBufOutput::StreamBufOutput(Complete&& complete)
-    : remaining(0)
-    , buffer(nullptr)
-    , chunked(false)
-    , firstChunk(false)
-    , complete(std::move(complete))
-    , chunkBuffer(0)
+    : remaining{0}
+    , buffer{nullptr}
+    , chunked{false}
+    , firstChunk{false}
+    , complete{std::move(complete)}
+    , chunkBuffer{0}
 {}
 
-StreamBufOutput::StreamBufOutput(std::ostream& stream, std::size_t length, Complete&& complete)
-    : remaining(length)
-    , buffer(stream.rdbuf())
-    , chunked(false)
-    , firstChunk(false)
-    , complete(std::move(complete))
-    , chunkBuffer(0)
+StreamBufOutput::StreamBufOutput(std::ostream& stream, std::streamsize length, Complete&& complete)
+    : remaining{length}
+    , buffer{stream.rdbuf()}
+    , chunked{false}
+    , firstChunk{false}
+    , complete{std::move(complete)}
+    , chunkBuffer{0}
 {}
 
 StreamBufOutput::StreamBufOutput(std::ostream& stream, Encoding /*encoding*/, Complete&& complete)
-    : remaining(chunkBufferSize)
-    , buffer(stream.rdbuf())
-    , chunked(true)
-    , firstChunk(true)
-    , complete(std::move(complete))
-    , chunkBuffer(chunkBufferSize)
-{}
+    : remaining{chunkBufferSize}
+    , buffer{stream.rdbuf()}
+    , chunked{true}
+    , firstChunk{true}
+    , complete{std::move(complete)}
+    , chunkBuffer{0}
+{
+    chunkBuffer.resize(chunkBufferSize);
+}
 
 StreamBufOutput::StreamBufOutput(StreamBufOutput&& move) noexcept
-    : remaining(std::exchange(move.remaining, 0))
-    , buffer(std::exchange(move.buffer, nullptr))
-    , chunked(std::exchange(move.chunked, false))
-    , firstChunk(std::exchange(move.firstChunk, false))
-    , complete(std::exchange(move.complete, [](){}))
-    , chunkBuffer(std::move(move.chunkBuffer))
+    : remaining{std::exchange(move.remaining, 0)}
+    , buffer{std::exchange(move.buffer, nullptr)}
+    , chunked{std::exchange(move.chunked, false)}
+    , firstChunk{std::exchange(move.firstChunk, false)}
+    , complete{std::exchange(move.complete, [](){})}
+    , chunkBuffer{std::move(move.chunkBuffer)}
 {}
 
 StreamBufOutput& StreamBufOutput::operator=(StreamBufOutput&& move) noexcept
