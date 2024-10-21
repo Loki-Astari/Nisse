@@ -9,7 +9,7 @@ TEST(ResponseTest, Construct)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -20,7 +20,7 @@ TEST(ResponseTest, ConstructNotStandard)
 {
     std::stringstream   ss;
     {
-        Response            response(ss, 404);
+        Response            response(ss, Version::HTTP1_1, 404);
     }
 
     EXPECT_EQ("HTTP/1.1 404 Not Found\r\n"
@@ -31,7 +31,7 @@ TEST(ResponseTest, SetStateAfter)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
         response.setStatus(511);
     }
 
@@ -43,7 +43,7 @@ TEST(ResponseTest, AddLength)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         response.addHeaders(headers, 0);
@@ -57,7 +57,7 @@ TEST(ResponseTest, AddChunked)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         response.addHeaders(headers, Encoding::Chunked);
@@ -74,7 +74,7 @@ TEST(ResponseTest, ZeroLengthWithHeader)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -91,7 +91,7 @@ TEST(ResponseTest, ZeroLengthWithHeaderContent)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -109,7 +109,7 @@ TEST(ResponseTest, ZeroLengthWithHeaderChunked)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -127,7 +127,7 @@ TEST(ResponseTest, FiveLengthWithHeader)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -146,7 +146,7 @@ TEST(ResponseTest, FiveLengthWithHeaderContent)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -166,7 +166,7 @@ TEST(ResponseTest, FiveLengthWithHeaderChunked)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -186,7 +186,7 @@ TEST(ResponseTest, ZeroChunkedWithHeader)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -205,7 +205,7 @@ TEST(ResponseTest, ZeroChunkedWithHeaderContent)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -225,7 +225,7 @@ TEST(ResponseTest, ZeroChunkedWithHeaderChunked)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -245,7 +245,7 @@ TEST(ResponseTest, FiveChunkedWithHeader)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -265,7 +265,7 @@ TEST(ResponseTest, FiveChunkedWithHeaderContent)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -286,7 +286,7 @@ TEST(ResponseTest, FiveChunkedWithHeaderChunked)
 {
     std::stringstream   ss;
     {
-        Response            response(ss);
+        Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
@@ -309,7 +309,7 @@ TEST(ResponseTest, HeadersHeaders)
     {
         std::stringstream   ss;
         {
-            Response            response(ss);
+            Response            response(ss, Version::HTTP1_1);
 
             HeaderResponse      headers;
             response.addHeaders(headers, Encoding::Chunked);

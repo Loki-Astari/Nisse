@@ -49,8 +49,9 @@ StatusCode const& StandardStatusCodeMap::operator[](int code)
 
 StandardStatusCodeMap standardCodes;
 
-Response::Response(std::ostream& stream, int responseCode)
-    : statusCode{standardCodes[responseCode]}
+Response::Response(std::ostream& stream, Version version, int responseCode)
+    : version{version}
+    , statusCode{standardCodes[responseCode]}
     , headerSent{false}
     , baseStream{stream}
 {}
@@ -60,7 +61,7 @@ Response::~Response()
     if (stream.rdbuf() == nullptr)
     {
         std::cerr << "\tSending minimum required data\n";
-        baseStream << "HTTP/1.1 " << statusCode << "\r\n"
+        baseStream << version << " " << statusCode << "\r\n"
                    << "\r\n";
     }
 }
@@ -85,7 +86,7 @@ std::ostream& Response::addHeaders(HeaderResponse const& headers, StreamBufOutpu
     if (headerSent) {
         ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers have already been sent");
     }
-    baseStream << "HTTP/1.1 " << statusCode << "\r\n"
+    baseStream << version << " " << statusCode << "\r\n"
                << headers
                << extraHeader
                << "\r\n"

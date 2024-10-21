@@ -9,12 +9,12 @@ ThorsAnvil::Nisse::PyntResult PyntHTTP::handleRequest(TAS::SocketStream& stream)
     Request     request(stream.getSocket().protocol(), stream);
     if (!request.isValidRequest())
     {
-        Response    clientError(stream, 400);
+        Response    clientError(stream, request.getVersion(), 400);
         clientError.addHeaders(request.failHeader(), 0);
         return PyntResult::More;
     }
 
-    Response    response(stream);
+    Response    response(stream, request.getVersion());
     this->processRequest(request, response);
     return PyntResult::More;
 }
