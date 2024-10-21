@@ -28,7 +28,7 @@ void PathMatcher::addPath(std::string pathMatch, Action&& action)
     paths.emplace_back(std::regex{expr}, std::move(names), std::move(action));
 }
 
-void PathMatcher::findMatch(std::string const& path, Request& request, Response& response)
+bool PathMatcher::findMatch(std::string const& path, Request& request, Response& response)
 {
     for (auto const& pathMatchInfo: paths)
     {
@@ -41,7 +41,8 @@ void PathMatcher::findMatch(std::string const& path, Request& request, Response&
                 result.insert({pathMatchInfo.names[loop], match[loop+1].str()});
             }
             pathMatchInfo.action(result, request, response);
-            break;
+            return true;
         }
     }
+    return false;
 }

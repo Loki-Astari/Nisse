@@ -101,9 +101,10 @@ void StreamBufOutput::done()
     if (chunked)
     {
         dumpBuffer();
-        sendAllData("0\r\n", 3);
+        sendAllData("0\r\n\r\n", 5);
         remaining = 0;
         chunked = false;
+        buffer->pubsync();
     }
 }
 

@@ -96,7 +96,7 @@ TEST(StreamOutputTest, WriteChunkedStream)
         streamOutput << data;
     }
 
-    EXPECT_EQ("24\r\nThis is sime test\nOne more line XXX\n\r\n0\r\n", ss.str());
+    EXPECT_EQ("24\r\nThis is sime test\nOne more line XXX\n\r\n0\r\n\r\n", ss.str());
 }
 
 TEST(StreamOutputTest, WriteChunkedStreamWithFlush)
@@ -109,7 +109,7 @@ TEST(StreamOutputTest, WriteChunkedStreamWithFlush)
         streamOutput << data1 << std::flush << data2;
     }
 
-    EXPECT_EQ("12\r\nThis is sime test\n\r\n12\r\nOne more line XXX\n\r\n0\r\n", ss.str());
+    EXPECT_EQ("12\r\nThis is sime test\n\r\n12\r\nOne more line XXX\n\r\n0\r\n\r\n", ss.str());
 }
 
 TEST(StreamOutputTest, WriteChunkedStreamWithFlushFlush)
@@ -122,7 +122,7 @@ TEST(StreamOutputTest, WriteChunkedStreamWithFlushFlush)
         streamOutput << data1 << std::flush << data2 << std::flush;
     }
 
-    EXPECT_EQ("12\r\nThis is sime test\n\r\n12\r\nOne more line XXX\n\r\n0\r\n", ss.str());
+    EXPECT_EQ("12\r\nThis is sime test\n\r\n12\r\nOne more line XXX\n\r\n0\r\n\r\n", ss.str());
 }
 
 TEST(StreamOutputTest, WriteChunkedWithBufferFill)
@@ -139,7 +139,7 @@ TEST(StreamOutputTest, WriteChunkedWithBufferFill)
     }
 
     using std::literals::string_literals::operator""s;
-    EXPECT_EQ("40C\r\n"s + block1000 + data1 + data2 + "\r\n0\r\n", ss.str());
+    EXPECT_EQ("40C\r\n"s + block1000 + data1 + data2 + "\r\n0\r\n\r\n", ss.str());
 }
 
 TEST(StreamOutputTest, LengthWithPut)
@@ -172,7 +172,7 @@ TEST(StreamOutputTest, ChunkedWithPut)
         streamOutput.put('a').put('b').put('c').put('d').put('e');
     }
 
-    EXPECT_EQ("5\r\nabcde\r\n0\r\n", ss.str());
+    EXPECT_EQ("5\r\nabcde\r\n0\r\n\r\n", ss.str());
 }
 
 TEST(StreamOutputTest, ChunkedWithPutWithMore)
@@ -184,6 +184,6 @@ TEST(StreamOutputTest, ChunkedWithPutWithMore)
         streamOutput << 15;
     }
 
-    EXPECT_EQ("7\r\nabcde15\r\n0\r\n", ss.str());
+    EXPECT_EQ("7\r\nabcde15\r\n0\r\n\r\n", ss.str());
 }
 

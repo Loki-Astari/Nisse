@@ -1,5 +1,6 @@
 #include "HTTPHandler.h"
 #include "Request.h"
+#include "Response.h"
 
 using namespace ThorsAnvil::Nisse::NisseHTTP;
 
@@ -12,7 +13,9 @@ void HTTPHandler::processRequest(Request& request, Response& response)
 {
     std::string path = normalize(request.getUrl().pathname());
 
-    pathMatcher.findMatch(path, request, response);
+    if (!pathMatcher.findMatch(path, request, response)) {
+        response.setStatus(404);
+    }
 }
 
 void HTTPHandler::addHeaders(RequestVariables& var, HeaderRequest const& headers)

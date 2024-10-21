@@ -13,6 +13,7 @@ TEST(ResponseTest, Construct)
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
+              "content-length: 0\r\n"
               "\r\n", ss.str());
 }
 
@@ -24,6 +25,7 @@ TEST(ResponseTest, ConstructNotStandard)
     }
 
     EXPECT_EQ("HTTP/1.1 404 Not Found\r\n"
+              "content-length: 0\r\n"
               "\r\n", ss.str());
 }
 
@@ -36,6 +38,7 @@ TEST(ResponseTest, SetStateAfter)
     }
 
     EXPECT_EQ("HTTP/1.1 511 Network Authentication Required\r\n"
+              "content-length: 0\r\n"
               "\r\n", ss.str());
 }
 
@@ -50,6 +53,7 @@ TEST(ResponseTest, AddLength)
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
+              "content-length: 0\r\n"
               "\r\n", ss.str());
 }
 
@@ -66,7 +70,7 @@ TEST(ResponseTest, AddChunked)
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
-              "0\r\n",
+              "0\r\n\r\n",
               ss.str());
 }
 
@@ -83,6 +87,7 @@ TEST(ResponseTest, ZeroLengthWithHeader)
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
+              "content-length: 0\r\n"
               "\r\n",
               ss.str());
 }
@@ -101,6 +106,7 @@ TEST(ResponseTest, ZeroLengthWithHeaderContent)
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
+              "content-length: 0\r\n"
               "\r\n",
               ss.str());
 }
@@ -119,6 +125,7 @@ TEST(ResponseTest, ZeroLengthWithHeaderChunked)
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
+              "content-length: 0\r\n"
               "\r\n",
               ss.str());
 }
@@ -197,7 +204,7 @@ TEST(ResponseTest, ZeroChunkedWithHeader)
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
-              "0\r\n",
+              "0\r\n\r\n",
               ss.str());
 }
 
@@ -217,7 +224,7 @@ TEST(ResponseTest, ZeroChunkedWithHeaderContent)
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
-              "0\r\n",
+              "0\r\n\r\n",
               ss.str());
 }
 
@@ -237,7 +244,7 @@ TEST(ResponseTest, ZeroChunkedWithHeaderChunked)
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
-              "0\r\n",
+              "0\r\n\r\n",
               ss.str());
 }
 
@@ -257,7 +264,7 @@ TEST(ResponseTest, FiveChunkedWithHeader)
               "transfer-encoding: chunked\r\n"
               "\r\n"
               "5\r\nabcde\r\n"
-              "0\r\n",
+              "0\r\n\r\n",
               ss.str());
 }
 
@@ -278,7 +285,7 @@ TEST(ResponseTest, FiveChunkedWithHeaderContent)
               "transfer-encoding: chunked\r\n"
               "\r\n"
               "5\r\nabcde\r\n"
-              "0\r\n",
+              "0\r\n\r\n",
               ss.str());
 }
 
@@ -299,7 +306,7 @@ TEST(ResponseTest, FiveChunkedWithHeaderChunked)
               "transfer-encoding: chunked\r\n"
               "\r\n"
               "5\r\nabcde\r\n"
-              "0\r\n",
+              "0\r\n\r\n",
               ss.str());
 }
 

@@ -62,7 +62,9 @@ Response::~Response()
     {
         std::cerr << "\tSending minimum required data\n";
         baseStream << version << " " << statusCode << "\r\n"
-                   << "\r\n";
+                   << "content-length: 0\r\n"
+                   << "\r\n"
+                   << std::flush;
     }
 }
 
@@ -78,7 +80,7 @@ std::ostream& Response::addHeaders(HeaderResponse const& headers, Encoding type)
 
 std::ostream& Response::addHeaders(HeaderResponse const& headers, std::size_t length)
 {
-    return addHeaders(headers, StreamBufOutput{baseStream, length}, length == 0 ? "" : "content-length: "s + std::to_string(length) + "\r\n");
+    return addHeaders(headers, StreamBufOutput{baseStream, length}, "content-length: "s + std::to_string(length) + "\r\n");
 }
 
 std::ostream& Response::addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader)

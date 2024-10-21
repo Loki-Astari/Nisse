@@ -31,7 +31,7 @@ class PathMatcher
     public:
         void addPath(std::string pathMatch, Action&& action);
 
-        void findMatch(std::string const& path, Request& request, Response& response);
+        bool findMatch(std::string const& path, Request& request, Response& response);
 };
 
 }
