@@ -145,7 +145,7 @@ bool Request::buildStream(std::istream& stream)
 {
     auto&   contentLength    = head.getHeader("content-length");
     auto&   transferEncoding = head.getHeader("transfer-encoding");
-    if (contentLength.size() == 1 && transferEncoding.size() != 0)
+    if (contentLength.size() != 0 && transferEncoding.size() != 0)
     {
         ThorsLogInfo("ThorsAnvil::Nisse::PyntHTTP::Request", "buildStream", ": Bad Request: Includes both 'content-length' and 'transfer-encoding'");
         failResponse.add("error", "Invalid HTTP Request- Includes both 'content-length' and 'transfer-encoding'");
@@ -157,9 +157,14 @@ bool Request::buildStream(std::istream& stream)
     }
 
 
-    if (contentLength.size() == 1)
+    if (transferEncoding.size() == 0)
     {
-        input.addBuffer(StreamBufInput(stream, std::stoi(contentLength[0])));
+        std::streamsize bodySize = 0;
+        if (contentLength.size() != 0)
+        {
+            bodySize = std::stoi(contentLength[0]);
+        }
+        input.addBuffer(StreamBufInput(stream, bodySize));
         return true;
     }
     if (transferEncoding.size() != 0 && transferEncoding.size() == 1 && transferEncoding[0] == "chunked")

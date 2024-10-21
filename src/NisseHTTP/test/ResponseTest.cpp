@@ -12,7 +12,7 @@ TEST(ResponseTest, Construct)
         Response            response(ss);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "\r\n", ss.str());
 }
 
@@ -23,7 +23,7 @@ TEST(ResponseTest, ConstructNotStandard)
         Response            response(ss, 404);
     }
 
-    EXPECT_EQ("404 Not Found\r\n"
+    EXPECT_EQ("HTTP/1.1 404 Not Found\r\n"
               "\r\n", ss.str());
 }
 
@@ -35,7 +35,7 @@ TEST(ResponseTest, SetStateAfter)
         response.setStatus(511);
     }
 
-    EXPECT_EQ("511 Network Authentication Required\r\n"
+    EXPECT_EQ("HTTP/1.1 511 Network Authentication Required\r\n"
               "\r\n", ss.str());
 }
 
@@ -49,7 +49,7 @@ TEST(ResponseTest, AddLength)
         response.addHeaders(headers, 0);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "\r\n", ss.str());
 }
 
@@ -63,7 +63,7 @@ TEST(ResponseTest, AddChunked)
         response.addHeaders(headers, Encoding::Chunked);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
               "0\r\n",
@@ -81,7 +81,7 @@ TEST(ResponseTest, ZeroLengthWithHeader)
         response.addHeaders(headers, 0);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "\r\n",
               ss.str());
@@ -99,7 +99,7 @@ TEST(ResponseTest, ZeroLengthWithHeaderContent)
         response.addHeaders(headers, 0);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "\r\n",
               ss.str());
@@ -117,7 +117,7 @@ TEST(ResponseTest, ZeroLengthWithHeaderChunked)
         response.addHeaders(headers, 0);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "\r\n",
               ss.str());
@@ -134,7 +134,7 @@ TEST(ResponseTest, FiveLengthWithHeader)
         response.addHeaders(headers, 5) << "abcde";
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "content-length: 5\r\n"
               "\r\n"
@@ -154,7 +154,7 @@ TEST(ResponseTest, FiveLengthWithHeaderContent)
         response.addHeaders(headers, 5) << "abcde";
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "content-length: 5\r\n"
               "\r\n"
@@ -174,7 +174,7 @@ TEST(ResponseTest, FiveLengthWithHeaderChunked)
         response.addHeaders(headers, 5) << "abcde";
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "content-length: 5\r\n"
               "\r\n"
@@ -193,7 +193,7 @@ TEST(ResponseTest, ZeroChunkedWithHeader)
         response.addHeaders(headers, Encoding::Chunked);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
@@ -213,7 +213,7 @@ TEST(ResponseTest, ZeroChunkedWithHeaderContent)
         response.addHeaders(headers, Encoding::Chunked);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
@@ -233,7 +233,7 @@ TEST(ResponseTest, ZeroChunkedWithHeaderChunked)
         response.addHeaders(headers, Encoding::Chunked);
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
@@ -252,7 +252,7 @@ TEST(ResponseTest, FiveChunkedWithHeader)
         response.addHeaders(headers, Encoding::Chunked) << "abcde";
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
@@ -273,7 +273,7 @@ TEST(ResponseTest, FiveChunkedWithHeaderContent)
         response.addHeaders(headers, Encoding::Chunked) << "abcde";
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"
@@ -294,7 +294,7 @@ TEST(ResponseTest, FiveChunkedWithHeaderChunked)
         response.addHeaders(headers, Encoding::Chunked) << "abcde";
     }
 
-    EXPECT_EQ("200 OK\r\n"
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
               "twist: drive\r\n"
               "transfer-encoding: chunked\r\n"
               "\r\n"

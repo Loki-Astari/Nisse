@@ -60,7 +60,7 @@ Response::~Response()
     if (stream.rdbuf() == nullptr)
     {
         std::cerr << "\tSending minimum required data\n";
-        baseStream << statusCode
+        baseStream << "HTTP/1.1 " << statusCode << "\r\n"
                    << "\r\n";
     }
 }
@@ -85,7 +85,7 @@ std::ostream& Response::addHeaders(HeaderResponse const& headers, StreamBufOutpu
     if (headerSent) {
         ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers have already been sent");
     }
-    baseStream << statusCode
+    baseStream << "HTTP/1.1 " << statusCode << "\r\n"
                << headers
                << extraHeader
                << "\r\n"

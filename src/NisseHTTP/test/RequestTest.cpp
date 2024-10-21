@@ -278,7 +278,10 @@ TEST(RequestTest, MissingContentSize)
                               };
     Request request("http", stream);
 
-    EXPECT_FALSE(request.isValidRequest());
+    // No content-length is OK.
+    // If no encoding and no content-length the body is 0 bytes
+
+    EXPECT_TRUE(request.isValidRequest());
 }
 
 TEST(RequestTest, ContentLength)

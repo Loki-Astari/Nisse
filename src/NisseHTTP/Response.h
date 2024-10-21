@@ -19,7 +19,7 @@ struct StatusCode
 
     friend std::ostream& operator<<(std::ostream& stream, StatusCode const& statusCode)
     {
-        return stream << statusCode.code << " " << statusCode.message << "\r\n";
+        return stream << statusCode.code << " " << statusCode.message;
     }
 };
 
