@@ -29,6 +29,7 @@ void Store::requestChange(T&& update)
 
 template void Store::requestChange<StateUpdateCreateServer>(StateUpdateCreateServer&& update);
 template void Store::requestChange<StateUpdateCreateStream>(StateUpdateCreateStream&& update);
+template void Store::requestChange<StateUpdateCreateLinkStream>(StateUpdateCreateLinkStream&& update);
 template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
 template void Store::requestChange<StateUpdateRestoreWrite>(StateUpdateRestoreWrite&& update);
@@ -73,6 +74,24 @@ void Store::operator()(StateUpdateCreateStream& update)
     data.coRoutine = update.coRoutineCreator(data);
     data.readEvent.add();
 };
+
+void Store::operator()(StateUpdateCreateLinkStream& update)
+{
+    auto find = data.find(update.linkedStream);
+    if (find == data.end()) {
+        return;
+    }
+    StoreData&  linkedData          = find->second;
+    StreamData& linkedStreamData    = std::get<StreamData>(linkedData);
+    CoRoutine&  linkedStreamCo      = linkedStreamData.coRoutine;
+
+    data.insert_or_assign(update.fd,
+                            LinkedStreamData{std::move(update.stream),
+                                             &linkedStreamCo,
+                                             std::move(update.readEvent),
+                                             std::move(update.writeEvent)
+                                            });
+}
 
 void Store::operator()(StateUpdateRemove& update)
 {

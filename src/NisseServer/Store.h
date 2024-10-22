@@ -89,6 +89,15 @@ struct StateUpdateCreateStream
     Pynt&               pynt;
 };
 
+struct StateUpdateCreateLinkStream
+{
+    int                 fd;
+    TAS::SocketStream   stream;
+    int                 linkedStream;
+    Event               readEvent;
+    Event               writeEvent;
+};
+
 struct StateUpdateRemove
 {
     int     fd;
@@ -105,7 +114,7 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -131,14 +140,16 @@ class Store
             ApplyUpdate(Store& store)
                 : store(store)
             {}
-            void operator()(StateUpdateCreateServer& update){store(update);}
-            void operator()(StateUpdateCreateStream& update){store(update);}
-            void operator()(StateUpdateRemove& update)      {store(update);}
-            void operator()(StateUpdateRestoreRead& update) {store(update);}
-            void operator()(StateUpdateRestoreWrite& update){store(update);}
+            void operator()(StateUpdateCreateServer& update)    {store(update);}
+            void operator()(StateUpdateCreateStream& update)    {store(update);}
+            void operator()(StateUpdateCreateLinkStream& update){store(update);}
+            void operator()(StateUpdateRemove& update)          {store(update);}
+            void operator()(StateUpdateRestoreRead& update)     {store(update);}
+            void operator()(StateUpdateRestoreWrite& update)    {store(update);}
         };
         void operator()(StateUpdateCreateServer& update);
         void operator()(StateUpdateCreateStream& update);
+        void operator()(StateUpdateCreateLinkStream& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);
         void operator()(StateUpdateRestoreWrite& update);
