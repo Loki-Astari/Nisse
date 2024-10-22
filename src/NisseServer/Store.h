@@ -57,7 +57,6 @@ struct StreamData
 };
 struct LinkedStreamData
 {
-    TAS::SocketStream   stream;
     CoRoutine*          linkedStreamCoRoutine;
     Event               readEvent;
     Event               writeEvent;
@@ -92,8 +91,8 @@ struct StateUpdateCreateStream
 struct StateUpdateCreateLinkStream
 {
     int                 fd;
-    TAS::SocketStream   stream;
     int                 linkedStream;
+    EventType           initialWait;
     Event               readEvent;
     Event               writeEvent;
 };

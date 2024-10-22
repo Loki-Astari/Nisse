@@ -3,7 +3,10 @@
 
 #include "NisseConfig.h"
 #include "NisseUtil.h"
+#include "EventHandlerLibEvent.h"
+#include <ThorsSocket/Socket.h>
 
+namespace TAS = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse
 {
 
@@ -15,11 +18,9 @@ class Context
     Yield&          yield;
     int             owner;
     public:
-        Context(NisseServer& server, Yield& yield, int owner)
-            : server{server}
-            , yield{yield}
-            , owner{owner}
-        {}
+        Context(NisseServer& server, Yield& yield, int owner);
+        void registerLocalSocket(TAS::Socket& socket, EventType initialWait);
+        void unregisterLocalSocket(TAS::Socket& socket);
 };
 
 }

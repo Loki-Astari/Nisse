@@ -85,12 +85,18 @@ void Store::operator()(StateUpdateCreateLinkStream& update)
     StreamData& linkedStreamData    = std::get<StreamData>(linkedData);
     CoRoutine&  linkedStreamCo      = linkedStreamData.coRoutine;
 
-    data.insert_or_assign(update.fd,
-                            LinkedStreamData{std::move(update.stream),
-                                             &linkedStreamCo,
-                                             std::move(update.readEvent),
-                                             std::move(update.writeEvent)
-                                            });
+    auto [iter, ok] = data.insert_or_assign(update.fd,
+                                            LinkedStreamData{&linkedStreamCo,
+                                                             std::move(update.readEvent),
+                                                             std::move(update.writeEvent)
+                                                            });
+    StreamData& data = std::get<StreamData>(iter->second);
+    if (update.initialWait == EventType::Read) {
+        data.readEvent.add();
+    }
+    else {
+        data.writeEvent.add();
+    }
 }
 
 void Store::operator()(StateUpdateRemove& update)

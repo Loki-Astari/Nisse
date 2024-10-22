@@ -59,6 +59,8 @@ class EventHandler
         void stop();
         void add(TAS::Server&& stream, ServerCreator&& creator, Pynt& pynt);
         void add(TAS::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
+        void addLinkedStream(int fd, int owner, EventType initialWait);
+        void remLinkedStream(int fd);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);

@@ -24,8 +24,12 @@
 namespace ThorsAnvil::Nisse
 {
 
+class Context;
+
 class NisseServer
 {
+    friend class Context;
+
     JobQueue                        jobQueue;
     Store                           store;
     EventHandler                    eventHandler;

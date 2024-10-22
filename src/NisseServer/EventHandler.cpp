@@ -77,6 +77,21 @@ void EventHandler::add(TAS::SocketStream&& stream, StreamCreator&& streamCreator
                                                });
 }
 
+void EventHandler::addLinkedStream(int fd, int owner, EventType initialWait)
+{
+    store.requestChange(StateUpdateCreateLinkStream{fd,
+                                                    owner,
+                                                    initialWait,
+                                                    Event{eventBase, fd, EventType::Read, *this},
+                                                    Event{eventBase, fd, EventType::Write, *this},
+                                                   });
+}
+
+void EventHandler::remLinkedStream(int fd)
+{
+    store.requestChange(StateUpdateRemove{fd});
+}
+
 void EventHandler::eventAction(int fd, EventType type)
 {
     StoreData& info = store.getStoreData(fd);
