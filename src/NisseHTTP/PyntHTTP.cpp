@@ -4,9 +4,9 @@
 
 using namespace ThorsAnvil::Nisse::NisseHTTP;
 
-ThorsAnvil::Nisse::PyntResult PyntHTTP::handleRequest(TAS::SocketStream& stream, ThorsAnvil::Nisse::Context&)
+ThorsAnvil::Nisse::PyntResult PyntHTTP::handleRequest(TAS::SocketStream& stream, ThorsAnvil::Nisse::Context& context)
 {
-    Request     request(stream.getSocket().protocol(), stream);
+    Request     request(context, stream.getSocket().protocol(), stream);
     if (!request.isValidRequest())
     {
         Response    clientError(stream, request.getVersion(), 400);

@@ -7,7 +7,22 @@
 using namespace ThorsAnvil::Nisse::NisseHTTP;
 
 Request::Request(std::string_view proto, std::istream& stream)
-    : version{Version::Unknown}
+    : context(nullptr)
+    , version{Version::Unknown}
+    , method{Method::Other}
+{
+    std::string_view path = readFirstLine(stream);
+    if (path.size() != 0)
+    {
+        readHeaders(head, stream)   &&
+        buildURL(proto, path)       &&
+        buildStream(stream);
+    }
+}
+
+Request::Request(ThorsAnvil::Nisse::Context& context, std::string_view proto, std::istream& stream)
+    : context(&context)
+    , version{Version::Unknown}
     , method{Method::Other}
 {
     std::string_view path = readFirstLine(stream);

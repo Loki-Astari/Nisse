@@ -6,6 +6,7 @@
 #include "HeaderRequest.h"
 #include "HeaderResponse.h"
 #include "StreamInput.h"
+#include "NisseServer/Context.h"
 #include <istream>
 
 namespace ThorsAnvil::Nisse::NisseHTTP
@@ -13,6 +14,7 @@ namespace ThorsAnvil::Nisse::NisseHTTP
 
 class Request
 {
+    Context*            context;
     std::string         messageHeader;
     Version             version;
     Method              method;
@@ -27,6 +29,8 @@ class Request
     std::unique_ptr<std::streambuf> streamBuf;
     public:
         Request(std::string_view proto, std::istream& stream);
+        Request(Context& context, std::string_view proto, std::istream& stream);
+        Context&                getContext()    const   {return *context;}
         Version                 getVersion()    const   {return version;}
         Method                  getMethod()     const   {return method;}
         URL const&              getUrl()        const   {return url;}
