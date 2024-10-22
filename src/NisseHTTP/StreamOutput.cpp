@@ -103,9 +103,11 @@ void StreamBufOutput::done()
     if (chunked)
     {
         dumpBuffer();
+        //std::cerr << "Sending Tail\n";
         sendAllData("0\r\n\r\n", 5);
         remaining = 0;
         chunked = false;
+        //std::cerr << "Sync Buffer\n";
         buffer->pubsync();
     }
 }

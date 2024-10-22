@@ -90,7 +90,7 @@ void Store::operator()(StateUpdateCreateLinkStream& update)
                                                              std::move(update.readEvent),
                                                              std::move(update.writeEvent)
                                                             });
-    StreamData& data = std::get<StreamData>(iter->second);
+    LinkedStreamData& data = std::get<LinkedStreamData>(iter->second);
     if (update.initialWait == EventType::Read) {
         data.readEvent.add();
     }

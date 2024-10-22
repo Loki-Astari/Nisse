@@ -21,15 +21,15 @@ void addFiles(ThorsAnvil::Nisse::NisseHTTP::HTTPHandler& http)
 
         std::string                     fileName = normalize("/Users/martinyork/Repo/Nisse/src/SimpleServer/content"s, request.variables()["file"]);
         ThorsAnvil::Nisse::IFStream     file(fileName, request.getContext());
-        if (!file)
-        {
-            response.setStatus(404);
-            response.addHeaders(header, 0);
-        }
-        else
+        if (file)
         {
             response.addHeaders(header, ThorsAnvil::Nisse::NisseHTTP::Encoding::Chunked)
                 << file.rdbuf();
+        }
+        else
+        {
+            response.setStatus(404);
+            response.addHeaders(header, 0);
         }
     });
 }
