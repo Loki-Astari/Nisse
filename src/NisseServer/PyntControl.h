@@ -20,7 +20,7 @@ class PyntControl: public Pynt
     NisseServer&    server;
     public:
         PyntControl(NisseServer& server);
-        virtual PyntResult handleRequest(TAS::SocketStream& stream) override;
+        virtual PyntResult handleRequest(TAS::SocketStream& stream, Context& context) override;
 };
 
 }

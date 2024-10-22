@@ -19,7 +19,7 @@ class HTTPHandler: public PyntHTTP
     PathMatcher             pathMatcher;
     std::vector<HTTPAction> actions;
     public:
-        virtual void       processRequest(Request& request, Response& response);
+        virtual void       processRequest(Request& request, Response& response) override;
 
         void addPath(std::string const& path, HTTPAction&& action);
     private:

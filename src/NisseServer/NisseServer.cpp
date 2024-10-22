@@ -1,5 +1,6 @@
 #include "NisseServer.h"
 #include "EventHandler.h"
+#include "Context.h"
 
 namespace TAS   = ThorsAnvil::ThorsSocket;
 using namespace ThorsAnvil::Nisse;
@@ -26,9 +27,10 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
     // By the `EventHandler::addJob()` function.
     return CoRoutine
     {
-        [&info](Yield& yield)
+        [&info, &server = *this](Yield& yield)
         {
             int socketId = info.stream.getSocket().socketId();
+            Context     context{server, yield, socketId};
             // Set the socket to work asynchronously.
             info.stream.getSocket().setReadYield([&yield, socketId](){yield({TaskYieldState::RestoreRead, socketId});return true;});
             info.stream.getSocket().setWriteYield([&yield, socketId](){yield({TaskYieldState::RestoreWrite, socketId});return true;});
@@ -37,11 +39,11 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             // The next call will happen when there is data available on the file descriptor.
             yield({TaskYieldState::RestoreRead, socketId});
 
-            PyntResult result = info.pynt->handleRequest(info.stream);
+            PyntResult result = info.pynt->handleRequest(info.stream, context);
             while (result == PyntResult::More)
             {
                 yield({TaskYieldState::RestoreRead, socketId});
-                result = info.pynt->handleRequest(info.stream);
+                result = info.pynt->handleRequest(info.stream, context);
             }
             // We are all done
             // So indicate that we should tidy up state.

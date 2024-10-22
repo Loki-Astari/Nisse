@@ -21,7 +21,7 @@ class Response;
 class PyntHTTP: public Pynt
 {
     public:
-        virtual PyntResult handleRequest(TAS::SocketStream& stream);
+        virtual PyntResult handleRequest(TAS::SocketStream& stream, Context& context) override;
         virtual void       processRequest(Request& request, Response& response) = 0;
 };
 
