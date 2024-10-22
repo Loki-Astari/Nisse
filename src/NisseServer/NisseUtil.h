@@ -23,13 +23,18 @@ struct StreamData;
  * See EventHandler for details.
  */
 enum class TaskYieldState        {RestoreRead, RestoreWrite, Remove};
+struct TaskYieldAction
+{
+    TaskYieldState      state;
+    int                 fd;
+};
 
 /*
  * The types need to do the work.
  * Created by the Server object.
  */
-using CoRoutine     = boost::coroutines2::coroutine<TaskYieldState>::pull_type;
-using Yield         = boost::coroutines2::coroutine<TaskYieldState>::push_type;
+using CoRoutine     = boost::coroutines2::coroutine<TaskYieldAction>::pull_type;
+using Yield         = boost::coroutines2::coroutine<TaskYieldAction>::push_type;
 using ServerTask    = std::function<void(TAS::Server& stream, Yield& yield)>;
 using StreamTask    = std::function<void(TAS::SocketStream& stream, Yield& yield)>;
 using ServerCreator = std::function<CoRoutine(ServerData&)>;

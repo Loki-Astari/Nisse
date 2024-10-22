@@ -96,7 +96,7 @@ void Store::operator()(StateUpdateRestoreWrite& update)
 {
     struct RestoreWrite
     {
-        void operator()(ServerData& update) {}
+        void operator()(ServerData&)        {}
         void operator()(StreamData& update) {update.writeEvent.add();}
     };
     auto find = data.find(update.fd);

@@ -115,7 +115,7 @@ void EventHandler::addJob(CoRoutine& work, int fd)
      */
     jobQueue.addJob([&work, fd, &store = this->store]()
     {
-        TaskYieldState task = TaskYieldState::Remove;
+        TaskYieldAction task = {TaskYieldState::Remove, fd};
         try
         {
             if (work()) {
@@ -130,16 +130,16 @@ void EventHandler::addJob(CoRoutine& work, int fd)
         {
             ThorsLogWarning("ThorsAnvil::Nissa::EventHandler::", "addJob", "jobQueue::job: Ignoring Exception: Unknown");
         }
-        switch (task)
+        switch (task.state)
         {
             case TaskYieldState::Remove:
-                store.requestChange(StateUpdateRemove{fd});
+                store.requestChange(StateUpdateRemove{task.fd});
                 break;
             case TaskYieldState::RestoreRead:
-                store.requestChange(StateUpdateRestoreRead{fd});
+                store.requestChange(StateUpdateRestoreRead{task.fd});
                 break;
             case TaskYieldState::RestoreWrite:
-                store.requestChange(StateUpdateRestoreWrite{fd});
+                store.requestChange(StateUpdateRestoreWrite{task.fd});
                 break;
         }
     });

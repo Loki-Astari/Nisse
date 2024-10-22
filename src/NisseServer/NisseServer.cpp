@@ -28,23 +28,24 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
     {
         [&info](Yield& yield)
         {
+            int socketId = info.stream.getSocket().socketId();
             // Set the socket to work asynchronously.
-            info.stream.getSocket().setReadYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
-            info.stream.getSocket().setWriteYield([&yield](){yield(TaskYieldState::RestoreWrite);return true;});
+            info.stream.getSocket().setReadYield([&yield, socketId](){yield({TaskYieldState::RestoreRead, socketId});return true;});
+            info.stream.getSocket().setWriteYield([&yield, socketId](){yield({TaskYieldState::RestoreWrite, socketId});return true;});
 
             // Return control to the creator.
             // The next call will happen when there is data available on the file descriptor.
-            yield(TaskYieldState::RestoreRead);
+            yield({TaskYieldState::RestoreRead, socketId});
 
             PyntResult result = info.pynt->handleRequest(info.stream);
             while (result == PyntResult::More)
             {
-                yield(TaskYieldState::RestoreRead);
+                yield({TaskYieldState::RestoreRead, socketId});
                 result = info.pynt->handleRequest(info.stream);
             }
             // We are all done
             // So indicate that we should tidy up state.
-            yield(TaskYieldState::Remove);
+            yield({TaskYieldState::Remove, socketId});
         }
     };
 }
@@ -57,12 +58,13 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
     {
         [&](Yield& yield)
         {
+            int socketId = info.server.socketId();
             // Set the socket to work asynchronously.
-            info.server.setYield([&yield](){yield(TaskYieldState::RestoreRead);return true;});
+            info.server.setYield([&yield, socketId](){yield({TaskYieldState::RestoreRead, socketId});return true;});
 
             // Return control to the creator.
             // The next call will happen when there is data available on the file descriptor.
-            yield(TaskYieldState::RestoreRead);
+            yield({TaskYieldState::RestoreRead, socketId});
 
             while (true)
             {
@@ -74,11 +76,11 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
                     // Note: The "Pynt" functionality is not run yet. The socket must be available to use.
                     eventHandler.add(TAS::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
                 }
-                yield(TaskYieldState::RestoreRead);
+                yield({TaskYieldState::RestoreRead, socketId});
             }
             // We are all done
             // So indicate that we should tidy up state.
-            yield(TaskYieldState::Remove);
+            yield({TaskYieldState::Remove, socketId});
         }
     };
 }
