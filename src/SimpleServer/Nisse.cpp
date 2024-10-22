@@ -44,9 +44,6 @@ int main(int argc, char* argv[])
     //      On how to get a free signed site certificate.
     TAS::ServerInfo      initPort{port+1};
 
-    // Set up the server
-    ThorsAnvil::Nisse::NisseServer              server;
-
     // Processes HTTP connection on port.
     ThorsAnvil::Nisse::NisseHTTP::HTTPHandler   http;
     http.addPath("/HW{Who}.html", [](ThorsAnvil::Nisse::NisseHTTP::Request& request, ThorsAnvil::Nisse::NisseHTTP::Response& response)
@@ -74,10 +71,17 @@ int main(int argc, char* argv[])
 )";
     });
 
+    // Set up the server
+    ThorsAnvil::Nisse::NisseServer              server;
 
+#ifdef CERTIFICATE_INFO
     server.listen(initPortSSL, http);
+#endif
     server.listen(initPort, http);
 
+    // This interface does nothing.
+    // But if you connect to it (port+2) it will cleanly shutdown the server.
+    // But you can hit ctrl-c will usually work.
     ThorsAnvil::Nisse::PyntControl  control(server);
     server.listen(TAS::ServerInfo{port+2}, control);
     server.run();
