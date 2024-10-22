@@ -83,8 +83,9 @@ void Store::operator()(StateUpdateRestoreRead& update)
 {
     struct RestoreRead
     {
-        void operator()(ServerData& update) {update.readEvent.add();}
-        void operator()(StreamData& update) {update.readEvent.add();}
+        void operator()(ServerData& update)         {update.readEvent.add();}
+        void operator()(StreamData& update)         {update.readEvent.add();}
+        void operator()(LinkedStreamData& update)   {update.readEvent.add();}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {
@@ -96,8 +97,9 @@ void Store::operator()(StateUpdateRestoreWrite& update)
 {
     struct RestoreWrite
     {
-        void operator()(ServerData&)        {}
-        void operator()(StreamData& update) {update.writeEvent.add();}
+        void operator()(ServerData&)                {}
+        void operator()(StreamData& update)         {update.writeEvent.add();}
+        void operator()(LinkedStreamData& update)   {update.writeEvent.add();}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {

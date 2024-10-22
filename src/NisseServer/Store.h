@@ -55,8 +55,15 @@ struct StreamData
     Event               writeEvent;
     Pynt*               pynt;
 };
+struct LinkedStreamData
+{
+    TAS::SocketStream   stream;
+    CoRoutine*          linkedStreamCoRoutine;
+    Event               readEvent;
+    Event               writeEvent;
+};
 
-using StoreData = std::variant<ServerData, StreamData>;
+using StoreData = std::variant<ServerData, StreamData, LinkedStreamData>;
 
 
 /*

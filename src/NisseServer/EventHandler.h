@@ -40,6 +40,7 @@ class JobQueue;
 class Store;
 struct StreamData;
 struct ServerData;
+struct LinkedStreamData;
 
 class EventHandler
 {
@@ -78,9 +79,9 @@ class EventHandler
                 , fd(fd)
                 , type(type)
             {}
-            void operator()(ServerData& info) {handler.addJob(info.coRoutine, fd);}
-            void operator()(StreamData& info) {if (handler.checkFileDescriptorOK(fd, type)) {handler.addJob(info.coRoutine, fd);}}
-
+            void operator()(ServerData& info)       {handler.addJob(info.coRoutine, fd);}
+            void operator()(StreamData& info)       {if (handler.checkFileDescriptorOK(fd, type)) {handler.addJob(info.coRoutine, fd);}}
+            void operator()(LinkedStreamData& info) {handler.addJob(*(info.linkedStreamCoRoutine), fd);}
         };
         bool checkFileDescriptorOK(int fd, EventType type);
         void addJob(CoRoutine& work, int fd);
