@@ -61,8 +61,11 @@ Response::~Response()
     if (stream.rdbuf() == nullptr)
     {
         std::cerr << "\tSending minimum required data\n";
-        baseStream << version << " " << statusCode << "\r\n"
-                   << "content-length: 0\r\n"
+        if (!headerSent) {
+            baseStream << version << " " << statusCode << "\r\n";
+            headerSent = true;
+        }
+        baseStream << "content-length: 0\r\n"
                    << "\r\n"
                    << std::flush;
     }
@@ -90,17 +93,27 @@ void Response::read(std::istream& stream)
     }
 }
 
-std::ostream& Response::addHeaders(HeaderResponse const& headers, BodyEncoding bodyEncoding)
+void Response::addHeaders(HeaderResponse const& headers)
 {
-    if (headerSent) {
-        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers have already been sent");
+    if (stream.rdbuf() != nullptr) {
+        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers can not be sent after the body has been started");
     }
-    baseStream << version << " " << statusCode << "\r\n"
-               << headers
-               << bodyEncoding
+
+    if (!headerSent) {
+        baseStream << version << " " << statusCode << "\r\n";
+        headerSent = true;
+    }
+    baseStream << headers;
+}
+
+std::ostream& Response::body(BodyEncoding bodyEncoding)
+{
+    if (!headerSent) {
+        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers should be sent before getting the body");
+    }
+    baseStream << bodyEncoding
                << "\r\n"
                << std::flush;
-    headerSent = true;
 
     stream.addBuffer(StreamBufOutput{baseStream, bodyEncoding});
     return stream;

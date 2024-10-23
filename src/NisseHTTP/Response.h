@@ -50,7 +50,8 @@ class Response
         friend std::istream& operator>>(std::istream& stream, Response& response)  {response.read(stream);return stream;}
         void read(std::istream& stream);
 
-        std::ostream&       addHeaders(HeaderResponse const& headers, BodyEncoding encoding);
+        void addHeaders(HeaderResponse const& headers);
+        std::ostream& body(BodyEncoding encoding);
 };
 
 }
