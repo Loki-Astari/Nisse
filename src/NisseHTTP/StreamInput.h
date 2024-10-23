@@ -23,8 +23,7 @@ class StreamBufInput: public std::streambuf
         Complete            complete;
     public:
         StreamBufInput(Complete&& complete = [](){});
-        StreamBufInput(std::istream& stream, std::streamsize length, Complete&& complete = [](){});
-        StreamBufInput(std::istream& stream, Encoding encoding, Complete&& complete = [](){});
+        StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete = [](){});
         StreamBufInput(StreamBufInput&& move)                   noexcept;
         StreamBufInput& operator=(StreamBufInput&& move)        noexcept;
         StreamBufInput(StreamBufInput const&)                   = delete;
@@ -55,13 +54,7 @@ class StreamInput: public std::istream
             : std::istream(nullptr)
             , buffer()
         {}
-        StreamInput(std::istream& stream, std::size_t length)
-            : std::istream(nullptr)
-            , buffer(stream, length)
-        {
-            rdbuf(&buffer);
-        }
-        StreamInput(std::istream& stream, Encoding encoding)
+        StreamInput(std::istream& stream, BodyEncoding encoding)
             : std::istream(nullptr)
             , buffer(stream, encoding)
         {

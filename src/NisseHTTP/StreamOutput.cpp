@@ -30,6 +30,7 @@ StreamBufOutput::StreamBufOutput(std::ostream& stream, BodyEncoding bodyEncoding
         BodyEncodingInit(StreamBufOutput* self)
             : self(self)
         {}
+        void operator()(std::size_t contentLength)              {self->remaining = contentLength;}
         void operator()(std::streamsize contentLength)          {self->remaining = contentLength;}
         void operator()(Encoding /*encoding (Always chunked)*/) {self->remaining = chunkBufferSize; self->chunked = true; self->firstChunk = true;self->chunkBuffer.resize(chunkBufferSize);}
     };

@@ -10,21 +10,25 @@ StreamBufInput::StreamBufInput(Complete&& complete)
     , complete{std::move(complete)}
 {}
 
-StreamBufInput::StreamBufInput(std::istream& stream, std::streamsize length, Complete&& complete)
-    : remaining{length}
+StreamBufInput::StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete)
+    : remaining{0}
     , buffer{stream.rdbuf()}
     , chunked{false}
     , firstChunk{false}
     , complete{std::move(complete)}
-{}
-
-StreamBufInput::StreamBufInput(std::istream& stream, Encoding /*encoding*/, Complete&& complete)
-    : remaining{0}
-    , buffer{stream.rdbuf()}
-    , chunked{true}
-    , firstChunk{true}
-    , complete{std::move(complete)}
-{}
+{
+    struct BodyEncodingInit
+    {
+        StreamBufInput* self;
+        BodyEncodingInit(StreamBufInput* self)
+            : self(self)
+        {}
+        void operator()(std::size_t contentLength)      {self->remaining = contentLength;}
+        void operator()(std::streamsize contentLength)  {self->remaining = contentLength;}
+        void operator()(Encoding /*encoding*/)          {self->chunked = true; self->firstChunk = true;}
+    };
+    std::visit(BodyEncodingInit{this}, encoding);
+}
 
 StreamBufInput::StreamBufInput(StreamBufInput&& move) noexcept
     : remaining{std::exchange(move.remaining, 0)}

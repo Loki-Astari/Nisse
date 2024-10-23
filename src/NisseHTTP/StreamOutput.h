@@ -67,13 +67,7 @@ class StreamOutput: public std::ostream
             : std::ostream(nullptr)
             , buffer()
         {}
-        StreamOutput(std::ostream& stream, std::streamsize length)
-            : std::ostream(nullptr)
-            , buffer(stream, length)
-        {
-            rdbuf(&buffer);
-        }
-        StreamOutput(std::ostream& stream, Encoding encoding)
+        StreamOutput(std::ostream& stream, BodyEncoding encoding)
             : std::ostream(nullptr)
             , buffer(stream, encoding)
         {

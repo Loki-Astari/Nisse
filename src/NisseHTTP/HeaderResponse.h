@@ -10,12 +10,6 @@
 namespace ThorsAnvil::Nisse::HTTP
 {
 
-inline bool ichar_equals(char a, char b)
-{
-    return std::tolower(static_cast<unsigned char>(a)) ==
-           std::tolower(static_cast<unsigned char>(b));
-}
-
 class HeaderResponse
 {
     std::map<std::string, std::string>  headers;

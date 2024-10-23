@@ -4,6 +4,7 @@
 #include "NisseHTTPConfig.h"
 #include "Util.h"
 #include "HeaderResponse.h"
+#include "HeaderPassThrough.h"
 #include "StreamOutput.h"
 #include <set>
 #include <ostream>
@@ -50,7 +51,9 @@ class Response
         friend std::istream& operator>>(std::istream& stream, Response& response)  {response.read(stream);return stream;}
         void read(std::istream& stream);
 
-        void addHeaders(HeaderResponse const& headers);
+        using Header = std::variant<std::reference_wrapper<HeaderResponse const>, std::reference_wrapper<HeaderPassThrough const>>;
+
+        void addHeaders(Header const& headers);
         std::ostream& body(BodyEncoding encoding);
 };
 

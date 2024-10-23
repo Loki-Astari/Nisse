@@ -28,13 +28,13 @@ void addFiles(NHTTP::HTTPHandler& http)
 
         if (file)
         {
-            response.addHeaders(header, NHTTP::Encoding::Chunked)
-                << file.rdbuf();
+            response.addHeaders(header);
+            response.body(NHTTP::Encoding::Chunked) << file.rdbuf();
         }
         else
         {
             response.setStatus(404);
-            response.addHeaders(header, 0);
+            response.addHeaders(header);
         }
     });
 }

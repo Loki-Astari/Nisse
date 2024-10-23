@@ -8,13 +8,11 @@ namespace ThorsAnvil::Nisse::HTTP
 {
 std::ostream& operator<<(std::ostream& stream, Version const& v)
 {
-    switch (v)
-    {
-        case Version::HTTP1_0:  stream << "HTTP/1.0";break;
-        case Version::HTTP1_1:  stream << "HTTP/1.1";break;
-        case Version::HTTP2:    stream << "HTTP/2";break;
-        case Version::HTTP3:    stream << "HTTP/3";break;
-        case Version::Unknown:  break;
+    static const std::map<Version, std::string> versionMap = {{Version::HTTP1_0, "HTTP/1.0"}, {Version::HTTP1_1, "HTTP/1.1"}, {Version::HTTP2, "HTTP/2"}, {Version::HTTP3, "HTTP/3"}};
+
+    auto find = versionMap.find(v);
+    if (find != versionMap.end()) {
+        stream << find->second;
     }
     return stream;
 }
@@ -48,6 +46,7 @@ std::ostream& operator<<(std::ostream& stream, BodyEncoding const& bodyEncoding)
         BodyEncodingStream(std::ostream& stream)
             : stream(stream)
         {}
+        std::ostream& operator()(std::size_t contentLength)         {return stream << "content-length: " << contentLength << "\r\n";}
         std::ostream& operator()(std::streamsize contentLength)     {return stream << "content-length: " << contentLength << "\r\n";}
         std::ostream& operator()(Encoding encoding)                 {return stream << "transfer-encoding: " << encoding << "\r\n";}
     };

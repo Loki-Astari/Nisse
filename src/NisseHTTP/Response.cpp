@@ -61,7 +61,8 @@ Response::~Response()
     if (stream.rdbuf() == nullptr)
     {
         std::cerr << "\tSending minimum required data\n";
-        if (!headerSent) {
+        if (!headerSent)
+        {
             baseStream << version << " " << statusCode << "\r\n";
             headerSent = true;
         }
@@ -93,16 +94,36 @@ void Response::read(std::istream& stream)
     }
 }
 
-void Response::addHeaders(HeaderResponse const& headers)
+namespace ThorsAnvil::Nisse::HTTP
+{
+    std::ostream& operator<<(std::ostream& stream, Response::Header const& header)
+    {
+        struct HeaderStream
+        {
+            std::ostream& stream;
+            HeaderStream(std::ostream& stream)
+                : stream(stream)
+            {}
+            std::ostream& operator()(HeaderResponse const& header)    {return stream << header;}
+            std::ostream& operator()(HeaderPassThrough const& header) {return stream << header;}
+        };
+        return std::visit(HeaderStream{stream}, header);
+    }
+
+}
+
+void Response::addHeaders(Response::Header const& headers)
 {
     if (stream.rdbuf() != nullptr) {
         ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers can not be sent after the body has been started");
     }
 
-    if (!headerSent) {
+    if (!headerSent)
+    {
         baseStream << version << " " << statusCode << "\r\n";
         headerSent = true;
     }
+
     baseStream << headers;
 }
 

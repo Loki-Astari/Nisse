@@ -13,8 +13,6 @@ void addReverseProxy(NHTTP::HTTPHandler& http)
 {
     http.addPath("/proxy/{host}:{port}", [](NHTTP::Request& request, NHTTP::Response& response)
     {
-        NHTTP::HeaderResponse    header;
-
         TAS::SocketInfo         init{request.variables()["host"], std::stoi(request.variables()["port"])};
         TAS::SocketStream       socket{TAS::Socket{init, TAS::Blocking::No}};
         NServer::AsyncStream    async(socket, request.getContext(), NServer::EventType::Write);
@@ -29,18 +27,20 @@ void addReverseProxy(NHTTP::HTTPHandler& http)
 
             // Step 2: Read the reply and return.
             socket >> response;
-#if 0
-                   >> header;
-#endif
+            NHTTP::HeaderPassThrough    headers(socket);
+            NHTTP::StreamInput          body(socket, headers.getEncoding());
 
             // Step 3: Send the reply back to the originator.
-            response.addHeaders(header, NHTTP::Encoding::Chunked)
-                << socket.rdbuf();
+            response.addHeaders(headers);
+
+            response.body(headers.getEncoding()) << body.rdbuf();
         }
         else
         {
+            NHTTP::HeaderResponse    header;
+
             response.setStatus(404);
-            response.addHeaders(header, 0);
+            response.addHeaders(header);
         }
     });
 }

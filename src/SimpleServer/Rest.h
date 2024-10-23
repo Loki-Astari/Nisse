@@ -18,12 +18,14 @@ void addRest(NHTTP::HTTPHandler& http)
 </html>
 )";
         NHTTP::HeaderResponse   header;
-        response.addHeaders(header, data.size()) << data;
+        response.addHeaders(header);
+        response.body(data.size()) << data;
     });
     http.addPath("/CK{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
     {
         NHTTP::HeaderResponse   header;
-        response.addHeaders(header, NHTTP::Encoding::Chunked) << R"(
+        response.addHeaders(header);
+        response.body(NHTTP::Encoding::Chunked) << R"(
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html>
 <head><title>Nisse server 1.1</title></head>
