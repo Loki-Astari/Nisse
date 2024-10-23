@@ -7,7 +7,7 @@
 #include <ThorsSocket/Socket.h>
 
 namespace TAS = ThorsAnvil::ThorsSocket;
-namespace ThorsAnvil::Nisse
+namespace ThorsAnvil::Nisse::Server
 {
 
 class NisseServer;

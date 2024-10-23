@@ -1,6 +1,6 @@
 #include "HeaderResponse.h"
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 bool HeaderResponse::empty() const
 {

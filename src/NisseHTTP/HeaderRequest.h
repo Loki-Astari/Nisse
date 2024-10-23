@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class HeaderRequest

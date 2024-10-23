@@ -8,7 +8,7 @@
 #include <functional>
 
 namespace TAS   = ThorsAnvil::ThorsSocket;
-namespace ThorsAnvil::Nisse
+namespace ThorsAnvil::Nisse::Server
 {
 /*
  * Forward declare Store objects.

@@ -1,6 +1,6 @@
 #include "Store.h"
 
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 /*
  * There is no default constructor for CoRoutine.

@@ -4,7 +4,7 @@
 #include <map>
 #include <iostream>
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 Request::Request(std::string_view proto, std::istream& stream)
     : context(nullptr)
@@ -20,7 +20,7 @@ Request::Request(std::string_view proto, std::istream& stream)
     }
 }
 
-Request::Request(ThorsAnvil::Nisse::Context& context, std::string_view proto, std::istream& stream)
+Request::Request(Server::Context& context, std::string_view proto, std::istream& stream)
     : context(&context)
     , version{Version::Unknown}
     , method{Method::Other}

@@ -9,12 +9,12 @@
 #include "NisseServer/Context.h"
 #include <istream>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class Request
 {
-    Context*            context;
+    Server::Context*    context;
     std::string         messageHeader;
     Version             version;
     Method              method;
@@ -29,8 +29,8 @@ class Request
     std::unique_ptr<std::streambuf> streamBuf;
     public:
         Request(std::string_view proto, std::istream& stream);
-        Request(Context& context, std::string_view proto, std::istream& stream);
-        Context&                getContext()    const   {return *context;}
+        Request(Server::Context& context, std::string_view proto, std::istream& stream);
+        Server::Context&        getContext()    const   {return *context;}
         Version                 getVersion()    const   {return version;}
         Method                  getMethod()     const   {return method;}
         URL const&              getUrl()        const   {return url;}

@@ -28,7 +28,7 @@
 #include <ThorsSocket/SocketStream.h>
 
 namespace TAS = ThorsAnvil::ThorsSocket;
-namespace ThorsAnvil::Nisse
+namespace ThorsAnvil::Nisse::Server
 {
 
 enum class PyntResult {Done, More};

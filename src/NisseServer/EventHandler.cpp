@@ -10,18 +10,18 @@
  */
 void eventCallback(evutil_socket_t fd, short eventType, void* data)
 {
-    ThorsAnvil::Nisse::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::EventHandler*>(data);
-    eventHandler.eventAction(fd, static_cast<ThorsAnvil::Nisse::EventType>(eventType));
+    ThorsAnvil::Nisse::Server::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::Server::EventHandler*>(data);
+    eventHandler.eventAction(fd, static_cast<ThorsAnvil::Nisse::Server::EventType>(eventType));
 }
 
 void controlTimerCallback(evutil_socket_t, short, void* data)
 {
-    ThorsAnvil::Nisse::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::EventHandler*>(data);
+    ThorsAnvil::Nisse::Server::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::Server::EventHandler*>(data);
     eventHandler.controlTimerAction();
 }
 
 namespace TAS   = ThorsAnvil::ThorsSocket;
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 /*
  * EventLib wrapper. Set up C-Function callbacks

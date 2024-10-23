@@ -17,7 +17,7 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace ThorsAnvil::Nisse
+namespace ThorsAnvil::Nisse::Server
 {
 
 using Work    = std::function<void()>;

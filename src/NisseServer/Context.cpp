@@ -2,7 +2,7 @@
 #include "NisseServer.h"
 #include "EventHandlerLibEvent.h"
 
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 Context::Context(NisseServer& server, Yield& yield, int owner)
     : server{server}

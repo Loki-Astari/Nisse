@@ -9,7 +9,7 @@
 #include <ostream>
 #include <functional>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 struct StatusCode

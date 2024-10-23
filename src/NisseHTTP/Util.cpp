@@ -1,9 +1,9 @@
 #include "Util.h"
 #include <ostream>
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 std::ostream& operator<<(std::ostream& stream, Version const& v)
 {

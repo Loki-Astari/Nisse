@@ -9,7 +9,7 @@
 #include <string_view>
 #include <algorithm>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 enum class Version {HTTP1_0, HTTP1_1, HTTP2, HTTP3, Unknown};

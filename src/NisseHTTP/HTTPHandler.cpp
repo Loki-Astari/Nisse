@@ -2,7 +2,7 @@
 #include "Request.h"
 #include "Response.h"
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 std::string HTTPHandler::normalize(std::string_view path)
 {
@@ -27,7 +27,7 @@ void HTTPHandler::addHeaders(RequestVariables& var, HeaderRequest const& headers
 
 void HTTPHandler::addQueryParam(RequestVariables& var, std::string_view query)
 {
-    // Add URL paramets to the variables object.
+    // Add URL parameters to the variables object.
     if (query.size() == 0) {
         return;
     }

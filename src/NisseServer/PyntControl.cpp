@@ -1,6 +1,6 @@
 #include "PyntControl.h"
 
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 PyntControl::PyntControl(NisseServer& server)
     : server{server}

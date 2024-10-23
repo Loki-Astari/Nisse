@@ -6,7 +6,9 @@
 #include <ThorsLogging/ThorsLogging.h>
 #include <ThorsSocket/Server.h>
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
+namespace TAS       = ThorsAnvil::ThorsSocket;
+namespace NServer   = ThorsAnvil::Nisse::Server;
+namespace NHTTP     = ThorsAnvil::Nisse::HTTP;
 
 int main(int argc, char* argv[])
 {
@@ -28,7 +30,7 @@ int main(int argc, char* argv[])
     // =======
     // Object to processes HTTP connections with.
     // Register with listen() below.
-    ThorsAnvil::Nisse::NisseHTTP::HTTPHandler   http;
+    NHTTP::HTTPHandler   http;
     addRest(http);
     addFiles(http);
 
@@ -59,7 +61,7 @@ int main(int argc, char* argv[])
     // Part 3:
     // =======
     // Set up the server
-    ThorsAnvil::Nisse::NisseServer              server;
+    NServer::NisseServer              server;
 
     // Set up the ports we want to listen on
     // and the object that will handle the requests from that port.
@@ -71,7 +73,7 @@ int main(int argc, char* argv[])
     // This interface does nothing.
     // But if you connect to it (port+2) it will cleanly shutdown the server.
     // But you can hit ctrl-c will usually work.
-    ThorsAnvil::Nisse::PyntControl  control(server);
+    NServer::PyntControl  control(server);
     server.listen(TAS::ServerInfo{port+2}, control);
 
 

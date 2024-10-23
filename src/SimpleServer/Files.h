@@ -4,6 +4,9 @@
 #include "NisseServer/AsyncStream.h"
 #include <string>
 
+namespace NServer   = ThorsAnvil::Nisse::Server;
+namespace NHTTP     = ThorsAnvil::Nisse::HTTP;
+
 inline
 std::string normalize(std::string const& path, std::string const& fileName)
 {
@@ -11,19 +14,19 @@ std::string normalize(std::string const& path, std::string const& fileName)
 }
 
 inline
-void addFiles(ThorsAnvil::Nisse::NisseHTTP::HTTPHandler& http)
+void addFiles(NHTTP::HTTPHandler& http)
 {
-    http.addPath("/content/{file}", [](ThorsAnvil::Nisse::NisseHTTP::Request& request, ThorsAnvil::Nisse::NisseHTTP::Response& response)
+    http.addPath("/content/{file}", [](NHTTP::Request& request, NHTTP::Response& response)
     {
-        ThorsAnvil::Nisse::NisseHTTP::HeaderResponse    header;
+        NHTTP::HeaderResponse    header;
 
         using std::literals::string_literals::operator""s;
 
-        std::string                     fileName = normalize("/Users/martinyork/Repo/Nisse/src/SimpleServer/content"s, request.variables()["file"]);
-        ThorsAnvil::Nisse::IFStream     file(fileName, request.getContext());
+        std::string           fileName = normalize("/Users/martinyork/Repo/Nisse/src/SimpleServer/content"s, request.variables()["file"]);
+        NServer::IFStream     file(fileName, request.getContext());
         if (file)
         {
-            response.addHeaders(header, ThorsAnvil::Nisse::NisseHTTP::Encoding::Chunked)
+            response.addHeaders(header, NHTTP::Encoding::Chunked)
                 << file.rdbuf();
         }
         else

@@ -1,6 +1,6 @@
 #include "AsyncStream.h"
 
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 IFStream::IFStream(std::string filename)
     : TAS::SocketStream{TAS::Socket{TAS::FileInfo{filename, TAS::FileMode::Read}, TAS::Blocking::No}}

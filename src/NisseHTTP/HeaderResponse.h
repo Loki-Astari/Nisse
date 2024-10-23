@@ -7,7 +7,7 @@
 #include <map>
 #include <iostream>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 inline bool ichar_equals(char a, char b)

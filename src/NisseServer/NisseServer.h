@@ -21,7 +21,7 @@
 #include "Pynt.h"
 #include <ThorsSocket/SocketStream.h>
 
-namespace ThorsAnvil::Nisse
+namespace ThorsAnvil::Nisse::Server
 {
 
 class Context;

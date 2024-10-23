@@ -7,7 +7,7 @@
 #include <functional>
 #include <regex>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class Request;

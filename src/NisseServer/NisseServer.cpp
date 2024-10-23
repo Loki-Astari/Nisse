@@ -3,7 +3,7 @@
 #include "Context.h"
 
 namespace TAS   = ThorsAnvil::ThorsSocket;
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 NisseServer::NisseServer(int workerCount)
     : jobQueue{workerCount}

@@ -1,6 +1,6 @@
 #include "PathMatcher.h"
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 void PathMatcher::addPath(std::string pathMatch, Action&& action)
 {

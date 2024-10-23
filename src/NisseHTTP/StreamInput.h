@@ -5,7 +5,7 @@
 #include "Util.h"
 #include <iostream>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class StreamBufInput: public std::streambuf

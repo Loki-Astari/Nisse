@@ -2,10 +2,12 @@
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
 
+namespace NHTTP     = ThorsAnvil::Nisse::HTTP;
+
 inline
-void addRest(ThorsAnvil::Nisse::NisseHTTP::HTTPHandler& http)
+void addRest(NHTTP::HTTPHandler& http)
 {
-    http.addPath("/HW{Who}.html", [](ThorsAnvil::Nisse::NisseHTTP::Request& request, ThorsAnvil::Nisse::NisseHTTP::Response& response)
+    http.addPath("/HW{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
     {
         std::string who  = request.variables()["Who"];
         std::string data = R"(
@@ -15,13 +17,13 @@ void addRest(ThorsAnvil::Nisse::NisseHTTP::HTTPHandler& http)
 <body>Hello world: )"  + who + R"(</body>
 </html>
 )";
-        ThorsAnvil::Nisse::NisseHTTP::HeaderResponse   header;
+        NHTTP::HeaderResponse   header;
         response.addHeaders(header, data.size()) << data;
     });
-    http.addPath("/CK{Who}.html", [](ThorsAnvil::Nisse::NisseHTTP::Request& request, ThorsAnvil::Nisse::NisseHTTP::Response& response)
+    http.addPath("/CK{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
     {
-        ThorsAnvil::Nisse::NisseHTTP::HeaderResponse   header;
-        response.addHeaders(header, ThorsAnvil::Nisse::NisseHTTP::Encoding::Chunked) << R"(
+        NHTTP::HeaderResponse   header;
+        response.addHeaders(header, NHTTP::Encoding::Chunked) << R"(
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html>
 <head><title>Nisse server 1.1</title></head>
