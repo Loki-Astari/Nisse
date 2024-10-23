@@ -10,13 +10,13 @@ namespace TAS = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse::Server
 {
 
-class IFStream: public TAS::SocketStream
+class AsyncStream
 {
-    Context*    registeredContext;
+    TAS::SocketStream&  stream;
+    Context&            context;
     public:
-        IFStream(std::string filename);
-        IFStream(std::string filename, Context& context);
-        ~IFStream();
+        AsyncStream(TAS::SocketStream& stream, Context& context, EventType initialWait);
+        ~AsyncStream();
 };
 
 }

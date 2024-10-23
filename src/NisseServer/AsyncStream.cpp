@@ -2,26 +2,14 @@
 
 using namespace ThorsAnvil::Nisse::Server;
 
-IFStream::IFStream(std::string filename)
-    : TAS::SocketStream{TAS::Socket{TAS::FileInfo{filename, TAS::FileMode::Read}, TAS::Blocking::No}}
-    , registeredContext{nullptr}
-{}
-
-IFStream::IFStream(std::string filename, Context& context)
-    : TAS::SocketStream{TAS::Socket{TAS::FileInfo{filename, TAS::FileMode::Read}, TAS::Blocking::No}}
-    , registeredContext{&context}
+AsyncStream::AsyncStream(TAS::SocketStream& stream, Context& context, EventType initialWait)
+    : stream{stream}
+    , context{context}
 {
-    if (*this) {
-        registeredContext->registerLocalSocket(getSocket(), EventType::Read);
-    }
-    else {
-        registeredContext = nullptr;
-    }
+    context.registerLocalSocket(stream.getSocket(), initialWait);
 }
 
-IFStream::~IFStream()
+AsyncStream::~AsyncStream()
 {
-    if (registeredContext) {
-        registeredContext->unregisterLocalSocket(getSocket());
-    }
+    context.unregisterLocalSocket(stream.getSocket());
 }

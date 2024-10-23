@@ -23,7 +23,9 @@ void addFiles(NHTTP::HTTPHandler& http)
         using std::literals::string_literals::operator""s;
 
         std::string           fileName = normalize("/Users/martinyork/Repo/Nisse/src/SimpleServer/content"s, request.variables()["file"]);
-        NServer::IFStream     file(fileName, request.getContext());
+        TAS::SocketStream     file{TAS::Socket{TAS::FileInfo{fileName, TAS::FileMode::Read}, TAS::Blocking::No}};
+        NServer::AsyncStream  async(file, request.getContext(), NServer::EventType::Read);
+
         if (file)
         {
             response.addHeaders(header, NHTTP::Encoding::Chunked)
