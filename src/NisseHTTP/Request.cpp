@@ -209,7 +209,5 @@ void Request::print(std::ostream& stream) const
 {
     stream << messageHeader << "\r\n"
            << head
-           << "\r\n"
-           << body().rdbuf()
-           << std::flush;
+           << "\r\n";
 }

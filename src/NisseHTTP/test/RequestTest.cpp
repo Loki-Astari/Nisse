@@ -357,7 +357,9 @@ TEST(RequestTest, Stream)
     Request             request{"https", ss};
 
     std::stringstream   out;
-    out << request;
+    out << request
+        << request.body().rdbuf()
+        << std::flush;
 
     EXPECT_EQ(out.str(),
               "GET /Path1/Path2/Stop.html HTTP/1.1\r\n"

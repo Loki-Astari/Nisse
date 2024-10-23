@@ -23,20 +23,9 @@ class HeaderResponse
         bool    empty() const;
         void    add(std::string_view header, std::string_view value);
 
-    friend std::ostream& operator<<(std::ostream& stream, HeaderResponse const& headersBlock)
-    {
-        for (auto header: headersBlock.headers)
-        {
-            if (std::ranges::equal(std::string_view(header.first), std::string_view("content-length"), ichar_equals)) {
-                continue;
-            }
-            if (std::ranges::equal(std::string_view(header.first), std::string_view("transfer-encoding"), ichar_equals)) {
-                continue;
-            }
-            stream << header.first << ": " << header.second << "\r\n";
-        }
-        return stream;
-    }
+    friend std::ostream& operator<<(std::ostream& stream, HeaderResponse const& headersBlock)   {headersBlock.print(stream);return stream;}
+
+    void print(std::ostream& stream) const;
 };
 
 }
