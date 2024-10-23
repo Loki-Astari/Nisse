@@ -1,5 +1,6 @@
 #include "Rest.h"
 #include "Files.h"
+#include "ReverseProxy.h"
 #include "NisseServer/NisseServer.h"
 #include "NisseServer/PyntControl.h"
 #include "NisseHTTP/HTTPHandler.h"
@@ -33,7 +34,7 @@ int main(int argc, char* argv[])
     NHTTP::HTTPHandler   http;
     addRest(http);
     addFiles(http);
-
+    addReverseProxy(http);
 
     // Part 2:
     // =======

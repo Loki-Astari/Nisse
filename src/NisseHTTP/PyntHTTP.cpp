@@ -11,7 +11,7 @@ ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TAS::SocketStream&
     {
         Response    clientError(stream, request.getVersion(), 400);
         clientError.addHeaders(request.failHeader(), 0);
-        return Server::PyntResult::More;
+        return Server::PyntResult::Done;
     }
 
     Response    response(stream, request.getVersion());
