@@ -73,28 +73,35 @@ void Response::setStatus(int newStatusCode)
     statusCode = standardCodes[newStatusCode];
 }
 
-std::ostream& Response::addHeaders(HeaderResponse const& headers, Encoding type)
+struct IgnoreLine
 {
-    return addHeaders(headers, StreamBufOutput{baseStream, type}, "transfer-encoding: chunked\r\n");
+    friend std::istream& operator>>(std::istream& stream, IgnoreLine const&)
+    {
+        return stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+};
+
+void Response::read(std::istream& stream)
+{
+    int code;
+    if (stream >> version >> code >> IgnoreLine{})
+    {
+        statusCode = standardCodes[code];
+    }
 }
 
-std::ostream& Response::addHeaders(HeaderResponse const& headers, std::streamsize length)
-{
-    return addHeaders(headers, StreamBufOutput{baseStream, length}, "content-length: "s + std::to_string(length) + "\r\n");
-}
-
-std::ostream& Response::addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader)
+std::ostream& Response::addHeaders(HeaderResponse const& headers, BodyEncoding bodyEncoding)
 {
     if (headerSent) {
         ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers have already been sent");
     }
     baseStream << version << " " << statusCode << "\r\n"
                << headers
-               << extraHeader
+               << bodyEncoding
                << "\r\n"
                << std::flush;
     headerSent = true;
 
-    stream.addBuffer(std::move(buffer));
+    stream.addBuffer(StreamBufOutput{baseStream, bodyEncoding});
     return stream;
 }

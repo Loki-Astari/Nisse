@@ -26,8 +26,7 @@ class StreamBufOutput: public std::streambuf
     public:
         ~StreamBufOutput();
         StreamBufOutput(Complete&& complete = [](){});
-        StreamBufOutput(std::ostream& stream, std::streamsize length, Complete&& complete = [](){});
-        StreamBufOutput(std::ostream& stream, Encoding encoding, Complete&& complete = [](){});
+        StreamBufOutput(std::ostream& stream, BodyEncoding bodyEncoding, Complete&& complete = [](){});
         StreamBufOutput(StreamBufOutput&& move)                   noexcept;
         StreamBufOutput& operator=(StreamBufOutput&& move)        noexcept;
         StreamBufOutput(StreamBufOutput const&)                   = delete;
@@ -68,7 +67,7 @@ class StreamOutput: public std::ostream
             : std::ostream(nullptr)
             , buffer()
         {}
-        StreamOutput(std::ostream& stream, std::size_t length)
+        StreamOutput(std::ostream& stream, std::streamsize length)
             : std::ostream(nullptr)
             , buffer(stream, length)
         {

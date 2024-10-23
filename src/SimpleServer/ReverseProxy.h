@@ -19,23 +19,25 @@ void addReverseProxy(NHTTP::HTTPHandler& http)
         TAS::SocketStream       socket{TAS::Socket{init, TAS::Blocking::No}};
         NServer::AsyncStream    async(socket, request.getContext(), NServer::EventType::Write);
 
-#if 0
         if (socket)
         {
             // Step 1:
             // Forward the request.
-            socket << request;
+            socket << request
+                   << request.body().rdbuf()
+                   << std::flush;
 
             // Step 2: Read the reply and return.
-            socket >> response
+            socket >> response;
+#if 0
                    >> header;
+#endif
 
             // Step 3: Send the reply back to the originator.
             response.addHeaders(header, NHTTP::Encoding::Chunked)
                 << socket.rdbuf();
         }
         else
-#endif
         {
             response.setStatus(404);
             response.addHeaders(header, 0);
