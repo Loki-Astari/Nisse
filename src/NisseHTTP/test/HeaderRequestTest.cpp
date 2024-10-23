@@ -333,3 +333,19 @@ TEST(HeaderRequestTest, NoSplitValue)
     EXPECT_EQ("Stuff, Comma No Split, done", header.getHeader("accept-datetime")[0]);
 }
 
+TEST(HeaderRequestTest, StreamHeader)
+{
+    ThorsAnvil::Nisse::HTTP::HeaderRequest     header;
+    header.add("header1", "Stuff, Comma On Split, done");
+    header.add("header2", "Stuff, Comma On Split");
+    header.add("header2", "done");
+    header.add("header3", "More Stuff");
+
+    std::stringstream   ss;
+    ss << header;
+
+    EXPECT_EQ(ss.str(), "header1: Stuff, Comma On Split, done\r\n"
+                        "header2: Stuff, Comma On Split, done\r\n"
+                        "header3: More Stuff\r\n"
+             );
+}

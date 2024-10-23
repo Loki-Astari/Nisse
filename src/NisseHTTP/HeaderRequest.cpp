@@ -72,3 +72,18 @@ bool HeaderRequest::splitOnComma(std::string_view header)
     static const std::set<std::string_view> nosplit = {"accept-datetime", "access-control-request-method", "access-control-request-header", "content-md5", "cookie", "date", "expect", "if-match", "if-none-match", "if-range"};
     return nosplit.find(header) == nosplit.end();
 }
+
+void HeaderRequest::print(std::ostream& stream) const
+{
+    for (auto const& header: headers)
+    {
+        stream << header.first << ": ";
+        std::string     sep = "";
+        for (auto const& val: header.second)
+        {
+            stream << sep << val;
+            sep = ", ";
+        }
+        stream << "\r\n";
+    }
+}

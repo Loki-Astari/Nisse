@@ -24,7 +24,7 @@ class Request
     HeaderResponse      failResponse;
     RequestVariables    var;
 
-    StreamInput input;
+    mutable StreamInput input;
 
     std::unique_ptr<std::streambuf> streamBuf;
     public:
@@ -45,10 +45,13 @@ class Request
                                                     // Trailers will return an empty HeaderRequest() if body has not been read.
                                                     // if (body().eof()) Then trailers have been read.
 
-        std::istream&           body();             // Can be used to read the stream body.
+        std::istream&           body() const;       // Can be used to read the stream body.
                                                     // It will auto eof() when no more data is available in the body.
                                                     // Note this stream will auto decode the incoming message body based
                                                     // on the 'content-encoding'
+
+        friend std::ostream& operator<<(std::ostream& stream, Request const& request)   {request.print(stream);return stream;}
+        void print(std::ostream& stream) const;
 
     private:
         std::string_view        readFirstLine(std::istream& stream);

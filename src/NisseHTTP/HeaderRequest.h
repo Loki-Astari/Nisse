@@ -30,6 +30,9 @@ class HeaderRequest
         bool operator!=(HeaderRequest const& rhs)  const {return !(*this == rhs);}
 
         void add(std::string_view header, std::string_view value);
+
+        friend std::ostream& operator<<(std::ostream& stream, HeaderRequest const& headers) {headers.print(stream);return stream;}
+        void print(std::ostream& stream) const;
     private:
         bool dedupHeader(std::string_view header);
         bool splitOnComma(std::string_view header);

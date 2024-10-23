@@ -201,7 +201,16 @@ bool Request::buildStream(std::istream& stream)
     return false;
 }
 
-std::istream& Request::body()
+std::istream& Request::body() const
 {
     return input;
+}
+
+void Request::print(std::ostream& stream) const
+{
+    stream << messageHeader << "\r\n"
+           << head
+           << "\r\n"
+           << body().rdbuf()
+           << std::flush;
 }
