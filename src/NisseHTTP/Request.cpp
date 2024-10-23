@@ -11,19 +11,18 @@ Request::Request(std::string_view proto, std::istream& stream)
     , version{Version::Unknown}
     , method{Method::Other}
 {
-    std::string_view path = readFirstLine(stream);
-    if (path.size() != 0)
-    {
-        readHeaders(head, stream)   &&
-        buildURL(proto, path)       &&
-        buildStream(stream);
-    }
+    init(proto, stream);
 }
 
 Request::Request(Server::Context& context, std::string_view proto, std::istream& stream)
     : context(&context)
     , version{Version::Unknown}
     , method{Method::Other}
+{
+    init(proto, stream);
+}
+
+void Request::init(std::string_view proto, std::istream& stream)
 {
     std::string_view path = readFirstLine(stream);
     if (path.size() != 0)

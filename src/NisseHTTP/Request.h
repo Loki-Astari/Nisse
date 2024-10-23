@@ -54,6 +54,7 @@ class Request
         void print(std::ostream& stream) const;
 
     private:
+        void                    init(std::string_view proto, std::istream& stream);
         std::string_view        readFirstLine(std::istream& stream);
         bool                    readHeaders(HeaderRequest& dst, std::istream& stream);
 

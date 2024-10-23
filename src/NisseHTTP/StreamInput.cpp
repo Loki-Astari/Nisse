@@ -60,17 +60,33 @@ void StreamBufInput::swap(StreamBufInput& other) noexcept
 }
 
 // Read:
+std::streamsize StreamBufInput::showmanyc()
+{
+    //std::cerr << "showmanyc\n";
+    return remaining;
+}
+
 StreamBufInput::int_type StreamBufInput::uflow()
 {
     //std::cerr << "uflow\n";
+    StreamBufInput::int_type val = underflow();
+    if ( val == traits::eof() ) {
+        return val;
+    }
+    --remaining;
+    return buffer->sbumpc();
+}
+
+StreamBufInput::int_type StreamBufInput::underflow()
+{
+    //std::cerr << "underflow: " << remaining << "\n";
     if (remaining == 0) {
         getNextChunk();
     }
     if (remaining == 0) {
         return traits::eof();
     }
-    --remaining;
-    int val = buffer->sbumpc();
+    int val = buffer->sgetc();
     //std::cerr << "Got: " << val << " >" << static_cast<char>(val) << "<\n";
     return val;
 }
