@@ -12,21 +12,35 @@ namespace NServer   = ThorsAnvil::Nisse::Server;
 namespace NHTTP     = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
 
+TAS::ServerInit getSSLInit(FS::path certPath, int port)
+{
+    TAS::CertificateInfo        certificate{FS::canonical(certPath /= "fullchain.pem"),
+                                            FS::canonical(certPath /= "privkey.pem")
+                                           };
+    TAS::SSLctx                 ctx{TAS::SSLMethodType::Server, certificate};
+    return TAS::SServerInfo{port, ctx};
+}
+
+TAS::ServerInit getNormalInit(int port)
+{
+    return TAS::ServerInfo{port};
+}
+
 
 int main(int argc, char* argv[])
 {
-    if (argc != 4)
+    if (argc != 3 && argc != 4)
     {
-        std::cerr << "Usage: WebServer <port> <contentDirectory> <certificateDirectory>\n";
+        std::cerr << "Usage: WebServer <port> <contentDirectory> [<certificateDirectory>]\n";
         return 1;
     }
     try
     {
-        int        port        = std::stoi(argv[1]);
-        FS::path   contentDir  = FS::canonical(argv[2]);
-        FS::path   certPath    = FS::canonical(argv[3]);
+        int             port        = std::stoi(argv[1]);
+        FS::path        contentDir  = FS::canonical(argv[2]);
+        TAS::ServerInit serverInit  = (argc == 3) ? getNormalInit(port) : getSSLInit(argv[3], port);
 
-        std::cout << "Nisse WebServer: Port: " << port << " ContentDir: >" << contentDir << "< Certificate Path: >" << certPath << "<\n";
+        std::cout << "Nisse WebServer: Port: " << port << " ContentDir: >" << contentDir << "< Certificate Path: >" << (argc == 3 ? "NONE" : argv[3]) << "<\n";
 
         NHTTP::HTTPHandler   http;
         http.addPath("/{path}", [&](NHTTP::Request& request, NHTTP::Response& response)
@@ -57,14 +71,8 @@ int main(int argc, char* argv[])
             response.body(NHTTP::Encoding::Chunked) << file.rdbuf();
         });
 
-        TAS::CertificateInfo        certificate{FS::canonical(certPath /= "fullchain.pem"),
-                                                FS::canonical(certPath /= "privkey.pem")
-                                               };
-        TAS::SSLctx                 ctx{TAS::SSLMethodType::Server, certificate};
-        TAS::SServerInfo            initPortSSL{port, ctx};
-
         NServer::NisseServer   server;
-        server.listen(initPortSSL, http);
+        server.listen(serverInit, http);
 
         NServer::PyntControl  control(server);
         server.listen(TAS::ServerInfo{port+2}, control);
