@@ -51,15 +51,20 @@ int main(int argc, char* argv[])
             FS::path        requestPath = FS::path{request.variables()["path"]}.lexically_normal();
             if (requestPath.empty() || (*requestPath.begin()) == "..")
             {
-                response.setStatus(404);
+                response.setStatus(400);
+                header.add("Error", "Invalid Request Path");
                 response.addHeaders(header);
                 return;
             }
             FS::path        filePath    = contentDir /= requestPath;
             FS::path        filePathCan = FS::canonical(filePath, ec);
+            if (!ec && FS::is_directory(filePathCan)) {
+                filePathCan = FS::canonical(filePathCan /= "index.html", ec);
+            }
             if (ec || !FS::is_regular_file(filePathCan))
             {
                 response.setStatus(404);
+                header.add("Error", "No File Found At Path");
                 response.addHeaders(header);
                 return;
             }
