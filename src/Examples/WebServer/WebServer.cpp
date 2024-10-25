@@ -47,6 +47,14 @@ int main(int argc, char* argv[])
         {
             NHTTP::HeaderResponse    header;
 
+            if (request.getMethod() != NHTTP::Method::GET)
+            {
+                response.setStatus(400);
+                header.add("Error", "Invalid Method");
+                response.addHeaders(header);
+                return;
+            }
+
             std::error_code ec;
             FS::path        requestPath = FS::path{request.variables()["path"]}.lexically_normal();
             if (requestPath.empty() || (*requestPath.begin()) == "..")
