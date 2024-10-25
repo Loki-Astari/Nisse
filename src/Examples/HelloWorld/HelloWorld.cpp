@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
         // Object to processes HTTP connections with.
         // Register with listen() below.
         NHTTP::HTTPHandler   http;
-        http.addPath("/HW{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
+        http.addPath(NHTTP::Method::GET, "/HW{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
         {
             std::string who  = request.variables()["Who"];
             std::string data = R"(
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
             response.addHeaders(header);
             response.body(data.size()) << data;
         });
-        http.addPath("/CK{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
+        http.addPath(NHTTP::Method::GET, "/CK{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
         {
             NHTTP::HeaderResponse   header;
             response.addHeaders(header);

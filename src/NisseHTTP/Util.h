@@ -14,7 +14,10 @@ namespace ThorsAnvil::Nisse::HTTP
 
 enum class Version {HTTP1_0, HTTP1_1, HTTP2, HTTP3, Unknown};
 enum class Method  {GET, HEAD, OPTIONS, TRACE, PUT, DELETE, POST, PATCH, CONNECT, Other};
+enum class All     {Method};
 enum class Encoding{Chunked};
+
+using MethodChoice = std::variant<Method, All>;
 using BodyEncoding = std::variant<std::size_t, std::streamsize, Encoding>;
 
 

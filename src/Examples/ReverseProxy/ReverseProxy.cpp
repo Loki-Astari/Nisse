@@ -44,7 +44,8 @@ int main(int argc, char* argv[])
         std::cout << "Nisse ReverseProxy: Port: " << port << " Destination: >" << dest << "< DestPort: >" << destPort << "< Certificate Path: >" << (argc == 4 ? "NONE" : argv[4]) << "<\n";
 
         NHTTP::HTTPHandler   http;
-        http.addPath("/{command}", [&](NHTTP::Request& request, NHTTP::Response& response)
+
+        http.addPath(NHTTP::All::Method, "/{command}", [&](NHTTP::Request& request, NHTTP::Response& response)
         {
             TAS::SocketInfo         init{dest, destPort};
             TAS::SocketStream       socket{TAS::Socket{init, TAS::Blocking::No}};

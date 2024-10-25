@@ -14,7 +14,7 @@ TEST(HTTPHandlerTest, SimplePathExactMatch)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath("/path1/path2/path3", [&count](Request&, Response&){++count;});
+    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request&, Response&){++count;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -32,7 +32,7 @@ TEST(HTTPHandlerTest, SimplePathExactMatchWithQuery)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath("/path1/path2/path3", [&count](Request&, Response&){++count;});
+    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request&, Response&){++count;});
 
     std::stringstream   ss{"GET /path1/path2/path3?user=Loki HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -51,7 +51,7 @@ TEST(HTTPHandlerTest, SimplePathExactMatchQueryOverride)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath("/path1/path2/path3", [&count](Request&, Response&){++count;});
+    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request&, Response&){++count;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -70,7 +70,7 @@ TEST(HTTPHandlerTest, PathMatch)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath("/path1/{name}/path3", [&count](Request&, Response&){++count;});
+    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request&, Response&){++count;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -89,7 +89,7 @@ TEST(HTTPHandlerTest, PathMatchWithQuery)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath("/path1/{name}/path3", [&count](Request&, Response&){++count;});
+    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request&, Response&){++count;});
 
     std::stringstream   ss{"GET /path1/path2/path3?user=Loki HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -109,7 +109,7 @@ TEST(HTTPHandlerTest, PathMatchQueryOverride)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath("/path1/{name}/path3", [&count](Request&, Response&){++count;});
+    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request&, Response&){++count;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -128,7 +128,7 @@ TEST(HTTPHandlerTest, PathMatchMAtchOverride)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath("/path1/{host}/path3", [&count](Request&, Response&){++count;});
+    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&count](Request&, Response&){++count;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"

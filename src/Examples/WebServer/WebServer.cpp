@@ -43,17 +43,9 @@ int main(int argc, char* argv[])
         std::cout << "Nisse WebServer: Port: " << port << " ContentDir: >" << contentDir << "< Certificate Path: >" << (argc == 3 ? "NONE" : argv[3]) << "<\n";
 
         NHTTP::HTTPHandler   http;
-        http.addPath("/{path}", [&](NHTTP::Request& request, NHTTP::Response& response)
+        http.addPath(NHTTP::Method::GET, "/{path}", [&](NHTTP::Request& request, NHTTP::Response& response)
         {
             NHTTP::HeaderResponse    header;
-
-            if (request.getMethod() != NHTTP::Method::GET)
-            {
-                response.setStatus(400);
-                header.add("Error", "Invalid Method");
-                response.addHeaders(header);
-                return;
-            }
 
             std::error_code ec;
             FS::path        requestPath = FS::path{request.variables()["path"]}.lexically_normal();
