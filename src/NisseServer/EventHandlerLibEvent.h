@@ -12,7 +12,7 @@
 #include <event2/event.h>
 #include <utility>
 
-namespace ThorsAnvil::Nisse
+namespace ThorsAnvil::Nisse::Server
 {
 
 using LibEventEventBase     = ::event_base;

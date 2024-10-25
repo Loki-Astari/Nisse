@@ -5,7 +5,7 @@
 #include "Util.h"
 #include <iostream>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class StreamBufInput: public std::streambuf
@@ -23,8 +23,7 @@ class StreamBufInput: public std::streambuf
         Complete            complete;
     public:
         StreamBufInput(Complete&& complete = [](){});
-        StreamBufInput(std::istream& stream, std::size_t length, Complete&& complete = [](){});
-        StreamBufInput(std::istream& stream, Encoding encoding, Complete&& complete = [](){});
+        StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete = [](){});
         StreamBufInput(StreamBufInput&& move)                   noexcept;
         StreamBufInput& operator=(StreamBufInput&& move)        noexcept;
         StreamBufInput(StreamBufInput const&)                   = delete;
@@ -35,26 +34,11 @@ class StreamBufInput: public std::streambuf
 
         // Create directly from socket.
     protected:
-        // Control:
-        //virtual std::streambuf* setbuf(char_type* s, std::streamsize n)                 override {std::cerr << "setbuf\n";return buffer->pubsetbuf(s, n);}
-        //virtual pos_type        seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out)
-        //                                                                                override {std::cerr << "seekoff\n";return buffer->pubseekoff(off, dir, mode);}
-        //virtual pos_type        seekpos(pos_type pos, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out)
-        //                                                                                override {std::cerr << "seekpos\n";return buffer->pubseekpos(pos, mode);}
-        //virtual int             sync() override;
-        //virtual std::streamsize showmanyc()                                             override {std::cerr << "showmanyc\n";return 0;}
-        //virtual int_type        underflow()                                             override {std::cerr << "underflow\n";return 'a';}
-
         // Read:
         virtual int_type        uflow() override;
+        virtual int_type        underflow() override;
         virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
-
-        // Write:
-        //virtual std::streamsize xsputn(char_type const*,std::streamsize) override;
-        //virtual int_type        overflow(int_type = traits::eof()) override;
-
-        // Undo
-        // virtual int_type        pbackfail(int_type c = traits::eof())                       override {std::cerr << "pbackfail\n";return 0;}
+        virtual std::streamsize showmanyc() override;
 
     private:
         void checkBuffer();
@@ -70,13 +54,7 @@ class StreamInput: public std::istream
             : std::istream(nullptr)
             , buffer()
         {}
-        StreamInput(std::istream& stream, std::size_t length)
-            : std::istream(nullptr)
-            , buffer(stream, length)
-        {
-            rdbuf(&buffer);
-        }
-        StreamInput(std::istream& stream, Encoding encoding)
+        StreamInput(std::istream& stream, BodyEncoding encoding)
             : std::istream(nullptr)
             , buffer(stream, encoding)
         {

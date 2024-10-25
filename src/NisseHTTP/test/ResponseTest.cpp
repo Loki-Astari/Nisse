@@ -3,7 +3,7 @@
 #include <sstream>
 #include <ThorsLogging/ThorsLogging.h>
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 TEST(ResponseTest, Construct)
 {
@@ -49,7 +49,7 @@ TEST(ResponseTest, AddLength)
         Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
-        response.addHeaders(headers, 0);
+        response.addHeaders(headers);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -64,7 +64,8 @@ TEST(ResponseTest, AddChunked)
         Response            response(ss, Version::HTTP1_1);
 
         HeaderResponse      headers;
-        response.addHeaders(headers, Encoding::Chunked);
+        response.addHeaders(headers);
+        response.body(Encoding::Chunked);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -82,7 +83,7 @@ TEST(ResponseTest, ZeroLengthWithHeader)
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
-        response.addHeaders(headers, 0);
+        response.addHeaders(headers);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -101,7 +102,7 @@ TEST(ResponseTest, ZeroLengthWithHeaderContent)
         HeaderResponse      headers;
         headers.add("twist", "drive");
         headers.add("content-length", "45");
-        response.addHeaders(headers, 0);
+        response.addHeaders(headers);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -120,7 +121,7 @@ TEST(ResponseTest, ZeroLengthWithHeaderChunked)
         HeaderResponse      headers;
         headers.add("twist", "drive");
         headers.add("transfer-encoding", "chunked");
-        response.addHeaders(headers, 0);
+        response.addHeaders(headers);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -138,7 +139,8 @@ TEST(ResponseTest, FiveLengthWithHeader)
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
-        response.addHeaders(headers, 5) << "abcde";
+        response.addHeaders(headers);
+        response.body(5) << "abcde";
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -158,7 +160,8 @@ TEST(ResponseTest, FiveLengthWithHeaderContent)
         HeaderResponse      headers;
         headers.add("twist", "drive");
         headers.add("content-length", "45");
-        response.addHeaders(headers, 5) << "abcde";
+        response.addHeaders(headers);
+        response.body(5) << "abcde";
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -178,7 +181,8 @@ TEST(ResponseTest, FiveLengthWithHeaderChunked)
         HeaderResponse      headers;
         headers.add("twist", "drive");
         headers.add("transfer-encoding", "chunked");
-        response.addHeaders(headers, 5) << "abcde";
+        response.addHeaders(headers);
+        response.body(5) << "abcde";
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -197,7 +201,8 @@ TEST(ResponseTest, ZeroChunkedWithHeader)
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
-        response.addHeaders(headers, Encoding::Chunked);
+        response.addHeaders(headers);
+        response.body(Encoding::Chunked);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -217,7 +222,8 @@ TEST(ResponseTest, ZeroChunkedWithHeaderContent)
         HeaderResponse      headers;
         headers.add("twist", "drive");
         headers.add("content-length", "45");
-        response.addHeaders(headers, Encoding::Chunked);
+        response.addHeaders(headers);
+        response.body(Encoding::Chunked);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -237,7 +243,8 @@ TEST(ResponseTest, ZeroChunkedWithHeaderChunked)
         HeaderResponse      headers;
         headers.add("twist", "drive");
         headers.add("transfer-encoding", "chunked");
-        response.addHeaders(headers, Encoding::Chunked);
+        response.addHeaders(headers);
+        response.body(Encoding::Chunked);
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -256,7 +263,8 @@ TEST(ResponseTest, FiveChunkedWithHeader)
 
         HeaderResponse      headers;
         headers.add("twist", "drive");
-        response.addHeaders(headers, Encoding::Chunked) << "abcde";
+        response.addHeaders(headers);
+        response.body(Encoding::Chunked) << "abcde";
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -277,7 +285,8 @@ TEST(ResponseTest, FiveChunkedWithHeaderContent)
         HeaderResponse      headers;
         headers.add("twist", "drive");
         headers.add("content-length", "45");
-        response.addHeaders(headers, Encoding::Chunked) << "abcde";
+        response.addHeaders(headers);
+        response.body(Encoding::Chunked) << "abcde";
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -298,7 +307,8 @@ TEST(ResponseTest, FiveChunkedWithHeaderChunked)
         HeaderResponse      headers;
         headers.add("twist", "drive");
         headers.add("transfer-encoding", "chunked");
-        response.addHeaders(headers, Encoding::Chunked) << "abcde";
+        response.addHeaders(headers);
+        response.body(Encoding::Chunked) << "abcde";
     }
 
     EXPECT_EQ("HTTP/1.1 200 OK\r\n"
@@ -310,17 +320,14 @@ TEST(ResponseTest, FiveChunkedWithHeaderChunked)
               ss.str());
 }
 
-TEST(ResponseTest, HeadersHeaders)
+TEST(ResponseTest, BodyBeforeHeaders)
 {
     auto action = []()
     {
         std::stringstream   ss;
         {
             Response            response(ss, Version::HTTP1_1);
-
-            HeaderResponse      headers;
-            response.addHeaders(headers, Encoding::Chunked);
-            response.addHeaders(headers, Encoding::Chunked);
+            response.body(Encoding::Chunked);
         }
     };
 
@@ -330,27 +337,44 @@ TEST(ResponseTest, HeadersHeaders)
     );
 }
 
-
-
-#if 0
-class Response
+TEST(ResponseTest, HeadersAfterBody)
 {
-    Version         version;
-    StatusCode      statusCode;
-    bool            headerSent;
-    bool            bodySent;
+    auto action = []()
+    {
+        std::stringstream   ss;
+        {
+            Response            response(ss, Version::HTTP1_1);
 
-    std::ostream&   baseStream;
-    StreamOutput    stream;
+            HeaderResponse      headers;
+            response.addHeaders(headers);
+            response.body(Encoding::Chunked);
+            response.addHeaders(headers);
+        }
+    };
 
-    public:
-        Response(std::ostream& stream, Version version, int code = 200);
-        void                setStatus(int code);
+    EXPECT_THROW(
+        action(),
+        ThorsAnvil::Logging::LogicalException
+    );
+}
 
-        std::ostream&       addHeaders(HeaderResponse const& headers, Encoding type);
-        std::ostream&       addHeaders(HeaderResponse const& headers, std::size_t length);
-    private:
-        std::ostream&       addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader);
-};
+TEST(ResponseTest, MultiperHeadersOK)
+{
+    auto action = []()
+    {
+        std::stringstream   ss;
+        {
+            Response            response(ss, Version::HTTP1_1);
 
-#endif
+            HeaderResponse      headers;
+            response.addHeaders(headers);
+            response.addHeaders(headers);
+            response.body(Encoding::Chunked);
+        }
+    };
+
+    EXPECT_NO_THROW(
+        action()
+    );
+}
+

@@ -3,7 +3,7 @@
 #include "Request.h"
 #include <sstream>
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 TEST(RequestTest, Construct)
 {
@@ -342,4 +342,67 @@ TEST(RequestTest, ContentChunked)
     EXPECT_EQ("loop", request.trailers().getHeader("tail2")[1]);
 }
 
+TEST(RequestTest, Stream)
+{
+    std::stringstream   ss{"GET /Path1/Path2/Stop.html HTTP/1.1\r\n"
+                           "host: boimler.com\r\n"
+                           "header1: stuff\r\n"
+                           "header2  : pump\r\n"
+                           "header2: loop\r\n"
+                           "content-length: 20\r\n"
+                           "\r\n"
+                           "12345678901234567890"
+                           "--------------------"
+                          };
+    Request             request{"https", ss};
 
+    std::stringstream   out;
+    out << request
+        << request.body().rdbuf()
+        << std::flush;
+
+    EXPECT_EQ(out.str(),
+              "GET /Path1/Path2/Stop.html HTTP/1.1\r\n"
+              "content-length: 20\r\n"
+              "header1: stuff\r\n"
+              "header2: pump, loop\r\n"
+              "host: boimler.com\r\n"
+              "\r\n"
+              "12345678901234567890"
+             );
+}
+
+TEST(RequestTest, BadBodyInformation)
+{
+    std::stringstream   ss{"GET /Path1/Path2/Stop.html HTTP/1.1\r\n"
+                           "host: boimler.com\r\n"
+                           "content-length: 20\r\n"
+                           "transfer-encoding: chunked\r\n"
+                           "header1: stuff\r\n"
+                           "header2  : pump\r\n"
+                           "header2: loop\r\n"
+                           "\r\n"
+                           "12345678901234567890"
+                           "--------------------"
+                          };
+    Request             request{"https", ss};
+    EXPECT_FALSE(request.isValidRequest());
+    EXPECT_FALSE(request.failHeader().empty());
+}
+
+TEST(RequestTest, UnsoportTransferEncodingInformation)
+{
+    std::stringstream   ss{"GET /Path1/Path2/Stop.html HTTP/1.1\r\n"
+                           "host: boimler.com\r\n"
+                           "transfer-encoding: long\r\n"
+                           "header1: stuff\r\n"
+                           "header2  : pump\r\n"
+                           "header2: loop\r\n"
+                           "\r\n"
+                           "12345678901234567890"
+                           "--------------------"
+                          };
+    Request             request{"https", ss};
+    EXPECT_FALSE(request.isValidRequest());
+    EXPECT_FALSE(request.failHeader().empty());
+}

@@ -1,6 +1,6 @@
 #include "Store.h"
 
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 /*
  * There is no default constructor for CoRoutine.
@@ -29,6 +29,7 @@ void Store::requestChange(T&& update)
 
 template void Store::requestChange<StateUpdateCreateServer>(StateUpdateCreateServer&& update);
 template void Store::requestChange<StateUpdateCreateStream>(StateUpdateCreateStream&& update);
+template void Store::requestChange<StateUpdateCreateLinkStream>(StateUpdateCreateLinkStream&& update);
 template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
 template void Store::requestChange<StateUpdateRestoreWrite>(StateUpdateRestoreWrite&& update);
@@ -74,6 +75,30 @@ void Store::operator()(StateUpdateCreateStream& update)
     data.readEvent.add();
 };
 
+void Store::operator()(StateUpdateCreateLinkStream& update)
+{
+    auto find = data.find(update.linkedStream);
+    if (find == data.end()) {
+        return;
+    }
+    StoreData&  linkedData          = find->second;
+    StreamData& linkedStreamData    = std::get<StreamData>(linkedData);
+    CoRoutine&  linkedStreamCo      = linkedStreamData.coRoutine;
+
+    auto [iter, ok] = data.insert_or_assign(update.fd,
+                                            LinkedStreamData{&linkedStreamCo,
+                                                             std::move(update.readEvent),
+                                                             std::move(update.writeEvent)
+                                                            });
+    LinkedStreamData& data = std::get<LinkedStreamData>(iter->second);
+    if (update.initialWait == EventType::Read) {
+        data.readEvent.add();
+    }
+    else {
+        data.writeEvent.add();
+    }
+}
+
 void Store::operator()(StateUpdateRemove& update)
 {
     data.erase(update.fd);
@@ -83,8 +108,9 @@ void Store::operator()(StateUpdateRestoreRead& update)
 {
     struct RestoreRead
     {
-        void operator()(ServerData& update) {update.readEvent.add();}
-        void operator()(StreamData& update) {update.readEvent.add();}
+        void operator()(ServerData& update)         {update.readEvent.add();}
+        void operator()(StreamData& update)         {update.readEvent.add();}
+        void operator()(LinkedStreamData& update)   {update.readEvent.add();}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {
@@ -96,8 +122,9 @@ void Store::operator()(StateUpdateRestoreWrite& update)
 {
     struct RestoreWrite
     {
-        void operator()(ServerData& update) {}
-        void operator()(StreamData& update) {update.writeEvent.add();}
+        void operator()(ServerData&)                {}
+        void operator()(StreamData& update)         {update.writeEvent.add();}
+        void operator()(LinkedStreamData& update)   {update.writeEvent.add();}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {

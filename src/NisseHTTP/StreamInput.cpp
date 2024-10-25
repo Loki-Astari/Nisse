@@ -1,37 +1,41 @@
 #include "StreamInput.h"
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 StreamBufInput::StreamBufInput(Complete&& complete)
-    : remaining(0)
-    , buffer(nullptr)
-    , chunked(false)
-    , firstChunk(false)
-    , complete(std::move(complete))
+    : remaining{0}
+    , buffer{nullptr}
+    , chunked{false}
+    , firstChunk{false}
+    , complete{std::move(complete)}
 {}
 
-StreamBufInput::StreamBufInput(std::istream& stream, std::size_t length, Complete&& complete)
-    : remaining(length)
-    , buffer(stream.rdbuf())
-    , chunked(false)
-    , firstChunk(false)
-    , complete(std::move(complete))
-{}
-
-StreamBufInput::StreamBufInput(std::istream& stream, Encoding /*encoding*/, Complete&& complete)
-    : remaining(0)
-    , buffer(stream.rdbuf())
-    , chunked(true)
-    , firstChunk(true)
-    , complete(std::move(complete))
-{}
+StreamBufInput::StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete)
+    : remaining{0}
+    , buffer{stream.rdbuf()}
+    , chunked{false}
+    , firstChunk{false}
+    , complete{std::move(complete)}
+{
+    struct BodyEncodingInit
+    {
+        StreamBufInput* self;
+        BodyEncodingInit(StreamBufInput* self)
+            : self(self)
+        {}
+        void operator()(std::size_t contentLength)      {self->remaining = contentLength;}
+        void operator()(std::streamsize contentLength)  {self->remaining = contentLength;}
+        void operator()(Encoding /*encoding*/)          {self->chunked = true; self->firstChunk = true;}
+    };
+    std::visit(BodyEncodingInit{this}, encoding);
+}
 
 StreamBufInput::StreamBufInput(StreamBufInput&& move) noexcept
-    : remaining(std::exchange(move.remaining, 0))
-    , buffer(std::exchange(move.buffer, nullptr))
-    , chunked(std::exchange(move.chunked, false))
-    , firstChunk(std::exchange(move.firstChunk, false))
-    , complete(std::exchange(move.complete, [](){}))
+    : remaining{std::exchange(move.remaining, 0)}
+    , buffer{std::exchange(move.buffer, nullptr)}
+    , chunked{std::exchange(move.chunked, false)}
+    , firstChunk{std::exchange(move.firstChunk, false)}
+    , complete{std::exchange(move.complete, [](){})}
 {}
 
 StreamBufInput& StreamBufInput::operator=(StreamBufInput&& move) noexcept
@@ -60,17 +64,33 @@ void StreamBufInput::swap(StreamBufInput& other) noexcept
 }
 
 // Read:
+std::streamsize StreamBufInput::showmanyc()
+{
+    //std::cerr << "showmanyc\n";
+    return remaining;
+}
+
 StreamBufInput::int_type StreamBufInput::uflow()
 {
     //std::cerr << "uflow\n";
+    StreamBufInput::int_type val = underflow();
+    if ( val == traits::eof() ) {
+        return val;
+    }
+    --remaining;
+    return buffer->sbumpc();
+}
+
+StreamBufInput::int_type StreamBufInput::underflow()
+{
+    //std::cerr << "underflow: " << remaining << "\n";
     if (remaining == 0) {
         getNextChunk();
     }
     if (remaining == 0) {
         return traits::eof();
     }
-    --remaining;
-    int val = buffer->sbumpc();
+    int val = buffer->sgetc();
     //std::cerr << "Got: " << val << " >" << static_cast<char>(val) << "<\n";
     return val;
 }

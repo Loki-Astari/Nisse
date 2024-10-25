@@ -1,9 +1,9 @@
 #include "URL.h"
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 URL::URL(std::string_view href)
-    : hrefValue(href)
+    : hrefValue{href}
     , protocolRef{findProtocol(hrefValue)}
     , originRef{findOrigin(hrefValue)}
     , hostRef{findHost(hrefValue)}
@@ -15,7 +15,7 @@ URL::URL(std::string_view href)
 {}
 
 URL::URL(std::string_view prot, std::string_view host, std::string_view request)
-    : hrefValue(buildHref(prot, host, request))
+    : hrefValue{buildHref(prot, host, request)}
     , protocolRef{findProtocol(hrefValue)}
     , originRef{findOrigin(hrefValue)}
     , hostRef{findHost(hrefValue)}
@@ -27,7 +27,7 @@ URL::URL(std::string_view prot, std::string_view host, std::string_view request)
 {}
 
 URL::URL(URL const& copy)
-    : hrefValue(copy.hrefValue)
+    : hrefValue{copy.hrefValue}
     , protocolRef{findProtocol(hrefValue)}
     , originRef{findOrigin(hrefValue)}
     , hostRef{findHost(hrefValue)}

@@ -7,7 +7,7 @@
 #include "Util.h"
 #include <string_view>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 class HeaderRequest;
@@ -19,7 +19,7 @@ class HTTPHandler: public PyntHTTP
     PathMatcher             pathMatcher;
     std::vector<HTTPAction> actions;
     public:
-        virtual void       processRequest(Request& request, Response& response);
+        virtual void       processRequest(Request& request, Response& response) override;
 
         void addPath(std::string const& path, HTTPAction&& action);
     private:

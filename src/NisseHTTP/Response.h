@@ -4,12 +4,13 @@
 #include "NisseHTTPConfig.h"
 #include "Util.h"
 #include "HeaderResponse.h"
+#include "HeaderPassThrough.h"
 #include "StreamOutput.h"
 #include <set>
 #include <ostream>
 #include <functional>
 
-namespace ThorsAnvil::Nisse::NisseHTTP
+namespace ThorsAnvil::Nisse::HTTP
 {
 
 struct StatusCode
@@ -47,10 +48,13 @@ class Response
         ~Response();
         void                setStatus(int code);
 
-        std::ostream&       addHeaders(HeaderResponse const& headers, Encoding type);
-        std::ostream&       addHeaders(HeaderResponse const& headers, std::size_t length);
-    private:
-        std::ostream&       addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader);
+        friend std::istream& operator>>(std::istream& stream, Response& response)  {response.read(stream);return stream;}
+        void read(std::istream& stream);
+
+        using Header = std::variant<std::reference_wrapper<HeaderResponse const>, std::reference_wrapper<HeaderPassThrough const>>;
+
+        void addHeaders(Header const& headers);
+        std::ostream& body(BodyEncoding encoding);
 };
 
 }

@@ -2,7 +2,7 @@
 #include "StreamInput.h"
 #include "Util.h"
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 TEST(StreamInputTest, ConstructBuf)
 {

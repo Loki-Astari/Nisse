@@ -10,18 +10,18 @@
  */
 void eventCallback(evutil_socket_t fd, short eventType, void* data)
 {
-    ThorsAnvil::Nisse::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::EventHandler*>(data);
-    eventHandler.eventAction(fd, static_cast<ThorsAnvil::Nisse::EventType>(eventType));
+    ThorsAnvil::Nisse::Server::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::Server::EventHandler*>(data);
+    eventHandler.eventAction(fd, static_cast<ThorsAnvil::Nisse::Server::EventType>(eventType));
 }
 
 void controlTimerCallback(evutil_socket_t, short, void* data)
 {
-    ThorsAnvil::Nisse::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::EventHandler*>(data);
+    ThorsAnvil::Nisse::Server::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::Server::EventHandler*>(data);
     eventHandler.controlTimerAction();
 }
 
 namespace TAS   = ThorsAnvil::ThorsSocket;
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 /*
  * EventLib wrapper. Set up C-Function callbacks
@@ -35,10 +35,10 @@ Event::Event(EventBase& eventBase, EventHandler& eventHandler)
 {}
 
 EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
-    : jobQueue(jobQueue)
-    , store(store)
-    , timer(eventBase, *this)
-    , finished(false)
+    : jobQueue{jobQueue}
+    , store{store}
+    , timer{eventBase, *this}
+    , finished{false}
 {
     timer.add(controlTimerPause);
 }
@@ -75,6 +75,21 @@ void EventHandler::add(TAS::SocketStream&& stream, StreamCreator&& streamCreator
                                                 Event{eventBase, fd, EventType::Write, *this},
                                                 pynt
                                                });
+}
+
+void EventHandler::addLinkedStream(int fd, int owner, EventType initialWait)
+{
+    store.requestChange(StateUpdateCreateLinkStream{fd,
+                                                    owner,
+                                                    initialWait,
+                                                    Event{eventBase, fd, EventType::Read, *this},
+                                                    Event{eventBase, fd, EventType::Write, *this},
+                                                   });
+}
+
+void EventHandler::remLinkedStream(int fd)
+{
+    store.requestChange(StateUpdateRemove{fd});
 }
 
 void EventHandler::eventAction(int fd, EventType type)
@@ -115,7 +130,7 @@ void EventHandler::addJob(CoRoutine& work, int fd)
      */
     jobQueue.addJob([&work, fd, &store = this->store]()
     {
-        TaskYieldState task = TaskYieldState::Remove;
+        TaskYieldAction task = {TaskYieldState::Remove, fd};
         try
         {
             if (work()) {
@@ -130,16 +145,16 @@ void EventHandler::addJob(CoRoutine& work, int fd)
         {
             ThorsLogWarning("ThorsAnvil::Nissa::EventHandler::", "addJob", "jobQueue::job: Ignoring Exception: Unknown");
         }
-        switch (task)
+        switch (task.state)
         {
             case TaskYieldState::Remove:
-                store.requestChange(StateUpdateRemove{fd});
+                store.requestChange(StateUpdateRemove{task.fd});
                 break;
             case TaskYieldState::RestoreRead:
-                store.requestChange(StateUpdateRestoreRead{fd});
+                store.requestChange(StateUpdateRestoreRead{task.fd});
                 break;
             case TaskYieldState::RestoreWrite:
-                store.requestChange(StateUpdateRestoreWrite{fd});
+                store.requestChange(StateUpdateRestoreWrite{task.fd});
                 break;
         }
     });

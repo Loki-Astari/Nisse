@@ -34,7 +34,7 @@
  */
 
 namespace TAS   = ThorsAnvil::ThorsSocket;
-namespace ThorsAnvil::Nisse
+namespace ThorsAnvil::Nisse::Server
 {
 
 /*
@@ -55,8 +55,14 @@ struct StreamData
     Event               writeEvent;
     Pynt*               pynt;
 };
+struct LinkedStreamData
+{
+    CoRoutine*          linkedStreamCoRoutine;
+    Event               readEvent;
+    Event               writeEvent;
+};
 
-using StoreData = std::variant<ServerData, StreamData>;
+using StoreData = std::variant<ServerData, StreamData, LinkedStreamData>;
 
 
 /*
@@ -82,6 +88,15 @@ struct StateUpdateCreateStream
     Pynt&               pynt;
 };
 
+struct StateUpdateCreateLinkStream
+{
+    int                 fd;
+    int                 linkedStream;
+    EventType           initialWait;
+    Event               readEvent;
+    Event               writeEvent;
+};
+
 struct StateUpdateRemove
 {
     int     fd;
@@ -98,7 +113,7 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -124,14 +139,16 @@ class Store
             ApplyUpdate(Store& store)
                 : store(store)
             {}
-            void operator()(StateUpdateCreateServer& update){store(update);}
-            void operator()(StateUpdateCreateStream& update){store(update);}
-            void operator()(StateUpdateRemove& update)      {store(update);}
-            void operator()(StateUpdateRestoreRead& update) {store(update);}
-            void operator()(StateUpdateRestoreWrite& update){store(update);}
+            void operator()(StateUpdateCreateServer& update)    {store(update);}
+            void operator()(StateUpdateCreateStream& update)    {store(update);}
+            void operator()(StateUpdateCreateLinkStream& update){store(update);}
+            void operator()(StateUpdateRemove& update)          {store(update);}
+            void operator()(StateUpdateRestoreRead& update)     {store(update);}
+            void operator()(StateUpdateRestoreWrite& update)    {store(update);}
         };
         void operator()(StateUpdateCreateServer& update);
         void operator()(StateUpdateCreateStream& update);
+        void operator()(StateUpdateCreateLinkStream& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);
         void operator()(StateUpdateRestoreWrite& update);

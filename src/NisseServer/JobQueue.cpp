@@ -1,10 +1,10 @@
 #include "JobQueue.h"
 #include <ThorsLogging/ThorsLogging.h>
 
-using namespace ThorsAnvil::Nisse;
+using namespace ThorsAnvil::Nisse::Server;
 
 JobQueue::JobQueue(int workerCount)
-    : finished(false)
+    : finished{false}
 {
     try
     {

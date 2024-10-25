@@ -33,13 +33,14 @@ extern "C" void eventCallback(evutil_socket_t fd, short eventType, void* data);
 extern "C" void controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
 
 namespace TAS   = ThorsAnvil::ThorsSocket;
-namespace ThorsAnvil::Nisse
+namespace ThorsAnvil::Nisse::Server
 {
 
 class JobQueue;
 class Store;
 struct StreamData;
 struct ServerData;
+struct LinkedStreamData;
 
 class EventHandler
 {
@@ -58,6 +59,8 @@ class EventHandler
         void stop();
         void add(TAS::Server&& stream, ServerCreator&& creator, Pynt& pynt);
         void add(TAS::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
+        void addLinkedStream(int fd, int owner, EventType initialWait);
+        void remLinkedStream(int fd);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
@@ -78,9 +81,9 @@ class EventHandler
                 , fd(fd)
                 , type(type)
             {}
-            void operator()(ServerData& info) {handler.addJob(info.coRoutine, fd);}
-            void operator()(StreamData& info) {if (handler.checkFileDescriptorOK(fd, type)) {handler.addJob(info.coRoutine, fd);}}
-
+            void operator()(ServerData& info)       {handler.addJob(info.coRoutine, fd);}
+            void operator()(StreamData& info)       {if (handler.checkFileDescriptorOK(fd, type)) {handler.addJob(info.coRoutine, fd);}}
+            void operator()(LinkedStreamData& info) {handler.addJob(*(info.linkedStreamCoRoutine), fd);}
         };
         bool checkFileDescriptorOK(int fd, EventType type);
         void addJob(CoRoutine& work, int fd);

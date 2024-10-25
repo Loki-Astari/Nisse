@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 using std::literals::string_literals::operator""s;
 using std::literals::string_view_literals::operator""sv;
@@ -60,9 +60,12 @@ Response::~Response()
 {
     if (stream.rdbuf() == nullptr)
     {
-        std::cerr << "\tSending minimum required data\n";
-        baseStream << version << " " << statusCode << "\r\n"
-                   << "content-length: 0\r\n"
+        if (!headerSent)
+        {
+            baseStream << version << " " << statusCode << "\r\n";
+            headerSent = true;
+        }
+        baseStream << "content-length: 0\r\n"
                    << "\r\n"
                    << std::flush;
     }
@@ -73,28 +76,65 @@ void Response::setStatus(int newStatusCode)
     statusCode = standardCodes[newStatusCode];
 }
 
-std::ostream& Response::addHeaders(HeaderResponse const& headers, Encoding type)
+struct IgnoreLine
 {
-    return addHeaders(headers, StreamBufOutput{baseStream, type}, "transfer-encoding: chunked\r\n");
-}
-
-std::ostream& Response::addHeaders(HeaderResponse const& headers, std::size_t length)
-{
-    return addHeaders(headers, StreamBufOutput{baseStream, length}, "content-length: "s + std::to_string(length) + "\r\n");
-}
-
-std::ostream& Response::addHeaders(HeaderResponse const& headers, StreamBufOutput&& buffer, std::string_view extraHeader)
-{
-    if (headerSent) {
-        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers have already been sent");
+    friend std::istream& operator>>(std::istream& stream, IgnoreLine const&)
+    {
+        return stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
-    baseStream << version << " " << statusCode << "\r\n"
-               << headers
-               << extraHeader
+};
+
+void Response::read(std::istream& stream)
+{
+    int code;
+    if (stream >> version >> code >> IgnoreLine{})
+    {
+        statusCode = standardCodes[code];
+    }
+}
+
+namespace ThorsAnvil::Nisse::HTTP
+{
+    std::ostream& operator<<(std::ostream& stream, Response::Header const& header)
+    {
+        struct HeaderStream
+        {
+            std::ostream& stream;
+            HeaderStream(std::ostream& stream)
+                : stream(stream)
+            {}
+            std::ostream& operator()(HeaderResponse const& header)    {return stream << header;}
+            std::ostream& operator()(HeaderPassThrough const& header) {return stream << header;}
+        };
+        return std::visit(HeaderStream{stream}, header);
+    }
+
+}
+
+void Response::addHeaders(Response::Header const& headers)
+{
+    if (stream.rdbuf() != nullptr) {
+        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers can not be sent after the body has been started");
+    }
+
+    if (!headerSent)
+    {
+        baseStream << version << " " << statusCode << "\r\n";
+        headerSent = true;
+    }
+
+    baseStream << headers;
+}
+
+std::ostream& Response::body(BodyEncoding bodyEncoding)
+{
+    if (!headerSent) {
+        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers should be sent before getting the body");
+    }
+    baseStream << bodyEncoding
                << "\r\n"
                << std::flush;
-    headerSent = true;
 
-    stream.addBuffer(std::move(buffer));
+    stream.addBuffer(StreamBufOutput{baseStream, bodyEncoding});
     return stream;
 }

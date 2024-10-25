@@ -1,6 +1,6 @@
 #include "StreamOutput.h"
 
-using namespace ThorsAnvil::Nisse::NisseHTTP;
+using namespace ThorsAnvil::Nisse::HTTP;
 
 StreamBufOutput::~StreamBufOutput()
 {
@@ -8,39 +8,42 @@ StreamBufOutput::~StreamBufOutput()
 }
 
 StreamBufOutput::StreamBufOutput(Complete&& complete)
-    : remaining(0)
-    , buffer(nullptr)
-    , chunked(false)
-    , firstChunk(false)
-    , complete(std::move(complete))
-    , chunkBuffer(0)
+    : remaining{0}
+    , buffer{nullptr}
+    , chunked{false}
+    , firstChunk{false}
+    , complete{std::move(complete)}
+    , chunkBuffer{0}
 {}
 
-StreamBufOutput::StreamBufOutput(std::ostream& stream, std::size_t length, Complete&& complete)
-    : remaining(length)
-    , buffer(stream.rdbuf())
-    , chunked(false)
-    , firstChunk(false)
-    , complete(std::move(complete))
-    , chunkBuffer(0)
-{}
-
-StreamBufOutput::StreamBufOutput(std::ostream& stream, Encoding /*encoding*/, Complete&& complete)
-    : remaining(chunkBufferSize)
-    , buffer(stream.rdbuf())
-    , chunked(true)
-    , firstChunk(true)
-    , complete(std::move(complete))
-    , chunkBuffer(chunkBufferSize)
-{}
+StreamBufOutput::StreamBufOutput(std::ostream& stream, BodyEncoding bodyEncoding, Complete&& complete)
+    : remaining{0}
+    , buffer{stream.rdbuf()}
+    , chunked{false}
+    , firstChunk{false}
+    , complete{std::move(complete)}
+    , chunkBuffer{0}
+{
+    struct BodyEncodingInit
+    {
+        StreamBufOutput* self;
+        BodyEncodingInit(StreamBufOutput* self)
+            : self(self)
+        {}
+        void operator()(std::size_t contentLength)              {self->remaining = contentLength;}
+        void operator()(std::streamsize contentLength)          {self->remaining = contentLength;}
+        void operator()(Encoding /*encoding (Always chunked)*/) {self->remaining = chunkBufferSize; self->chunked = true; self->firstChunk = true;self->chunkBuffer.resize(chunkBufferSize);}
+    };
+    std::visit(BodyEncodingInit{this}, bodyEncoding);
+}
 
 StreamBufOutput::StreamBufOutput(StreamBufOutput&& move) noexcept
-    : remaining(std::exchange(move.remaining, 0))
-    , buffer(std::exchange(move.buffer, nullptr))
-    , chunked(std::exchange(move.chunked, false))
-    , firstChunk(std::exchange(move.firstChunk, false))
-    , complete(std::exchange(move.complete, [](){}))
-    , chunkBuffer(std::move(move.chunkBuffer))
+    : remaining{std::exchange(move.remaining, 0)}
+    , buffer{std::exchange(move.buffer, nullptr)}
+    , chunked{std::exchange(move.chunked, false)}
+    , firstChunk{std::exchange(move.firstChunk, false)}
+    , complete{std::exchange(move.complete, [](){})}
+    , chunkBuffer{std::move(move.chunkBuffer)}
 {}
 
 StreamBufOutput& StreamBufOutput::operator=(StreamBufOutput&& move) noexcept
@@ -101,9 +104,11 @@ void StreamBufOutput::done()
     if (chunked)
     {
         dumpBuffer();
+        //std::cerr << "Sending Tail\n";
         sendAllData("0\r\n\r\n", 5);
         remaining = 0;
         chunked = false;
+        //std::cerr << "Sync Buffer\n";
         buffer->pubsync();
     }
 }
