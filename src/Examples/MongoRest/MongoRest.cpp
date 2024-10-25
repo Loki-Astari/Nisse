@@ -1,6 +1,6 @@
+#include "MongoServer.h"
 #include "NisseServer/NisseServer.h"
 #include "NisseServer/PyntControl.h"
-#include "NisseServer/AsyncStream.h"
 #include "NisseHTTP/HTTPHandler.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
@@ -12,6 +12,7 @@ namespace TAS       = ThorsAnvil::ThorsSocket;
 namespace NServer   = ThorsAnvil::Nisse::Server;
 namespace NHTTP     = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
+namespace MRest     = ThorsAnvil::Nisse::Examples::MongoRest;
 
 TAS::ServerInit getSSLInit(FS::path certPath, int port)
 {
@@ -26,6 +27,7 @@ TAS::ServerInit getNormalInit(int port)
 {
     return TAS::ServerInfo{port};
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -42,10 +44,14 @@ int main(int argc, char* argv[])
 
         std::cout << "Nisse MongoRest: Port: " << port << " MongoHost: >" << mongoHost << "< Certificate Path: >" << (argc == 3 ? "NONE" : argv[3]) << "<\n";
 
-        NHTTP::HTTPHandler   http;
-        http.addPath(NHTTP::Method::GET, "/{command}", [&](NHTTP::Request& /*request*/, NHTTP::Response& /*response*/)
-        {
-        });
+        MRest::MongoServer  mongoServer;
+
+        NHTTP::HTTPHandler  http;
+        // CRUD Person Interface
+        http.addPath(NHTTP::Method::POST,   "/person/",     [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personCreate(request, response);});
+        http.addPath(NHTTP::Method::GET,    "/person/{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personGet(request, response);});
+        http.addPath(NHTTP::Method::PUT,    "/person/{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personUpdate(request, response);});
+        http.addPath(NHTTP::Method::DELETE, "/person/{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personDelete(request, response);});
 
         NServer::NisseServer   server;
         server.listen(serverInit, http);
