@@ -31,27 +31,33 @@ TAS::ServerInit getNormalInit(int port)
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3 && argc != 4)
+    if (argc != 6 && argc != 7)
     {
-        std::cerr << "Usage: MongoRest <port> <MongoHost> [<certificateDirectory>]\n";
+        std::cerr << "Usage: MongoRest <port> <MongoHost> <MongoUser> <MongoPass> <MongoDB> [<certificateDirectory>]\n";
         return 1;
     }
     try
     {
         int             port        = std::stoi(argv[1]);
         std::string     mongoHost   = argv[2];
-        TAS::ServerInit serverInit  = (argc == 3) ? getNormalInit(port) : getSSLInit(argv[3], port);
+        std::string     mongoUser   = argv[3];
+        std::string     mongoPass   = argv[4];
+        std::string     mongoDB     = argv[5];
+        TAS::ServerInit serverInit  = (argc == 6) ? getNormalInit(port) : getSSLInit(argv[6], port);
 
         std::cout << "Nisse MongoRest: Port: " << port << " MongoHost: >" << mongoHost << "< Certificate Path: >" << (argc == 3 ? "NONE" : argv[3]) << "<\n";
 
-        MRest::MongoServer  mongoServer;
+        MRest::MongoServer  mongoServer{mongoHost, 27017, mongoUser, mongoPass, mongoDB};
 
         NHTTP::HTTPHandler  http;
         // CRUD Person Interface
-        http.addPath(NHTTP::Method::POST,   "/person/",     [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personCreate(request, response);});
-        http.addPath(NHTTP::Method::GET,    "/person/{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personGet(request, response);});
-        http.addPath(NHTTP::Method::PUT,    "/person/{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personUpdate(request, response);});
-        http.addPath(NHTTP::Method::DELETE, "/person/{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personDelete(request, response);});
+        http.addPath(NHTTP::Method::POST,   "/person/",        [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personCreate(request, response);});
+        http.addPath(NHTTP::Method::GET,    "/person/Id-{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personGet(request, response);});
+        http.addPath(NHTTP::Method::PUT,    "/person/Id-{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personUpdate(request, response);});
+        http.addPath(NHTTP::Method::DELETE, "/person/Id-{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personDelete(request, response);});
+
+        // Search Person Interface
+        http.addPath(NHTTP::Method::GET,    "/person/find",    [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personFind(request, response);});
 
         NServer::NisseServer   server;
         server.listen(serverInit, http);
