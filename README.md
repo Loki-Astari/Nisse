@@ -63,19 +63,16 @@ Extends the `PyntHTTP` interface. Provides an interface to register lambdas to s
 
 Note: `{file}` will match any valid URL characters (except '/'). The matched characters are available in the variable `file` that is part of the `request` object.
 
-## Example:
-### [SimpleServer](src/SimpleServer/Nisse.cpp):
-
-Provides a trivial server that listens on port `8080` for an `https://` connection and `8081` for and `http://` connection that will serve an HTML "Hello-World" page for the paths: `/HW{Who}.html` and `/CK{Who}.html`.
-
 ## Building:
 
 ### Dependencies:
-You will need [boost](https://www.boost.org/) and [ThorsMongo](https://github.com/Loki-Astari/ThorsMongo).  
+You will need [boost](https://www.boost.org/), [libEvent](https://libevent.org/)  and [ThorsMongo](https://github.com/Loki-Astari/ThorsMongo).  
 
 To install boost libraries `brew install boost` or (check google for you platform).  
 
-To install ThorsMongo the easiest way to install is `brew install thors-mongo` but checkout the above project to see alternative ways to install or build.
+To install libEvent `brew install libEvent` or (check the libEvent website).  
+
+To install ThorsMongo the easiest way to install is `brew install thors-mongo` but checkout the above project to see alternative ways to install or build.  
 
 ### Compile and Run:
 ```bash
@@ -83,7 +80,7 @@ To install ThorsMongo the easiest way to install is `brew install thors-mongo` b
 > cd Nisse
 > ./configure
 > make
-> ./build/bin/Nisse
+> ./build/bin/HelloWorld
 ```
 
 ## Nisse
@@ -91,5 +88,19 @@ To install ThorsMongo the easiest way to install is `brew install thors-mongo` b
 From the [Scandinavia folklore](https://en.wikipedia.org/wiki/Nisse_\(folklore\)). Small gnome like creatures that live in the farm barn and will help out with tasks in exchange for gifts.
 
 Since `Nisse` like a small drink the interface to them is a `Pynt` (Pint).
+
+## Example Applications:
+
+### [HelloWorld](src/Examples/HelloWorld/HelloWorld.cpp)
+
+Provides a trivial server that that will serve an HTML "Hello-World" page for the paths: `/HW{Who}.html` and `/CK{Who}.html` that are programmatically generated via the streams. Note: **ALL** the streams are async non-blocking. Any IO operations that would block release the thread to do processes other requests.
+
+### [WebServer](src/Examples/WebServer/WebServer.cpp):
+
+Provides a trivial web server that that will serve an HTML pages from files on the local filesystem. Note: **ALL** the streams are async non-blocking. Any IO operations that would block release the thread to do processes other requests.
+
+### [ReverseProxy](src/Examples/ReverseProxy/ReverseProxy.cpp):
+
+Provides a trivial reverse proxy that that will forward requests to an application server and return the result to the original connection. Note: **ALL** the streams are async non-blocking. Any IO operations that would block release the thread to do processes other requests.
 
 
