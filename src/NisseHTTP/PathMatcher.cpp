@@ -1,46 +1,91 @@
 #include "PathMatcher.h"
+#include <ThorsLogging/ThorsLogging.h>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
 void PathMatcher::addPath(std::string pathMatch, Action&& action)
 {
-    // Variables to be built.
-    std::string     expr;       // Convert pathMatch into a regular expression.
-    NameList        names;      // Extract list of names from pathMatch.
+    MatchList   matchSections;
+    NameList    names;
 
-    // Search variables
-    std::smatch     searchMatch;
-    std::regex      pathNameExpr{"\\{[^}]*\\}"};
+    std::size_t prefix   = 0;
+    std::size_t nameBeg  = 0;
+    std::size_t nameEnd  = 0;
+    std::size_t size     = pathMatch.size();
+    bool        first    = true;
 
-    while (std::regex_search(pathMatch, searchMatch, pathNameExpr))
+    // /path1/{name}/{id}
+    // Section: >/path1/<
+    // Name   : >name<
+    // Section: >/<
+    // Name   : >id<
+    while (prefix != size)
     {
-        expr += pathMatch.substr(0, searchMatch.position());
-        expr += "([^/]*)";
+        nameBeg = std::min(size, pathMatch.find('{', prefix));
+        nameEnd  = std::min(size, pathMatch.find('}', nameBeg));
 
-        std::string match = searchMatch.str();
-        names.emplace_back(match.substr(1, match.size() - 2));
+        if (!first && prefix == nameBeg) {
+            ThorsLogAndThrow("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Multiple name sections with no gap");
+        }
+        matchSections.emplace_back(pathMatch.substr(prefix, nameBeg - prefix));
+        first = false;
+        if (nameBeg == size) {
+            break;
+        }
 
-        pathMatch = searchMatch.suffix().str();
+        if (nameEnd == size) {
+            ThorsLogAndThrow("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Badly nested braces.");
+        }
+        if (nameBeg + 1 == nameEnd) {
+            ThorsLogAndThrow("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Name section with no name");
+        }
+
+        names.emplace_back(pathMatch.substr(nameBeg + 1, nameEnd - nameBeg - 1));
+        prefix = nameEnd + 1;
     }
-    expr += pathMatch;
-
-    // Add the path information to the list.
-    paths.emplace_back(std::regex{expr}, std::move(names), std::move(action));
+    if (nameBeg != size) {
+        matchSections.emplace_back("");
+    }
+    paths.emplace_back(std::move(matchSections), std::move(names), std::move(action));
 }
 
-bool PathMatcher::findMatch(std::string const& path, Request& request, Response& response)
+bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response)
+{
+    Match   result;
+
+    std::string_view    prefix = path.substr(0, pathMatchInfo.matchSections[0].size());
+    path.remove_prefix(pathMatchInfo.matchSections[0].size());
+
+    if (pathMatchInfo.matchSections[0] != prefix) {
+        return false;
+    }
+
+    for (std::size_t loop = 1; loop < pathMatchInfo.matchSections.size(); ++loop)
+    {
+        auto find = pathMatchInfo.matchSections[loop] == "" ? path.size() : path.find(pathMatchInfo.matchSections[loop]);
+
+        if (find == std::string::npos) {
+            return false;
+        }
+        result.emplace(pathMatchInfo.names[loop - 1], path.substr(0, find));
+
+        path.remove_prefix(find);
+        path.remove_prefix(pathMatchInfo.matchSections[loop].size());
+    }
+
+    if (!path.empty()) {
+        return false;
+    }
+
+    pathMatchInfo.action(result, request, response);
+    return true;
+}
+
+bool PathMatcher::findMatch(std::string_view path, Request& request, Response& response)
 {
     for (auto const& pathMatchInfo: paths)
     {
-        std::smatch     match{};
-        if (std::regex_match(path, match, pathMatchInfo.test))
-        {
-            Match   result;
-            for (std::size_t loop = 0; loop < pathMatchInfo.names.size(); ++loop)
-            {
-                result.insert({pathMatchInfo.names[loop], match[loop+1].str()});
-            }
-            pathMatchInfo.action(result, request, response);
+        if (checkPathMatch(pathMatchInfo, path, request, response)) {
             return true;
         }
     }

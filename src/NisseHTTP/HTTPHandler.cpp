@@ -1,6 +1,7 @@
 #include "HTTPHandler.h"
 #include "Request.h"
 #include "Response.h"
+#include <regex>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

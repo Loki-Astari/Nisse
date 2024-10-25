@@ -181,4 +181,57 @@ TEST(PathMatcherTest, NameMatchMultiple)
     EXPECT_EQ("path3", hit.begin()->second);
 }
 
+TEST(PathMatcherTest, NameMatchEverything)
+{
+    PathMatcher         pm;
+    int                 count = 0;
+    Match               hit;
+    pm.addPath("{all}", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+
+    std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
+    Request     request("http", ss);
+    Response    response(ss, Version::HTTP1_1);
+    pm.findMatch("/path1/path2/path3", request, response);
+
+    EXPECT_EQ(1, count);
+    EXPECT_EQ(1, hit.size());
+    EXPECT_EQ("all", hit.begin()->first);
+    EXPECT_EQ("/path1/path2/path3", hit.begin()->second);
+}
+
+TEST(PathMatcherTest, NameMatchFront)
+{
+    PathMatcher         pm;
+    int                 count = 0;
+    Match               hit;
+    pm.addPath("{prefix}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+
+    std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
+    Request     request("http", ss);
+    Response    response(ss, Version::HTTP1_1);
+    pm.findMatch("/path1/path2/path3", request, response);
+
+    EXPECT_EQ(1, count);
+    EXPECT_EQ(1, hit.size());
+    EXPECT_EQ("prefix", hit.begin()->first);
+    EXPECT_EQ("/path1/path2", hit.begin()->second);
+}
+
+TEST(PathMatcherTest, NameMatchBack)
+{
+    PathMatcher         pm;
+    int                 count = 0;
+    Match               hit;
+    pm.addPath("/path1{suffix}", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+
+    std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
+    Request     request("http", ss);
+    Response    response(ss, Version::HTTP1_1);
+    pm.findMatch("/path1/path2/path3", request, response);
+
+    EXPECT_EQ(1, count);
+    EXPECT_EQ(1, hit.size());
+    EXPECT_EQ("suffix", hit.begin()->first);
+    EXPECT_EQ("/path2/path3", hit.begin()->second);
+}
 

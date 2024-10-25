@@ -5,23 +5,23 @@
 #include <vector>
 #include <string>
 #include <functional>
-#include <regex>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
 
 class Request;
 class Response;
-
 using Match     = std::map<std::string, std::string>;
-using Action    = std::function<void(Match const&, Request&, Response&)>;
-using NameList  = std::vector<std::string>;
 
 class PathMatcher
 {
+    using Action    = std::function<void(Match const&, Request&, Response&)>;
+    using NameList  = std::vector<std::string>;
+    using MatchList = std::vector<std::string>;
+
     struct MatchInfo
     {
-        std::regex  test;
+        MatchList   matchSections;
         NameList    names;
         Action      action;
     };
@@ -31,7 +31,9 @@ class PathMatcher
     public:
         void addPath(std::string pathMatch, Action&& action);
 
-        bool findMatch(std::string const& path, Request& request, Response& response);
+        bool findMatch(std::string_view path, Request& request, Response& response);
+    private:
+        bool checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response);
 };
 
 }

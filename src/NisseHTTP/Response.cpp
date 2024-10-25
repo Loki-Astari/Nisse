@@ -60,7 +60,6 @@ Response::~Response()
 {
     if (stream.rdbuf() == nullptr)
     {
-        std::cerr << "\tSending minimum required data\n";
         if (!headerSent)
         {
             baseStream << version << " " << statusCode << "\r\n";
