@@ -23,7 +23,9 @@ class MongoServer
         void personDelete(NHTTP::Request& request, NHTTP::Response& response);
 
         // FIND
-        void personFind(NHTTP::Request& request, NHTTP::Response& response);
+        void personFindByName(NHTTP::Request& request, NHTTP::Response& response);
+        void personFindByTel(NHTTP::Request& request, NHTTP::Response& response);
+        void personFindByZip(NHTTP::Request& request, NHTTP::Response& response);
     private:
         TAMongo::ObjectID   getIdFromRequest(NHTTP::Request& request);
         void                requestFailed(NHTTP::Response& response, std::initializer_list<std::string> messages);

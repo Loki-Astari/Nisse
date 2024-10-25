@@ -30,10 +30,16 @@ struct ContactInfo
     Telephone           telephone;
 };
 
+struct Name
+{
+    std::string         first;
+    std::string         last;
+};
+
 struct Person
 {
     TAMongo::ObjectID   _id;
-    std::string         name;
+    Name                name;
     int                 age;
     ContactInfo         contactInfo;
 };
@@ -41,6 +47,7 @@ struct Person
 ThorsAnvil_MakeTrait(Address,       street1, street2, city, state, zip);
 ThorsAnvil_MakeTrait(Telephone,     type, number);
 ThorsAnvil_MakeTrait(ContactInfo,   address, telephone);
+ThorsAnvil_MakeTrait(Name,          first, last);
 ThorsAnvil_MakeTrait(Person,        _id, name, age, contactInfo);
 
 MongoServer::MongoServer(std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
@@ -48,7 +55,17 @@ MongoServer::MongoServer(std::string const& host, int port, std::string const& u
 {}
 
 ThorsMongo_CreateFieldAccess(Person, _id);
-using FindById = ThorsMongo_FilterFromAccess(Eq, Person, _id);
+ThorsMongo_CreateFieldAccess(Person, name, first);
+ThorsMongo_CreateFieldAccess(Person, name, last);
+ThorsMongo_CreateFieldAccess(Person, contactInfo, telephone, number);
+ThorsMongo_CreateFieldAccess(Person, contactInfo, address, zip);
+
+using FindById      = ThorsMongo_FilterFromAccess(Eq, Person, _id);
+using FindByFName   = ThorsMongo_FilterFromAccess(Eq, Person, name, first);
+using FindByLName   = ThorsMongo_FilterFromAccess(Eq, Person, name, last);
+using FindByName    = TAMongo::QueryOp::And<FindByFName, FindByLName>;
+using FindByTel     = ThorsMongo_FilterFromAccess(Eq, Person, contactInfo, telephone, number);
+using FindByZip     = ThorsMongo_FilterFromAccess(Eq, Person, contactInfo, address, zip);
 
 TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
 {
@@ -146,7 +163,71 @@ void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& respons
     }
 }
 
-void MongoServer::personFind(NHTTP::Request& request, NHTTP::Response& response)
+void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<Person>& result)
 {
-    //mongo["test"]["Person"].find()
+
+    std::ostream& output = response.body(NHTTP::Encoding::Chunked);
+    output << '[';
+    std::string sep = "";
+    for (auto const& p: result)
+    {
+        output << sep << TAJson::jsonExporter(p);
+        sep = ", ";
+    }
+    output << ']';
+}
+
+void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& response)
+{
+    std::string first = request.variables()["first"];
+    std::string last  = request.variables()["last"];
+
+    TAMongo::FindRange<Person> result;
+
+    if (first == "" && last == "")
+    {
+        response.setStatus(400);
+    }
+    if (first == "")
+    {
+        result = mongo["test"]["Person"].find<Person>(FindByLName{last});
+    }
+    else if (last == "")
+    {
+        result = mongo["test"]["Person"].find<Person>(FindByFName{first});
+    }
+    else
+    {
+        result = mongo["test"]["Person"].find<Person>(FindByName{first, last});
+    }
+
+    if (!result) {
+        return requestFailed(response, {result.getHRErrorMessage()});
+    }
+
+    requestStreamRange(response, result);
+}
+
+void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& response)
+{
+    std::string tel = request.variables()["tel"];
+
+    auto result = mongo["test"]["Person"].find<Person>(FindByTel{tel});
+    if (!result) {
+        return requestFailed(response, {result.getHRErrorMessage()});
+    }
+
+    requestStreamRange(response, result);
+}
+
+void MongoServer::personFindByZip(NHTTP::Request& request, NHTTP::Response& response)
+{
+    std::string tel = request.variables()["zip"];
+
+    auto result = mongo["test"]["Person"].find<Person>(FindByZip{tel});
+    if (!result) {
+        return requestFailed(response, {result.getHRErrorMessage()});
+    }
+
+    requestStreamRange(response, result);
 }

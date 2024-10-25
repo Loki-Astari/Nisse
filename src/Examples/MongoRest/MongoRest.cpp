@@ -57,7 +57,9 @@ int main(int argc, char* argv[])
         http.addPath(NHTTP::Method::DELETE, "/person/Id-{id}", [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personDelete(request, response);});
 
         // Search Person Interface
-        http.addPath(NHTTP::Method::GET,    "/person/find",    [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personFind(request, response);});
+        http.addPath(NHTTP::Method::GET,    "/person/findByName/{first}/{last}",[&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personFindByName(request, response);});
+        http.addPath(NHTTP::Method::GET,    "/person/findByTel/{tel}",          [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personFindByTel(request, response);});
+        http.addPath(NHTTP::Method::GET,    "/person/findByZip/{zip}",          [&](NHTTP::Request& request, NHTTP::Response& response) {mongoServer.personFindByZip(request, response);});
 
         NServer::NisseServer   server;
         server.listen(serverInit, http);
