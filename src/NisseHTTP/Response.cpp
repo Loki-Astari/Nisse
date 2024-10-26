@@ -49,6 +49,11 @@ StatusCode const& StandardStatusCodeMap::operator[](int code)
 
 StandardStatusCodeMap standardCodes;
 
+void StatusCode::print(std::ostream& stream) const
+{
+    stream << code << " " << message;
+}
+
 Response::Response(std::ostream& stream, Version version, int responseCode)
     : version{version}
     , statusCode{standardCodes[responseCode]}
@@ -71,11 +76,6 @@ Response::~Response()
     }
 }
 
-void Response::setStatus(int newStatusCode)
-{
-    statusCode = standardCodes[newStatusCode];
-}
-
 struct IgnoreLine
 {
     friend std::istream& operator>>(std::istream& stream, IgnoreLine const&)
@@ -95,7 +95,7 @@ void Response::read(std::istream& stream)
 
 namespace ThorsAnvil::Nisse::HTTP
 {
-    std::ostream& operator<<(std::ostream& stream, Response::Header const& header)
+    std::ostream& operator<<(std::ostream& stream, Header const& header)
     {
         struct HeaderStream
         {
@@ -111,7 +111,12 @@ namespace ThorsAnvil::Nisse::HTTP
 
 }
 
-void Response::addHeaders(Response::Header const& headers)
+void Response::setStatus(int newStatusCode)
+{
+    statusCode = standardCodes[newStatusCode];
+}
+
+void Response::addHeaders(Header const& headers)
 {
     if (stream.rdbuf() != nullptr) {
         ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers can not be sent after the body has been started");
@@ -137,4 +142,12 @@ std::ostream& Response::body(BodyEncoding bodyEncoding)
 
     stream.addBuffer(StreamBufOutput{baseStream, bodyEncoding});
     return stream;
+}
+
+void Response::error(int code, std::string_view errorMessage)
+{
+    setStatus(code);
+    HeaderResponse  header;
+    header.add("Error", errorMessage);
+    addHeaders(header);
 }

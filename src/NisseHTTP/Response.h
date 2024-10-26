@@ -18,10 +18,8 @@ struct StatusCode
     int                 code;
     std::string_view    message;
 
-    friend std::ostream& operator<<(std::ostream& stream, StatusCode const& statusCode)
-    {
-        return stream << statusCode.code << " " << statusCode.message;
-    }
+    friend std::ostream& operator<<(std::ostream& stream, StatusCode const& statusCode) {statusCode.print(stream);return stream;}
+    void print(std::ostream& stream) const;
 };
 
 class StandardStatusCodeMap
@@ -33,6 +31,7 @@ class StandardStatusCodeMap
         StatusCode const& operator[](int code);
 };
 
+using Header = std::variant<std::reference_wrapper<HeaderResponse const>, std::reference_wrapper<HeaderPassThrough const>>;
 
 class Response
 {
@@ -46,15 +45,19 @@ class Response
     public:
         Response(std::ostream& stream, Version version, int code = 200);
         ~Response();
-        void                setStatus(int code);
 
+        // Read a response from another server.
         friend std::istream& operator>>(std::istream& stream, Response& response)  {response.read(stream);return stream;}
         void read(std::istream& stream);
 
-        using Header = std::variant<std::reference_wrapper<HeaderResponse const>, std::reference_wrapper<HeaderPassThrough const>>;
 
-        void addHeaders(Header const& headers);
+        // Build up the response message.
+        void          setStatus(int code);
+        void          addHeaders(Header const& headers);
         std::ostream& body(BodyEncoding encoding);
+
+        // Simplifications to handling common cases.
+        void          error(int code, std::string_view errorMessage);   // Call(s) setStatus() adds A single header with the Error Message.
 };
 
 }

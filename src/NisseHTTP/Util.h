@@ -28,11 +28,11 @@ std::ostream& operator<<(std::ostream&, Encoding const& e);
 
 using RequestVariables = std::map<std::string, std::string>;
 
-inline bool ichar_equals(char a, char b)
+static auto ichar_equals = [](char a, char b)
 {
     return std::tolower(static_cast<unsigned char>(a)) ==
            std::tolower(static_cast<unsigned char>(b));
-}
+};
 
 }
 
