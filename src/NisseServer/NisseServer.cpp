@@ -87,9 +87,9 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
     };
 }
 
-void NisseServer::listen(TAS::ServerInit listenerInit, Pynt& pynt)
+void NisseServer::listen(TAS::ServerInit&& listenerInit, Pynt& pynt)
 {
-    TAS::Server  server{listenerInit, TAS::Blocking::No};
+    TAS::Server  server{std::move(listenerInit), TAS::Blocking::No};
 
     eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pynt);
 }

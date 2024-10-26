@@ -40,7 +40,7 @@ class NisseServer
 
         void run();
         void stop();
-        void listen(TAS::ServerInit listenerInit, Pynt& pynt);
+        void listen(TAS::ServerInit&& listenerInit, Pynt& pynt);
 
     private:
         CoRoutine  createStreamJob(StreamData& info);
