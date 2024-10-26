@@ -5,10 +5,7 @@
 #include "Context.h"
 #include <ThorsSocket/SocketStream.h>
 
-namespace ThorsAnvil::DB::Mongo
-{
-    class ThorsMongo;
-}
+namespace TAS = ThorsAnvil::ThorsSocket;
 
 namespace ThorsAnvil::Nisse::Server
 {
@@ -18,8 +15,7 @@ class AsyncStream
     TAS::Socket&        socket;
     Context&            context;
     public:
-        AsyncStream(ThorsAnvil::ThorsSocket::SocketStream& stream, Context& context, EventType initialWait);
-        AsyncStream(ThorsAnvil::DB::Mongo::ThorsMongo& stream, Context& context, EventType initialWait);
+        AsyncStream(TAS::Socket& socket, Context& context, EventType initialWait);
         ~AsyncStream();
 };
 

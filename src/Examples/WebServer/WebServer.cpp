@@ -47,7 +47,7 @@ class WebServer: public TANS::NisseServer
         }
 
         TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
-        TANS::AsyncStream       async(file, request.getContext(), TANS::EventType::Read);
+        TANS::AsyncStream       async(file.getSocket(), request.getContext(), TANS::EventType::Read);
 
         response.body(TANH::Encoding::Chunked) << file.rdbuf();
     }

@@ -35,23 +35,23 @@ class ReverseProxy: public TANS::NisseServer
     void handleRequest(TANH::Request& request, TANH::Response& response)
     {
         TASock::SocketInfo      init{dest, destPort};
-        TASock::SocketStream    socket{TASock::Socket{init, TASock::Blocking::No}};
-        TANS::AsyncStream       async(socket, request.getContext(), TANS::EventType::Write);
+        TASock::SocketStream    stream{TASock::Socket{init, TASock::Blocking::No}};
+        TANS::AsyncStream       async(stream.getSocket(), request.getContext(), TANS::EventType::Write);
 
-        if (!socket) {
+        if (!stream) {
             return response.error(500, "Failed to open socket");
         }
 
         // Step 1:
         // Forward the request.
-        socket << request
+        stream << request
                << request.body().rdbuf()
                << std::flush;
 
         // Step 2: Read the reply and return.
-        socket >> response;
-        TANH::HeaderPassThrough headers(socket);
-        TANH::StreamInput       body(socket, headers.getEncoding());
+        stream >> response;
+        TANH::HeaderPassThrough headers(stream);
+        TANH::StreamInput       body(stream, headers.getEncoding());
 
         // Step 3: Send the reply back to the originator.
         response.addHeaders(headers);

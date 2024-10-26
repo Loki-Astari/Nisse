@@ -106,7 +106,7 @@ TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
 void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     Person                  person;
     request.body() >> TAJson::jsonImporter(person);
 
@@ -121,7 +121,7 @@ void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& respons
 void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
     auto range = mongo["test"]["Person"].find<Person>(FindById{id});
@@ -142,7 +142,7 @@ void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
 void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
     Person                  person;
     request.body() >> TAJson::jsonImporter(person);
@@ -167,7 +167,7 @@ void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& respons
 void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
     auto result = mongo["test"]["Person"].findAndRemoveOne<Person>(FindById{id});
@@ -190,7 +190,7 @@ void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& respons
 void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     std::string             first = request.variables()["first"];
     std::string             last  = request.variables()["last"];
 
@@ -223,7 +223,7 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
 void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     std::string             tel = request.variables()["tel"];
 
     auto result = mongo["test"]["Person"].find<Person>(FindByTel{tel});
@@ -237,7 +237,7 @@ void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& resp
 void MongoServer::personFindByZip(NHTTP::Request& request, NHTTP::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     std::string             tel = request.variables()["zip"];
 
     auto result = mongo["test"]["Person"].find<Person>(FindByZip{tel});

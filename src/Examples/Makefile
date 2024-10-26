@@ -1,5 +1,5 @@
 THORSANVIL_ROOT             = $(realpath ../../)
 
-TARGET                      = WebServer ReverseProxy HelloWorld MongoRest
+TARGET                      = HelloWorld WebServer ReverseProxy MongoRest
 
 include $(THORSANVIL_ROOT)/build/tools/Project.Makefile
