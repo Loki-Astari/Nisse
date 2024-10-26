@@ -23,11 +23,11 @@ class WebServer: public TANS::NisseServer
             return TASock::ServerInfo{port};
         }
 
-        TASock::CertificateInfo     certificate{FS::canonical(*certPath /= "fullchain.pem"),
-                                                FS::canonical(*certPath /= "privkey.pem")
+        TASock::CertificateInfo     certificate{FS::canonical(FS::path(*certPath) /= "fullchain.pem"),
+                                                FS::canonical(FS::path(*certPath) /= "privkey.pem")
                                                };
         TASock::SSLctx              ctx{TASock::SSLMethodType::Server, certificate};
-        return TASock::SServerInfo{port, ctx};
+        return TASock::SServerInfo{port, std::move(ctx)};
     }
 
     void handleRequest(TANH::Request& request, TANH::Response& response)
