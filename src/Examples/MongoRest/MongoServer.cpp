@@ -50,10 +50,6 @@ ThorsAnvil_MakeTrait(ContactInfo,   address, telephone);
 ThorsAnvil_MakeTrait(Name,          first, last);
 ThorsAnvil_MakeTrait(Person,        _id, name, age, contactInfo);
 
-MongoServer::MongoServer(std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
-    : mongo(TAMongo::MongoURL{host, port}, TAMongo::Auth::UserNamePassword{user, password, db})
-{}
-
 ThorsMongo_CreateFieldAccess(Person, _id);
 ThorsMongo_CreateFieldAccess(Person, name, first);
 ThorsMongo_CreateFieldAccess(Person, name, last);
@@ -67,16 +63,6 @@ using FindByName    = TAMongo::QueryOp::And<FindByFName, FindByLName>;
 using FindByTel     = ThorsMongo_FilterFromAccess(Eq, Person, contactInfo, telephone, number);
 using FindByZip     = ThorsMongo_FilterFromAccess(Eq, Person, contactInfo, address, zip);
 
-TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
-{
-    TAMongo::ObjectID   result;
-
-    std::stringstream   ss(std::move(request.variables()["id"]));
-    ss >> TAJson::jsonImporter(result);
-
-    return result;
-}
-
 void MongoServer::requestFailed(NHTTP::Response& response, std::initializer_list<std::string> messages)
 {
     response.setStatus(404);
@@ -86,6 +72,34 @@ void MongoServer::requestFailed(NHTTP::Response& response, std::initializer_list
         headers.add("Error", message);
     }
     response.addHeaders(headers);
+}
+
+void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<Person>& result)
+{
+
+    std::ostream& output = response.body(NHTTP::Encoding::Chunked);
+    output << '[';
+    std::string sep = "";
+    for (auto const& p: result)
+    {
+        output << sep << TAJson::jsonExporter(p);
+        sep = ", ";
+    }
+    output << ']';
+}
+
+MongoServer::MongoServer(std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
+    : mongo(TAMongo::MongoURL{host, port}, TAMongo::Auth::UserNamePassword{user, password, db})
+{}
+
+TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
+{
+    TAMongo::ObjectID   result;
+
+    std::stringstream   ss(std::move(request.variables()["id"]));
+    ss >> TAJson::jsonImporter(result);
+
+    return result;
 }
 
 void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& response)
@@ -161,20 +175,6 @@ void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& respons
         // This was the value we removed.
         response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(*result.value);
     }
-}
-
-void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<Person>& result)
-{
-
-    std::ostream& output = response.body(NHTTP::Encoding::Chunked);
-    output << '[';
-    std::string sep = "";
-    for (auto const& p: result)
-    {
-        output << sep << TAJson::jsonExporter(p);
-        sep = ", ";
-    }
-    output << ']';
 }
 
 void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& response)
