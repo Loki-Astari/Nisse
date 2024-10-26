@@ -3,19 +3,23 @@
 
 #include "NisseConfig.h"
 #include "Context.h"
-#include "ThorsSocket/Socket.h"
-#include "ThorsSocket/SocketStream.h"
+#include <ThorsSocket/SocketStream.h>
 
-namespace TAS = ThorsAnvil::ThorsSocket;
+namespace ThorsAnvil::DB::Mongo
+{
+    class ThorsMongo;
+}
+
 namespace ThorsAnvil::Nisse::Server
 {
 
 class AsyncStream
 {
-    TAS::SocketStream&  stream;
+    TAS::Socket&        socket;
     Context&            context;
     public:
-        AsyncStream(TAS::SocketStream& stream, Context& context, EventType initialWait);
+        AsyncStream(ThorsAnvil::ThorsSocket::SocketStream& stream, Context& context, EventType initialWait);
+        AsyncStream(ThorsAnvil::DB::Mongo::ThorsMongo& stream, Context& context, EventType initialWait);
         ~AsyncStream();
 };
 

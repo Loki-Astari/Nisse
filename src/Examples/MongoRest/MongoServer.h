@@ -11,11 +11,34 @@ namespace TAMongo   = ThorsAnvil::DB::Mongo;
 namespace ThorsAnvil::Nisse::Examples::MongoRest
 {
 
+class MongoConnectionPool
+{
+    std::vector<TAMongo::ThorsMongo>    connections;
+    std::size_t                         next;
+    public:
+        MongoConnectionPool(int poolSize, std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
+            : next(0)
+        {
+            poolSize = std::max(1, poolSize);
+            for (int loop = 0; loop < poolSize; ++loop)
+            {
+                connections.emplace_back(TAMongo::MongoURL{host, port}, TAMongo::Auth::UserNamePassword{user, password, db});
+            }
+        }
+
+        TAMongo::ThorsMongo&    getConnection()
+        {
+            // Bad implementation.
+            // Will work for low volume server that is only handling upto poolSize request simultaneously.
+            return connections[next++ % connections.size()];
+        }
+};
+
 class MongoServer
 {
-    TAMongo::ThorsMongo          mongo;
+    MongoConnectionPool     mongoPool;
     public:
-        MongoServer(std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db);
+        MongoServer(int poolSize, std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db);
         // CRUD
         void personCreate(NHTTP::Request& request, NHTTP::Response& response);
         void personGet(NHTTP::Request& request, NHTTP::Response& response);

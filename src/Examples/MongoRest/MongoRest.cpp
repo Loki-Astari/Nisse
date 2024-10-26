@@ -34,8 +34,9 @@ class MongoRest: public TANS::NisseServer
     }
 
     public:
-        MongoRest(int port, std::optional<FS::path> certPath, MRest::MongoServer& ms)
-            : control(*this)
+        MongoRest(int poolSize, int port, std::optional<FS::path> certPath, MRest::MongoServer& ms)
+            : TANS::NisseServer(poolSize)
+            , control(*this)
             , mongoServer(ms)
         {
             // CRUD Person Interface
@@ -74,10 +75,12 @@ int main(int argc, char* argv[])
             certPath = FS::canonical(argv[6]);
         }
 
+        static constexpr int poolSize             = 6;
+        static constexpr int mongoConnectionCount = 12;
         std::cout << "Nisse MongoRest: Port: " << port << " MongoHost: >" << mongoHost << "< Mongo User: >" << mongoUser << "< MongoPass: >" << mongoPass << "< MongoDB: >" << mongoDB << "< Certificate Path: >" << (argc == 6 ? "NONE" : argv[6]) << "<\n";
 
-        MRest::MongoServer  mongoServer{mongoHost, 27017, mongoUser, mongoPass, mongoDB};
-        MongoRest           server(port, certPath, mongoServer);
+        MRest::MongoServer  mongoServer{mongoConnectionCount, mongoHost, 27017, mongoUser, mongoPass, mongoDB};
+        MongoRest           server{poolSize, port, certPath, mongoServer};
         server.run();
     }
     catch (std::exception const& e)

@@ -1,13 +1,15 @@
 #include "MongoServer.h"
 #include "ThorsMongo/MongoUtil.h"
+#include "NisseServer/AsyncStream.h"
 #include "ThorSerialize/Traits.h"
 #include "ThorSerialize/JsonThor.h"
 #include <ranges>
 
 
 using namespace ThorsAnvil::Nisse::Examples::MongoRest;
-namespace TAMongo  = ThorsAnvil::DB::Mongo;
-namespace TAJson   = ThorsAnvil::Serialize;
+namespace TAMongo   = ThorsAnvil::DB::Mongo;
+namespace TANS      = ThorsAnvil::Nisse::Server;
+namespace TAJson    = ThorsAnvil::Serialize;
 
 struct Address
 {
@@ -76,7 +78,6 @@ void MongoServer::requestFailed(NHTTP::Response& response, std::initializer_list
 
 void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<Person>& result)
 {
-
     std::ostream& output = response.body(NHTTP::Encoding::Chunked);
     output << '[';
     std::string sep = "";
@@ -88,8 +89,8 @@ void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<Person>& r
     output << ']';
 }
 
-MongoServer::MongoServer(std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
-    : mongo(TAMongo::MongoURL{host, port}, TAMongo::Auth::UserNamePassword{user, password, db})
+MongoServer::MongoServer(int poolSize, std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
+    : mongoPool(poolSize, host, port, user, password, db)
 {}
 
 TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
@@ -104,7 +105,9 @@ TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
 
 void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& response)
 {
-    Person  person;
+    TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
+    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    Person                  person;
     request.body() >> TAJson::jsonImporter(person);
 
     auto result = mongo["test"]["Person"].insert(std::tie(person));
@@ -117,6 +120,8 @@ void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& respons
 
 void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
 {
+    TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
+    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
     auto range = mongo["test"]["Person"].find<Person>(FindById{id});
@@ -136,8 +141,10 @@ void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
 
 void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& response)
 {
-    TAMongo::ObjectID   id  = getIdFromRequest(request);
-    Person              person;
+    TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
+    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TAMongo::ObjectID       id  = getIdFromRequest(request);
+    Person                  person;
     request.body() >> TAJson::jsonImporter(person);
 
     auto result = mongo["test"]["Person"].findAndReplaceOne<Person>(FindById{id}, person);
@@ -159,7 +166,10 @@ void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& respons
 
 void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& response)
 {
-    TAMongo::ObjectID   id  = getIdFromRequest(request);
+    TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
+    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    TAMongo::ObjectID       id  = getIdFromRequest(request);
+
     auto result = mongo["test"]["Person"].findAndRemoveOne<Person>(FindById{id});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
@@ -179,8 +189,10 @@ void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& respons
 
 void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& response)
 {
-    std::string first = request.variables()["first"];
-    std::string last  = request.variables()["last"];
+    TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
+    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    std::string             first = request.variables()["first"];
+    std::string             last  = request.variables()["last"];
 
     TAMongo::FindRange<Person> result;
 
@@ -210,7 +222,9 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
 
 void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& response)
 {
-    std::string tel = request.variables()["tel"];
+    TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
+    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    std::string             tel = request.variables()["tel"];
 
     auto result = mongo["test"]["Person"].find<Person>(FindByTel{tel});
     if (!result) {
@@ -222,7 +236,9 @@ void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& resp
 
 void MongoServer::personFindByZip(NHTTP::Request& request, NHTTP::Response& response)
 {
-    std::string tel = request.variables()["zip"];
+    TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
+    TANS::AsyncStream       async(mongo, request.getContext(), TANS::EventType::Write);
+    std::string             tel = request.variables()["zip"];
 
     auto result = mongo["test"]["Person"].find<Person>(FindByZip{tel});
     if (!result) {
