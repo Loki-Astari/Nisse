@@ -8,24 +8,69 @@
 #include <ThorsSocket/Server.h>
 #include <filesystem>
 
-namespace TAS       = ThorsAnvil::ThorsSocket;
-namespace NServer   = ThorsAnvil::Nisse::Server;
-namespace NHTTP     = ThorsAnvil::Nisse::HTTP;
+namespace TASock    = ThorsAnvil::ThorsSocket;
+namespace TANS      = ThorsAnvil::Nisse::Server;
+namespace TANH      = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
 
-TAS::ServerInit getSSLInit(FS::path certPath, int port)
+class ReverseProxy: public TANS::NisseServer
 {
-    TAS::CertificateInfo        certificate{FS::canonical(certPath /= "fullchain.pem"),
-                                            FS::canonical(certPath /= "privkey.pem")
-                                           };
-    TAS::SSLctx                 ctx{TAS::SSLMethodType::Server, certificate};
-    return TAS::SServerInfo{port, ctx};
-}
+    TANH::HTTPHandler       http;
+    TANS::PyntControl       control;
+    std::string             dest;
+    int                     destPort;
 
-TAS::ServerInit getNormalInit(int port)
-{
-    return TAS::ServerInfo{port};
-}
+    TASock::ServerInit getServerInit(std::optional<FS::path> certPath, int port)
+    {
+        if (!certPath.has_value()) {
+            return TASock::ServerInfo{port};
+        }
+
+        TASock::CertificateInfo     certificate{FS::canonical(*certPath /= "fullchain.pem"),
+                                                FS::canonical(*certPath /= "privkey.pem")
+                                               };
+        TASock::SSLctx              ctx{TASock::SSLMethodType::Server, certificate};
+        return TASock::SServerInfo{port, ctx};
+    }
+
+    void handleRequest(TANH::Request& request, TANH::Response& response)
+    {
+        TASock::SocketInfo      init{dest, destPort};
+        TASock::SocketStream    socket{TASock::Socket{init, TASock::Blocking::No}};
+        TANS::AsyncStream       async(socket, request.getContext(), TANS::EventType::Write);
+
+        if (!socket) {
+            return response.error(500, "Failed to open socket");
+        }
+
+        // Step 1:
+        // Forward the request.
+        socket << request
+               << request.body().rdbuf()
+               << std::flush;
+
+        // Step 2: Read the reply and return.
+        socket >> response;
+        TANH::HeaderPassThrough headers(socket);
+        TANH::StreamInput       body(socket, headers.getEncoding());
+
+        // Step 3: Send the reply back to the originator.
+        response.addHeaders(headers);
+        response.body(headers.getEncoding()) << body.rdbuf();
+    }
+
+    public:
+        ReverseProxy(int port, std::string const& dest, int destPort, std::optional<FS::path> certPath)
+            : control(*this)
+            , dest(dest)
+            , destPort(destPort)
+        {
+            http.addPath(TANH::All::Method, "/{command}", [&](TANH::Request& request, TANH::Response& response){handleRequest(request, response);});
+            listen(getServerInit(certPath, port), http);
+
+            listen(TASock::ServerInfo{port+2}, control);
+        }
+};
 
 int main(int argc, char* argv[])
 {
@@ -36,51 +81,17 @@ int main(int argc, char* argv[])
     }
     try
     {
-        int             port        = std::stoi(argv[1]);
-        std::string     dest        = argv[2];
-        int             destPort    = std::stoi(argv[3]);
-        TAS::ServerInit serverInit  = (argc == 4) ? getNormalInit(port) : getSSLInit(argv[4], port);
+        int                     port        = std::stoi(argv[1]);
+        std::string             dest        = argv[2];
+        int                     destPort    = std::stoi(argv[3]);
+        std::optional<FS::path> certPath;
+        if (argc == 5) {
+            certPath = FS::canonical(argv[4]);
+        }
 
         std::cout << "Nisse ReverseProxy: Port: " << port << " Destination: >" << dest << "< DestPort: >" << destPort << "< Certificate Path: >" << (argc == 4 ? "NONE" : argv[4]) << "<\n";
 
-        NHTTP::HTTPHandler   http;
-
-        http.addPath(NHTTP::All::Method, "/{command}", [&](NHTTP::Request& request, NHTTP::Response& response)
-        {
-            TAS::SocketInfo         init{dest, destPort};
-            TAS::SocketStream       socket{TAS::Socket{init, TAS::Blocking::No}};
-            NServer::AsyncStream    async(socket, request.getContext(), NServer::EventType::Write);
-
-            if (!socket)
-            {
-                NHTTP::HeaderResponse    header;
-
-                response.setStatus(404);
-                response.addHeaders(header);
-            }
-
-            // Step 1:
-            // Forward the request.
-            socket << request
-                   << request.body().rdbuf()
-                   << std::flush;
-
-            // Step 2: Read the reply and return.
-            socket >> response;
-            NHTTP::HeaderPassThrough    headers(socket);
-            NHTTP::StreamInput          body(socket, headers.getEncoding());
-
-            // Step 3: Send the reply back to the originator.
-            response.addHeaders(headers);
-            response.body(headers.getEncoding()) << body.rdbuf();
-        });
-
-        NServer::NisseServer   server;
-        server.listen(serverInit, http);
-
-        NServer::PyntControl  control(server);
-        server.listen(TAS::ServerInfo{port+2}, control);
-
+        ReverseProxy   server(port, dest, destPort, certPath);;
         server.run();
     }
     catch (std::exception const& e)

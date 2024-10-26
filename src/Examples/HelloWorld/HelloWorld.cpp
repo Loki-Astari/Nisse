@@ -7,24 +7,62 @@
 #include <ThorsSocket/Server.h>
 #include <filesystem>
 
-namespace TAS       = ThorsAnvil::ThorsSocket;
-namespace NServer   = ThorsAnvil::Nisse::Server;
-namespace NHTTP     = ThorsAnvil::Nisse::HTTP;
+namespace TASock    = ThorsAnvil::ThorsSocket;
+namespace TANS      = ThorsAnvil::Nisse::Server;
+namespace TANH      = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
 
-TAS::ServerInit getSSLInit(FS::path certPath, int port)
+class HelloWorld: public TANS::NisseServer
 {
-    TAS::CertificateInfo        certificate{FS::canonical(certPath /= "fullchain.pem"),
-                                            FS::canonical(certPath /= "privkey.pem")
-                                           };
-    TAS::SSLctx                 ctx{TAS::SSLMethodType::Server, certificate};
-    return TAS::SServerInfo{port, ctx};
-}
+    TANH::HTTPHandler       http;
+    TANS::PyntControl       control;
 
-TAS::ServerInit getNormalInit(int port)
-{
-    return TAS::ServerInfo{port};
-}
+    TASock::ServerInit getServerInit(std::optional<FS::path> certPath, int port)
+    {
+        if (!certPath.has_value()) {
+            return TASock::ServerInfo{port};
+        }
+
+        TASock::CertificateInfo     certificate{FS::canonical(*certPath /= "fullchain.pem"),
+                                                FS::canonical(*certPath /= "privkey.pem")
+                                               };
+        TASock::SSLctx              ctx{TASock::SSLMethodType::Server, certificate};
+        return TASock::SServerInfo{port, ctx};
+    }
+
+    void handleRequestLenght(TANH::Request& request, TANH::Response& response)
+    {
+        std::string who  = request.variables()["Who"];
+        std::string data = R"(
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html>
+<head><title>Nisse server 1.1</title></head>
+<body>Hello world: )"  + who + R"(</body>
+</html>
+)";
+        response.body(data.size()) << data;
+    }
+    void handleRequestChunked(TANH::Request& request, TANH::Response& response)
+    {
+        response.body(TANH::Encoding::Chunked) << R"(
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html>
+<head><title>Nisse server 1.1</title></head>
+<body>Hello world: )" << request.variables()["Who"] << R"(</body>
+</html>
+)";
+    }
+
+    public:
+        HelloWorld(int port, std::optional<FS::path> certPath)
+            : control(*this)
+        {
+            http.addPath(TANH::Method::GET, "/HW{Who}.html", [&](TANH::Request& request, TANH::Response& response){handleRequestLenght(request, response);});
+            http.addPath(TANH::Method::GET, "/CK{Who}.html", [&](TANH::Request& request, TANH::Response& response){handleRequestChunked(request, response);});
+            listen(getServerInit(certPath, port), http);
+            listen(TASock::ServerInfo{port+2}, control);
+        }
+};
 
 int main(int argc, char* argv[])
 {
@@ -35,59 +73,15 @@ int main(int argc, char* argv[])
     }
     try
     {
-        int             port        = std::stoi(argv[1]);
-        TAS::ServerInit serverInit  = (argc == 2) ? getNormalInit(port) : getSSLInit(argv[2], port);
+        int                     port        = std::stoi(argv[1]);
+        std::optional<FS::path> certPath;
+        if (argc == 3) {
+            certPath = FS::canonical(argv[2]);
+        }
 
         std::cout << "Nisse Hello World: Port: " << port << " Certificate Path: >" << (argc == 2 ? "NONE" : argv[2]) << "<\n";
 
-        // Part 1:
-        // =======
-        // Object to processes HTTP connections with.
-        // Register with listen() below.
-        NHTTP::HTTPHandler   http;
-        http.addPath(NHTTP::Method::GET, "/HW{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
-        {
-            std::string who  = request.variables()["Who"];
-            std::string data = R"(
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html>
-<head><title>Nisse server 1.1</title></head>
-<body>Hello world: )"  + who + R"(</body>
-</html>
-)";
-            NHTTP::HeaderResponse   header;
-            response.addHeaders(header);
-            response.body(data.size()) << data;
-        });
-        http.addPath(NHTTP::Method::GET, "/CK{Who}.html", [](NHTTP::Request& request, NHTTP::Response& response)
-        {
-            NHTTP::HeaderResponse   header;
-            response.addHeaders(header);
-            response.body(NHTTP::Encoding::Chunked) << R"(
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html>
-<head><title>Nisse server 1.1</title></head>
-<body>Hello world: )" << request.variables()["Who"] << R"(</body>
-</html>
-)";
-        });
-
-        // Part 2:
-        // =======
-        // Set up the server
-        NServer::NisseServer              server;
-        server.listen(serverInit, http);
-
-        // This interface does nothing.
-        // But if you connect to it (port+2) it will cleanly shutdown the server.
-        // But you can hit ctrl-c will usually work.
-        NServer::PyntControl  control(server);
-        server.listen(TAS::ServerInfo{port+2}, control);
-
-
-        // Part 3:
-        // =======
-        // Let the server run.
+        HelloWorld      server{port, certPath};
         server.run();
     }
     catch (std::exception const& e)

@@ -133,8 +133,10 @@ void Response::addHeaders(Header const& headers)
 
 std::ostream& Response::body(BodyEncoding bodyEncoding)
 {
-    if (!headerSent) {
-        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers should be sent before getting the body");
+    if (!headerSent)
+    {
+        baseStream << version << " " << statusCode << "\r\n";
+        headerSent = true;
     }
     baseStream << bodyEncoding
                << "\r\n"
