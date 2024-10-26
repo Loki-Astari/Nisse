@@ -4,7 +4,6 @@
 #include "NisseHTTP/HTTPHandler.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
-#include <ThorsLogging/ThorsLogging.h>
 #include <ThorsSocket/Server.h>
 #include <filesystem>
 
