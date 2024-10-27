@@ -114,8 +114,8 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
     if (result == 0 || (result == -1 && errno != EAGAIN && errno != EWOULDBLOCK))
     {
         // Remove a socket if the other end has been closed.
-        ThorsLogInfo("ThorsAnvil::Nissa::EventHandler::", "checkFileDescriptorOK", "Client closed connection");
-        store.requestChange(StateUpdateRemove{fd});
+        ThorsLogInfo("ThorsAnvil::Nissa::EventHandler", "checkFileDescriptorOK", "Client closed connection");
+        store.requestChange(StateUpdateExternallClosed{fd});
         return false;
     }
     return true;
@@ -139,11 +139,11 @@ void EventHandler::addJob(CoRoutine& work, int fd)
         }
         catch (std::exception const& e)
         {
-            ThorsLogWarning("ThorsAnvil::Nissa::EventHandler::", "addJob", "jobQueue::job: Ignoring Exception: ",  e.what());
+            ThorsLogWarning("ThorsAnvil::Nissa::EventHandler", "addJob", "jobQueue::job: Ignoring Exception: ",  e.what());
         }
         catch (...)
         {
-            ThorsLogWarning("ThorsAnvil::Nissa::EventHandler::", "addJob", "jobQueue::job: Ignoring Exception: Unknown");
+            ThorsLogWarning("ThorsAnvil::Nissa::EventHandler", "addJob", "jobQueue::job: Ignoring Exception: Unknown");
         }
         switch (task.state)
         {
