@@ -30,6 +30,7 @@ void Store::requestChange(T&& update)
 template void Store::requestChange<StateUpdateCreateServer>(StateUpdateCreateServer&& update);
 template void Store::requestChange<StateUpdateCreateStream>(StateUpdateCreateStream&& update);
 template void Store::requestChange<StateUpdateCreateLinkStream>(StateUpdateCreateLinkStream&& update);
+template void Store::requestChange<StateUpdateExternallClosed>(StateUpdateExternallClosed&& update);
 template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
 template void Store::requestChange<StateUpdateRestoreWrite>(StateUpdateRestoreWrite&& update);
@@ -97,6 +98,21 @@ void Store::operator()(StateUpdateCreateLinkStream& update)
     else {
         data.writeEvent.add();
     }
+}
+
+void Store::operator()(StateUpdateExternallClosed& update)
+{
+    struct ExternallyClosed
+    {
+        void operator()(ServerData&)        {}
+        void operator()(StreamData& update) {update.stream.getSocket().externalyClosed();}
+        void operator()(LinkedStreamData&)  {}
+    };
+    auto find = data.find(update.fd);
+    if (find != data.end()) {
+        std::visit(ExternallyClosed{}, find->second);
+    }
+    data.erase(update.fd);
 }
 
 void Store::operator()(StateUpdateRemove& update)

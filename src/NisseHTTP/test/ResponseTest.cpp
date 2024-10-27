@@ -320,21 +320,20 @@ TEST(ResponseTest, FiveChunkedWithHeaderChunked)
               ss.str());
 }
 
-TEST(ResponseTest, BodyBeforeHeaders)
+TEST(ResponseTest, BodyNoHeaders)
 {
-    auto action = []()
+    std::stringstream   ss;
     {
-        std::stringstream   ss;
-        {
-            Response            response(ss, Version::HTTP1_1);
-            response.body(Encoding::Chunked);
-        }
-    };
+        Response            response(ss, Version::HTTP1_1);
+        response.body(Encoding::Chunked) << "abcde";
+    }
 
-    EXPECT_THROW(
-        action(),
-        ThorsAnvil::Logging::LogicalException
-    );
+    EXPECT_EQ("HTTP/1.1 200 OK\r\n"
+              "transfer-encoding: chunked\r\n"
+              "\r\n"
+              "5\r\nabcde\r\n"
+              "0\r\n\r\n",
+              ss.str());
 }
 
 TEST(ResponseTest, HeadersAfterBody)

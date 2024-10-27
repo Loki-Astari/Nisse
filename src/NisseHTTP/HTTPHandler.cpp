@@ -55,11 +55,11 @@ void HTTPHandler::addPathMatch(RequestVariables& var, Match const& matches)
     }
 }
 
-void HTTPHandler::addPath(std::string const& path, HTTPAction&& action)
+void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPAction&& action)
 {
     actions.emplace_back(std::move(action));
 
-    pathMatcher.addPath(path, [&, actionId = actions.size() - 1](Match const& matches, Request& request, Response& response)
+    pathMatcher.addPath(method, path, [&, actionId = actions.size() - 1](Match const& matches, Request& request, Response& response)
     {
         // Get the variable object
         RequestVariables&   var     = request.variables();

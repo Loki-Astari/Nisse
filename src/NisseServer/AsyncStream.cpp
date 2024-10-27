@@ -2,14 +2,14 @@
 
 using namespace ThorsAnvil::Nisse::Server;
 
-AsyncStream::AsyncStream(TAS::SocketStream& stream, Context& context, EventType initialWait)
-    : stream{stream}
+AsyncStream::AsyncStream(TAS::Socket& socket, Context& context, EventType initialWait)
+    : socket{socket}
     , context{context}
 {
-    context.registerLocalSocket(stream.getSocket(), initialWait);
+    context.registerLocalSocket(socket, initialWait);
 }
 
 AsyncStream::~AsyncStream()
 {
-    context.unregisterLocalSocket(stream.getSocket());
+    context.unregisterLocalSocket(socket);
 }

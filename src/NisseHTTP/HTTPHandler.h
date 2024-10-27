@@ -22,6 +22,7 @@ class HTTPHandler: public PyntHTTP
         virtual void       processRequest(Request& request, Response& response) override;
 
         void addPath(std::string const& path, HTTPAction&& action);
+        void addPath(MethodChoice method, std::string const& path, HTTPAction&& action);
     private:
         std::string normalize(std::string_view path);
 

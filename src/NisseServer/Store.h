@@ -97,6 +97,11 @@ struct StateUpdateCreateLinkStream
     Event               writeEvent;
 };
 
+struct StateUpdateExternallClosed
+{
+    int     fd;
+};
+
 struct StateUpdateRemove
 {
     int     fd;
@@ -113,7 +118,7 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -142,6 +147,7 @@ class Store
             void operator()(StateUpdateCreateServer& update)    {store(update);}
             void operator()(StateUpdateCreateStream& update)    {store(update);}
             void operator()(StateUpdateCreateLinkStream& update){store(update);}
+            void operator()(StateUpdateExternallClosed& update) {store(update);}
             void operator()(StateUpdateRemove& update)          {store(update);}
             void operator()(StateUpdateRestoreRead& update)     {store(update);}
             void operator()(StateUpdateRestoreWrite& update)    {store(update);}
@@ -149,6 +155,7 @@ class Store
         void operator()(StateUpdateCreateServer& update);
         void operator()(StateUpdateCreateStream& update);
         void operator()(StateUpdateCreateLinkStream& update);
+        void operator()(StateUpdateExternallClosed& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);
         void operator()(StateUpdateRestoreWrite& update);

@@ -1,9 +1,10 @@
 #include "PathMatcher.h"
+#include "Request.h"
 #include <ThorsLogging/ThorsLogging.h>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
-void PathMatcher::addPath(std::string pathMatch, Action&& action)
+void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& action)
 {
     MatchList   matchSections;
     NameList    names;
@@ -14,11 +15,6 @@ void PathMatcher::addPath(std::string pathMatch, Action&& action)
     std::size_t size     = pathMatch.size();
     bool        first    = true;
 
-    // /path1/{name}/{id}
-    // Section: >/path1/<
-    // Name   : >name<
-    // Section: >/<
-    // Name   : >id<
     while (prefix != size)
     {
         nameBeg = std::min(size, pathMatch.find('{', prefix));
@@ -46,11 +42,16 @@ void PathMatcher::addPath(std::string pathMatch, Action&& action)
     if (nameBeg != size) {
         matchSections.emplace_back("");
     }
-    paths.emplace_back(std::move(matchSections), std::move(names), std::move(action));
+    paths.emplace_back(method, std::move(matchSections), std::move(names), std::move(action));
 }
 
 bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response)
 {
+    // If it is not holding a `Method` it is holding All::Method.
+    if (std::holds_alternative<Method>(pathMatchInfo.method) && std::get<Method>(pathMatchInfo.method) != request.getMethod()) {
+        return false;
+    }
+
     Match   result;
 
     std::string_view    prefix = path.substr(0, pathMatchInfo.matchSections[0].size());

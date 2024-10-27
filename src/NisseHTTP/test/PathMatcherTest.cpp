@@ -16,7 +16,7 @@ TEST(PathMatcherTest, SimplePathExactMatch)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/path2/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/path2/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -32,7 +32,7 @@ TEST(PathMatcherTest, SimplePathExactMatchFailSuffix)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/path2/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/path2/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -48,7 +48,7 @@ TEST(PathMatcherTest, SimplePathExactMatchFailPrefix)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/path2/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/path2/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -64,7 +64,7 @@ TEST(PathMatcherTest, NameMatch)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/{name}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/{name}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -82,7 +82,7 @@ TEST(PathMatcherTest, NameMatchSuffix)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/{name}SUFFIX/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/{name}SUFFIX/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -100,7 +100,7 @@ TEST(PathMatcherTest, NameMatchPrefix)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/PREFIX{name}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/PREFIX{name}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -118,7 +118,7 @@ TEST(PathMatcherTest, NameMatchFail)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/{name}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/{name}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -134,7 +134,7 @@ TEST(PathMatcherTest, NameMatchSuffixFail)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/{name}SUFFIX1/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/{name}SUFFIX1/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -150,7 +150,7 @@ TEST(PathMatcherTest, NameMatchPrefixFail)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/PREFIX{name}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/PREFIX{name}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -166,7 +166,7 @@ TEST(PathMatcherTest, NameMatchMultiple)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1/{name}/{id}", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1/{name}/{id}", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -186,7 +186,7 @@ TEST(PathMatcherTest, NameMatchEverything)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("{all}", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "{all}", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -204,7 +204,7 @@ TEST(PathMatcherTest, NameMatchFront)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("{prefix}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "{prefix}/path3", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);
@@ -222,7 +222,7 @@ TEST(PathMatcherTest, NameMatchBack)
     PathMatcher         pm;
     int                 count = 0;
     Match               hit;
-    pm.addPath("/path1{suffix}", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
+    pm.addPath(Method::GET, "/path1{suffix}", [&count, &hit](Match const& match, Request&, Response&){++count;hit = match;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
     Request     request("http", ss);

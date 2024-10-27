@@ -1,6 +1,7 @@
 #ifndef THORSANVIL_NISSE_NISSEHTTP_PATH_MATCHER_H
 #define THORSANVIL_NISSE_NISSEHTTP_PATH_MATCHER_H
 
+#include "Util.h"
 #include <map>
 #include <vector>
 #include <string>
@@ -21,15 +22,16 @@ class PathMatcher
 
     struct MatchInfo
     {
-        MatchList   matchSections;
-        NameList    names;
-        Action      action;
+        MethodChoice    method;
+        MatchList       matchSections;
+        NameList        names;
+        Action          action;
     };
 
     std::vector<MatchInfo>  paths;
 
     public:
-        void addPath(std::string pathMatch, Action&& action);
+        void addPath(MethodChoice method, std::string pathMatch, Action&& action);
 
         bool findMatch(std::string_view path, Request& request, Response& response);
     private:

@@ -15,14 +15,14 @@ void HeaderResponse::add(std::string_view header, std::string_view value)
 
 void HeaderResponse::print(std::ostream& stream) const
 {
-    for (auto const& header: headers)
+    for (auto const& [headerKey, headerValue] : headers)
     {
-        if (std::ranges::equal(std::string_view(header.first), std::string_view("content-length"), ichar_equals)) {
+        if (std::ranges::equal(std::string_view(headerKey), std::string_view("content-length"), ichar_equals)) {
             continue;
         }
-        if (std::ranges::equal(std::string_view(header.first), std::string_view("transfer-encoding"), ichar_equals)) {
+        if (std::ranges::equal(std::string_view(headerKey), std::string_view("transfer-encoding"), ichar_equals)) {
             continue;
         }
-        stream << header.first << ": " << header.second << "\r\n";
+        stream << headerKey << ": " << headerValue << "\r\n";
     }
 }
