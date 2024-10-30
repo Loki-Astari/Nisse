@@ -45,12 +45,24 @@ struct Person
     int                 age;
     ContactInfo         contactInfo;
 };
+struct NewPerson
+{
+    Name                name;
+    int                 age;
+    ContactInfo         contactInfo;
+};
+
+struct FindResult
+{
+    TAMongo::ObjectID   _id;
+};
 
 ThorsAnvil_MakeTrait(Address,       street1, street2, city, state, zip);
 ThorsAnvil_MakeTrait(Telephone,     type, number);
 ThorsAnvil_MakeTrait(ContactInfo,   address, telephone);
 ThorsAnvil_MakeTrait(Name,          first, last);
 ThorsAnvil_MakeTrait(Person,        _id, name, age, contactInfo);
+ThorsAnvil_MakeTrait(NewPerson,     name, age, contactInfo);
 ThorsAnvil_MakeTrait(FindResult,    _id);
 
 ThorsMongo_CreateFieldAccess(Person, _id);
