@@ -110,7 +110,7 @@ void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& respons
     Person                  person;
     request.body() >> TAJson::jsonImporter(person);
 
-    auto result = mongo["test"]["Person"].insert(std::tie(person));
+    auto result = mongo["test"]["AddressBook"].insert(std::tie(person));
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -124,7 +124,7 @@ void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
-    auto range = mongo["test"]["Person"].find<Person>(FindById{id});
+    auto range = mongo["test"]["AddressBook"].find<Person>(FindById{id});
     if (!range) {
         return requestFailed(response, {range.getHRErrorMessage()});
     }
@@ -147,7 +147,7 @@ void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& respons
     Person                  person;
     request.body() >> TAJson::jsonImporter(person);
 
-    auto result = mongo["test"]["Person"].findAndReplaceOne<Person>(FindById{id}, person);
+    auto result = mongo["test"]["AddressBook"].findAndReplaceOne<Person>(FindById{id}, person);
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -170,7 +170,7 @@ void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& respons
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
-    auto result = mongo["test"]["Person"].findAndRemoveOne<Person>(FindById{id});
+    auto result = mongo["test"]["AddressBook"].findAndRemoveOne<Person>(FindById{id});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -194,7 +194,7 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
     std::string             first = request.variables()["first"];
     std::string             last  = request.variables()["last"];
 
-    TAMongo::FindRange<Person> result;
+    TAMongo::FindRange<FindResult> result;
 
     if (first == "" && last == "")
     {
@@ -202,15 +202,15 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
     }
     if (first == "")
     {
-        result = mongo["test"]["Person"].find<Person>(FindByLName{last});
+        result = mongo["test"]["AddressBook"].find<Person>(FindByLName{last});
     }
     else if (last == "")
     {
-        result = mongo["test"]["Person"].find<Person>(FindByFName{first});
+        result = mongo["test"]["AddressBook"].find<Person>(FindByFName{first});
     }
     else
     {
-        result = mongo["test"]["Person"].find<Person>(FindByName{first, last});
+        result = mongo["test"]["AddressBook"].find<Person>(FindByName{first, last});
     }
 
     if (!result) {
@@ -226,7 +226,7 @@ void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& resp
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     std::string             tel = request.variables()["tel"];
 
-    auto result = mongo["test"]["Person"].find<Person>(FindByTel{tel});
+    auto result = mongo["test"]["AddressBook"].find<Person>(FindByTel{tel});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -238,9 +238,9 @@ void MongoServer::personFindByZip(NHTTP::Request& request, NHTTP::Response& resp
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
-    std::string             tel = request.variables()["zip"];
+    std::string             zip = request.variables()["zip"];
 
-    auto result = mongo["test"]["Person"].find<Person>(FindByZip{tel});
+    auto result = mongo["test"]["AddressBook"].find<Person>(FindByZip{tel});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
