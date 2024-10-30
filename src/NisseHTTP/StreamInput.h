@@ -15,12 +15,17 @@ class StreamBufInput: public std::streambuf
         typedef std::streambuf::traits_type traits;
         typedef traits::int_type            int_type;
         typedef traits::char_type           char_type;
+        typedef traits::pos_type            pos_type;
+        typedef traits::off_type            offtype;
     private:
+        static std::streamsize constexpr chunkBufferSize = 1024;
         std::streamsize     remaining;
+        std::streamsize     processed;
         std::streambuf*     buffer;
         bool                chunked;
         bool                firstChunk;
         Complete            complete;
+        std::vector<char>   chunkBuffer;
     public:
         StreamBufInput(Complete&& complete = [](){});
         StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete = [](){});
@@ -35,14 +40,15 @@ class StreamBufInput: public std::streambuf
         // Create directly from socket.
     protected:
         // Read:
-        virtual int_type        uflow() override;
         virtual int_type        underflow() override;
         virtual std::streamsize xsgetn(char_type* s, std::streamsize count) override;
-        virtual std::streamsize showmanyc() override;
+        virtual pos_type        seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out ) override;
+        virtual pos_type        seekpos(pos_type pos, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) override;
 
     private:
         void checkBuffer();
         void getNextChunk();
+        std::streamsize         currentPosition() const {return processed + (gptr() - eback());}
 
 };
 
