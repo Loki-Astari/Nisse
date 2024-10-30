@@ -4,6 +4,29 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+std::string PathMatcher::decode(std::string_view matched)
+{
+    std::string result;
+    result.reserve(matched.size());
+
+    for (std::size_t loop = 0; loop < matched.size(); ++loop)
+    {
+        char n = matched[loop];
+        if ((n == '%') && (loop+2) < matched.size())
+        {
+            char c1 = matched[loop + 1];
+            int  v1 = (c1 >= '0' && c1 <= '9') ? c1 - '0' : c1 - 'A' + 10;
+            char c2 = matched[loop + 2];
+            int  v2 = (c2 >= '0' && c2 <= '9') ? c2 - '0' : c2 - 'A' + 10;
+            n = ((v1 % 16) << 4) | (v2 %16);
+            loop += 2;
+        }
+        result += n;
+    }
+    std::cerr << "Decode: >" << matched << "< => >" << result << "<\n";
+    return result;
+}
+
 void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& action)
 {
     MatchList   matchSections;
@@ -68,7 +91,7 @@ bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_vie
         if (find == std::string::npos) {
             return false;
         }
-        result.emplace(pathMatchInfo.names[loop - 1], path.substr(0, find));
+        result.emplace(pathMatchInfo.names[loop - 1], decode(path.substr(0, find)));
 
         path.remove_prefix(find);
         path.remove_prefix(pathMatchInfo.matchSections[loop].size());
