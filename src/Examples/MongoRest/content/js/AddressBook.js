@@ -37,48 +37,67 @@ function getPerson() {
     loadPerson(id);
 }
 
+function delPerson() {
+    console.log("delPerson()");
+    request = [window.location.protocol + '//' + window.location.host, '/person/Id-', document.getElementById('personId').value].join('');
+    update('DELETE', request);
+}
+
 function updatePerson() {
     request = [window.location.protocol + '//' + window.location.host, '/person/Id-', document.getElementById('personId').value].join('');
     update('PUT', request);
 }
+
 function addPerson() {
     request = [window.location.protocol + '//' + window.location.host, '/person/'].join('');
     update('POST', request);
 }
 
 function update(method, request) {
-    person = {
-        name: {
-            first: document.getElementById('personNameF').value,
-            last: document.getElementById('personNameL').value
-        },
-        age: parseInt(document.getElementById('personAge').value),
-        contactInfo: {
-            address: {
-                street1: document.getElementById('personStreet1').value,
-                street2: document.getElementById('personStreet2').value,
-                city: document.getElementById('personCity').value,
-                state: document.getElementById('personState').value,
-                zip: document.getElementById('personZip').value
+    if (method == 'DELETE') {
+        body = '';
+    }
+    else {
+        person = {
+            name: {
+                first: document.getElementById('personNameF').value,
+                last: document.getElementById('personNameL').value
             },
-            telephone: {
-                type: document.getElementById('personTelType').value,
-                number: document.getElementById('personTelNum').value
+            age: parseInt(document.getElementById('personAge').value),
+            contactInfo: {
+                address: {
+                    street1: document.getElementById('personStreet1').value,
+                    street2: document.getElementById('personStreet2').value,
+                    city: document.getElementById('personCity').value,
+                    state: document.getElementById('personState').value,
+                    zip: document.getElementById('personZip').value
+                },
+                telephone: {
+                    type: document.getElementById('personTelType').value,
+                    number: document.getElementById('personTelNum').value
+                }
             }
-        }
-    };
-    console.log("request: " + request);
+        };
+        body = JSON.stringify(person);
+    }
+
+    console.log("request: " + method + " " + request);
     const userAction = async () => {
-        console.log("String: >" + JSON.stringify(person) + "<");
+        console.log("String: >" + body + "<");
         const response = await fetch(request, {
                                         method: method,
-                                        body:JSON.stringify(person)
+                                        body: body
                                      });
         const result = await response.json();
         console.log("response: %j", result);
-        newId = result[0];
-        document.getElementById('personId').value = newId;
+        if (method == 'DELETE') {
+            newId = '';
+        }
+        else {
+            newId = result[0];
+        }
         console.log("New Id: " + newId);
+        document.getElementById('personId').value = newId;
     }
     userAction();
 }
