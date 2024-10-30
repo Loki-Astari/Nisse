@@ -97,8 +97,8 @@ TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
 {
     TAMongo::ObjectID   result;
 
-    std::stringstream   ss(std::move(request.variables()["id"]));
-    ss >> TAJson::jsonImporter(result);
+    std::stringstream   ss{std::move(request.variables()["id"])};
+    ss >> result;
 
     return result;
 }
@@ -107,15 +107,23 @@ void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& respons
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
-    Person                  person;
-    request.body() >> TAJson::jsonImporter(person);
+    NewPerson               person;
+    //request.body() >> TAJson::jsonImporter(person);
+    std::istream& stream = request.body();
+    std::string line;
+    while (std::getline(stream, line))
+    {
+        std::cerr << "L: " << line << "\n";
+    }
+    std::stringstream ss(std::move(line));
+    ss >> TAJson::jsonImporter(person);
 
     auto result = mongo["test"]["AddressBook"].insert(std::tie(person));
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
 
-    response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(result);
+    response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(result.inserted);
 }
 
 void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
@@ -144,10 +152,18 @@ void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& respons
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
-    Person                  person;
-    request.body() >> TAJson::jsonImporter(person);
+    NewPerson               person;
+    //request.body() >> TAJson::jsonImporter(person);
+    std::istream& stream = request.body();
+    std::string line;
+    while (std::getline(stream, line))
+    {
+        std::cerr << "L: " << line << "\n";
+    }
+    std::stringstream ss(std::move(line));
+    ss >> TAJson::jsonImporter(person);
 
-    auto result = mongo["test"]["AddressBook"].findAndReplaceOne<Person>(FindById{id}, person);
+    auto result = mongo["test"]["AddressBook"].findAndReplaceOne<NewPerson>(FindById{id}, person);
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -194,7 +210,7 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
     std::string             first = request.variables()["first"];
     std::string             last  = request.variables()["last"];
 
-    TAMongo::FindRange<FindResult> result;
+    TAMongo::FindRange<Person> result;
 
     if (first == "" && last == "")
     {
@@ -240,7 +256,7 @@ void MongoServer::personFindByZip(NHTTP::Request& request, NHTTP::Response& resp
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     std::string             zip = request.variables()["zip"];
 
-    auto result = mongo["test"]["AddressBook"].find<Person>(FindByZip{tel});
+    auto result = mongo["test"]["AddressBook"].find<Person>(FindByZip{zip});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
