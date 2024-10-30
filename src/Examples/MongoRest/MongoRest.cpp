@@ -79,6 +79,10 @@ class MongoRest: public TANS::NisseServer
 
 int main(int argc, char* argv[])
 {
+#if 0
+    loguru::g_stderr_verbosity = 9;
+#endif
+
     if (argc != 7 && argc != 8)
     {
         std::cerr << "Usage: MongoRest <port> <contentDir> <MongoHost> <MongoUser> <MongoPass> <MongoDB> [<certificateDirectory>]\n";
