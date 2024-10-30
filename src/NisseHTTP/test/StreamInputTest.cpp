@@ -139,3 +139,176 @@ TEST(StreamInputTest, ReadBulkChunkedStream)
     EXPECT_EQ(bufferView, "This is sime test\nOne more line XXX\n");
 }
 
+TEST(StreamInputTest, BufSeekBegInShouldFail)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(3, std::ios_base::beg, std::ios_base::in);
+    EXPECT_EQ(5, newPos);
+}
+
+TEST(StreamInputTest, BufSeekBegOutShouldFail)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(3, std::ios_base::beg, std::ios_base::out);
+    EXPECT_EQ(0, newPos);
+}
+
+TEST(StreamInputTest, BufSeekEndInShouldFail)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(3, std::ios_base::end, std::ios_base::in);
+    EXPECT_EQ(5, newPos);
+}
+
+TEST(StreamInputTest, BufSeekEndOutShouldFail)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(3, std::ios_base::end, std::ios_base::out);
+    EXPECT_EQ(0, newPos);
+}
+
+TEST(StreamInputTest, BufSeekCurOutShouldFail)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(3, std::ios_base::cur, std::ios_base::out);
+    EXPECT_EQ(0, newPos);
+}
+
+// Seek forward inside current chunk
+TEST(StreamInputTest, BufSeekCurIn)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+    // Force an underflow.
+    streamInput.peek();
+
+    char buffer[100] = {0};
+    std::cerr << "Reading 5\n";
+    streamInput.read(buffer, 5);
+    std::cerr << "Seeking 3\n";
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(3, std::ios_base::cur, std::ios_base::in);
+    EXPECT_EQ(8, newPos);
+}
+
+// Seek forward to next chunk
+TEST(StreamInputTest, BufSeekCurInNextChunk)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(18, std::ios_base::cur, std::ios_base::in);
+    EXPECT_EQ(23, newPos);
+    EXPECT_EQ('o', streamInput.peek());
+}
+
+TEST(StreamInputTest, BufSeekCurInPastEnd)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(36, std::ios_base::cur, std::ios_base::in);
+    EXPECT_EQ(36, newPos);
+}
+
+TEST(StreamInputTest, BufSeekAbsoluteOutShouldFail)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekpos(36, std::ios_base::out);
+    EXPECT_EQ(0, newPos);
+}
+
+TEST(StreamInputTest, BufSeekAbsoluteIn)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekpos(12, std::ios_base::in);
+    EXPECT_EQ(12, newPos);
+    EXPECT_EQ(' ', streamInput.peek());
+}
+
+TEST(StreamInputTest, BufSeekAbsoluteInBackFromCurrentFail)
+{
+    std::stringstream   stream{"12\r\nThis is sime test\n\r\n"
+                               "12\r\nOne more line XXX\n\r\n"
+                               "0\r\n"
+                               "Should not be able to read this"
+                              };
+    StreamInput     streamInput(stream, Encoding::Chunked);
+
+    char buffer[100] = {0};
+    streamInput.read(buffer, 5);
+    StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekpos(3, std::ios_base::in);
+    EXPECT_EQ(5, newPos);
+}
+

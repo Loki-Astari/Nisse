@@ -1,0 +1,9 @@
+
+
+label {
+    width: 80px;
+    display: inline-block;
+}
+.Address, .Telephone, .Name {
+    padding-left: 20px;
+}

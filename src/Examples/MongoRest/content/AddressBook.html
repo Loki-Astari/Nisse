@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Address Book</title>
+        <script src="js/AddressBook.js"></script>
+        <link rel="stylesheet" href="css/AddressBook.css">
+    </head>
+    <body>
+        <div>
+            <div>
+                <h3>Find By Name</h3>
+                    <label for="findByNameFirst">First:</label>
+                    <input type="First Name" id="findByNameFirst"/><br><br>
+                    <label for="findByNameLast">Last:</label>
+                    <input type="Last  Name" id="findByNameLast"/><br><br>
+                    <input type="submit" value="Find" onclick="findByName()"/>
+            </div>
+            <div>
+                <h3>Find By Tel</h3>
+                    <label for="findByTelephone">Telephone:</label>
+                    <input type="Telephon" id="findByTelephone" /><br><br>
+                    <input type="submit" value="Submit" onclick="findByTel()"/>
+            </div>
+            <div>
+                <h3>Find By Zip</h3>
+                    <label for="findByZip">Zip:</label>
+                    <input type="Telephon" id="findByZip" /><br><br>
+                    <input type="submit" value="Submit" onclick="findByZip()"/>
+            </div>
+            <div class="Person">
+                <div>Actions:
+                    <input type="submit" value="Get" onclick="getPerson()">
+                    <input type="submit" value="Delete" onclick="delPerson()">
+                    <input type="submit" value="Update" onclick="updatePerson()">
+                    <input type="submit" value="Add" onclick="addPerson()">
+                </div>
+                <h2>Person</h2>
+                <label for="personId" class="Label">Id:</label><input type="text" id="personId"/><br>
+                <label for="personId" class="Label">Name</label><br>
+                <div class="Name">
+                    <label for="personNameF">First:</label><input type="text" id="personNameF"/><br>
+                    <label for="personNameL">Sur:</label><input type="text" id="personNameL"/><br>
+                </div>
+                <label for="personAge">Age:</label><input type="text" id="personAge"/><br>
+                <div>Address:
+                    <div class="Address">
+                        <label for="personStreet1">Street1:</label><input type="text" id="personStreet1"/><br>
+                        <label for="personStreet2">Street2:</label><input type="text" id="personStreet2"/><br>
+                        <label for="personCity">City:</label><input type="text" id="personCity"/><br>
+                        <label for="personState">State:</label><input type="text" id="personState"/><br>
+                        <label for="personZip">Zip:</label><input type="text" id="personZip"/><br>
+                    </div>
+                </div>
+                <div>Telephone
+                    <div class="Telephone">
+                        <label for="personTelType" >Type:</label><input type="text" id="personTelType"/><br>
+                        <label for="personTelNum" >Number:</label><input type="text" id="personTelNum"/><br>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2>List</h2>
+                <div id="foundList">
+                </div>
+            </div>
+    </body>
+</html>

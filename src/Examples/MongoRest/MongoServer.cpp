@@ -45,12 +45,25 @@ struct Person
     int                 age;
     ContactInfo         contactInfo;
 };
+struct NewPerson
+{
+    Name                name;
+    int                 age;
+    ContactInfo         contactInfo;
+};
+
+struct FindResult
+{
+    TAMongo::ObjectID   _id;
+};
 
 ThorsAnvil_MakeTrait(Address,       street1, street2, city, state, zip);
 ThorsAnvil_MakeTrait(Telephone,     type, number);
 ThorsAnvil_MakeTrait(ContactInfo,   address, telephone);
 ThorsAnvil_MakeTrait(Name,          first, last);
 ThorsAnvil_MakeTrait(Person,        _id, name, age, contactInfo);
+ThorsAnvil_MakeTrait(NewPerson,     name, age, contactInfo);
+ThorsAnvil_MakeTrait(FindResult,    _id);
 
 ThorsMongo_CreateFieldAccess(Person, _id);
 ThorsMongo_CreateFieldAccess(Person, name, first);
@@ -76,7 +89,7 @@ void MongoServer::requestFailed(NHTTP::Response& response, std::initializer_list
     response.addHeaders(headers);
 }
 
-void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<Person>& result)
+void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<FindResult>& result)
 {
     std::ostream& output = response.body(NHTTP::Encoding::Chunked);
     output << '[';
@@ -97,8 +110,8 @@ TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
 {
     TAMongo::ObjectID   result;
 
-    std::stringstream   ss(std::move(request.variables()["id"]));
-    ss >> TAJson::jsonImporter(result);
+    std::stringstream   ss{std::move(request.variables()["id"])};
+    ss >> result;
 
     return result;
 }
@@ -107,15 +120,15 @@ void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& respons
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
-    Person                  person;
+    NewPerson               person;
     request.body() >> TAJson::jsonImporter(person);
 
-    auto result = mongo["test"]["Person"].insert(std::tie(person));
+    auto result = mongo["test"]["AddressBook"].insert(std::tie(person));
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
 
-    response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(result);
+    response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(result.inserted);
 }
 
 void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
@@ -124,7 +137,7 @@ void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
-    auto range = mongo["test"]["Person"].find<Person>(FindById{id});
+    auto range = mongo["test"]["AddressBook"].find<Person>(FindById{id});
     if (!range) {
         return requestFailed(response, {range.getHRErrorMessage()});
     }
@@ -144,10 +157,11 @@ void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& respons
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
-    Person                  person;
-    request.body() >> TAJson::jsonImporter(person);
+    NewPerson               person;
+    std::istream& stream = request.body();
+    stream >> TAJson::jsonImporter(person);
 
-    auto result = mongo["test"]["Person"].findAndReplaceOne<Person>(FindById{id}, person);
+    auto result = mongo["test"]["AddressBook"].findAndReplaceOne<NewPerson>(FindById{id}, person);
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -170,7 +184,7 @@ void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& respons
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
-    auto result = mongo["test"]["Person"].findAndRemoveOne<Person>(FindById{id});
+    auto result = mongo["test"]["AddressBook"].findAndRemoveOne<Person>(FindById{id});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -194,7 +208,7 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
     std::string             first = request.variables()["first"];
     std::string             last  = request.variables()["last"];
 
-    TAMongo::FindRange<Person> result;
+    TAMongo::FindRange<FindResult> result;
 
     if (first == "" && last == "")
     {
@@ -202,15 +216,15 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
     }
     if (first == "")
     {
-        result = mongo["test"]["Person"].find<Person>(FindByLName{last});
+        result = mongo["test"]["AddressBook"].find<FindResult>(FindByLName{last});
     }
     else if (last == "")
     {
-        result = mongo["test"]["Person"].find<Person>(FindByFName{first});
+        result = mongo["test"]["AddressBook"].find<FindResult>(FindByFName{first});
     }
     else
     {
-        result = mongo["test"]["Person"].find<Person>(FindByName{first, last});
+        result = mongo["test"]["AddressBook"].find<FindResult>(FindByName{first, last});
     }
 
     if (!result) {
@@ -226,7 +240,7 @@ void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& resp
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     std::string             tel = request.variables()["tel"];
 
-    auto result = mongo["test"]["Person"].find<Person>(FindByTel{tel});
+    auto result = mongo["test"]["AddressBook"].find<FindResult>(FindByTel{tel});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -238,9 +252,9 @@ void MongoServer::personFindByZip(NHTTP::Request& request, NHTTP::Response& resp
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
-    std::string             tel = request.variables()["zip"];
+    std::string             zip = request.variables()["zip"];
 
-    auto result = mongo["test"]["Person"].find<Person>(FindByZip{tel});
+    auto result = mongo["test"]["AddressBook"].find<FindResult>(FindByZip{zip});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }

@@ -36,6 +36,7 @@ class PathMatcher
         bool findMatch(std::string_view path, Request& request, Response& response);
     private:
         bool checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response);
+        std::string decode(std::string_view matched);
 };
 
 }

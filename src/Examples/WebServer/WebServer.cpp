@@ -38,7 +38,7 @@ class WebServer: public TANS::NisseServer
         }
 
         std::error_code ec;
-        FS::path        filePath = FS::canonical(contentDir /= requestPath, ec);
+        FS::path        filePath = FS::canonical(FS::path{contentDir} /= requestPath, ec);
         if (!ec && FS::is_directory(filePath)) {
             filePath = FS::canonical(filePath /= "index.html", ec);
         }

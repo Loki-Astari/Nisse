@@ -1,6 +1,7 @@
 #include "MongoServer.h"
 #include "NisseServer/NisseServer.h"
 #include "NisseServer/PyntControl.h"
+#include "NisseServer/AsyncStream.h"
 #include "NisseHTTP/HTTPHandler.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
@@ -19,6 +20,7 @@ class MongoRest: public TANS::NisseServer
     TANH::HTTPHandler       http;
     TANS::PyntControl       control;
     MRest::MongoServer&     mongoServer;
+    FS::path                contentDir;
 
     TASock::ServerInit getServerInit(std::optional<FS::path> certPath, int port)
     {
@@ -33,11 +35,27 @@ class MongoRest: public TANS::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
+    void sendPage(TANH::Request& request, TANH::Response& response)
+    {
+        std::error_code ec;
+        FS::path        requestPath = FS::path{request.variables()["page"]}.lexically_normal();
+        std::cerr << "Getting Page: >" << requestPath << "<\n";
+        FS::path        filePath = FS::canonical(FS::path{contentDir} /= requestPath, ec);
+        if (requestPath.empty() || (*requestPath.begin()) == ".." || ec || !FS::is_regular_file(filePath)) {
+            return response.error(404, "No File Found At Path");
+        }
+
+        TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
+        TANS::AsyncStream       async(file.getSocket(), request.getContext(), TANS::EventType::Read);
+
+        response.body(TANH::Encoding::Chunked) << file.rdbuf();
+    }
     public:
-        MongoRest(int poolSize, int port, std::optional<FS::path> certPath, MRest::MongoServer& ms)
-            : TANS::NisseServer(poolSize)
-            , control(*this)
-            , mongoServer(ms)
+        MongoRest(int poolSize, int port, FS::path contentDir, std::optional<FS::path> certPath, MRest::MongoServer& ms)
+            : TANS::NisseServer{poolSize}
+            , control{*this}
+            , mongoServer{ms}
+            , contentDir{contentDir}
         {
             // CRUD Person Interface
             http.addPath(TANH::Method::POST,   "/person/",        [&](TANH::Request& request, TANH::Response& response) {mongoServer.personCreate(request, response);});
@@ -50,6 +68,9 @@ class MongoRest: public TANS::NisseServer
             http.addPath(TANH::Method::GET,    "/person/findByTel/{tel}",          [&](TANH::Request& request, TANH::Response& response) {mongoServer.personFindByTel(request, response);});
             http.addPath(TANH::Method::GET,    "/person/findByZip/{zip}",          [&](TANH::Request& request, TANH::Response& response) {mongoServer.personFindByZip(request, response);});
 
+            // WebInterface
+            http.addPath(TANH::Method::GET,    "/{page}",         [&](TANH::Request& request, TANH::Response& response) {sendPage(request, response);});
+
             listen(getServerInit(certPath, port), http);
             listen(TASock::ServerInfo{port+2}, control);
         }
@@ -58,29 +79,34 @@ class MongoRest: public TANS::NisseServer
 
 int main(int argc, char* argv[])
 {
-    if (argc != 6 && argc != 7)
+#if 0
+    loguru::g_stderr_verbosity = 9;
+#endif
+
+    if (argc != 7 && argc != 8)
     {
-        std::cerr << "Usage: MongoRest <port> <MongoHost> <MongoUser> <MongoPass> <MongoDB> [<certificateDirectory>]\n";
+        std::cerr << "Usage: MongoRest <port> <contentDir> <MongoHost> <MongoUser> <MongoPass> <MongoDB> [<certificateDirectory>]\n";
         return 1;
     }
     try
     {
         int                     port        = std::stoi(argv[1]);
-        std::string             mongoHost   = argv[2];
-        std::string             mongoUser   = argv[3];
-        std::string             mongoPass   = argv[4];
-        std::string             mongoDB     = argv[5];
+        FS::path                contentDir  = FS::canonical(argv[2]);
+        std::string             mongoHost   = argv[3];
+        std::string             mongoUser   = argv[4];
+        std::string             mongoPass   = argv[5];
+        std::string             mongoDB     = argv[6];
         std::optional<FS::path> certPath;
-        if (argc == 7) {
-            certPath = FS::canonical(argv[6]);
+        if (argc == 8) {
+            certPath = FS::canonical(argv[7]);
         }
 
         static constexpr int poolSize             = 6;
         static constexpr int mongoConnectionCount = 12;
-        std::cout << "Nisse MongoRest: Port: " << port << " MongoHost: >" << mongoHost << "< Mongo User: >" << mongoUser << "< MongoPass: >" << mongoPass << "< MongoDB: >" << mongoDB << "< Certificate Path: >" << (argc == 6 ? "NONE" : argv[6]) << "<\n";
+        std::cout << "Nisse MongoRest: Port: " << port << " ConentDir: " << contentDir << " MongoHost: >" << mongoHost << "< Mongo User: >" << mongoUser << "< MongoPass: >" << mongoPass << "< MongoDB: >" << mongoDB << "< Certificate Path: >" << (argc == 7 ? "NONE" : argv[7]) << "<\n";
 
         MRest::MongoServer  mongoServer{mongoConnectionCount, mongoHost, 27017, mongoUser, mongoPass, mongoDB};
-        MongoRest           server{poolSize, port, certPath, mongoServer};
+        MongoRest           server{poolSize, port, contentDir, certPath, mongoServer};
         server.run();
     }
     catch (std::exception const& e)
