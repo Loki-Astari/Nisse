@@ -51,6 +51,7 @@ ThorsAnvil_MakeTrait(Telephone,     type, number);
 ThorsAnvil_MakeTrait(ContactInfo,   address, telephone);
 ThorsAnvil_MakeTrait(Name,          first, last);
 ThorsAnvil_MakeTrait(Person,        _id, name, age, contactInfo);
+ThorsAnvil_MakeTrait(FindResult,    _id);
 
 ThorsMongo_CreateFieldAccess(Person, _id);
 ThorsMongo_CreateFieldAccess(Person, name, first);
@@ -76,7 +77,7 @@ void MongoServer::requestFailed(NHTTP::Response& response, std::initializer_list
     response.addHeaders(headers);
 }
 
-void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<Person>& result)
+void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<FindResult>& result)
 {
     std::ostream& output = response.body(NHTTP::Encoding::Chunked);
     output << '[';
@@ -210,7 +211,7 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
     std::string             first = request.variables()["first"];
     std::string             last  = request.variables()["last"];
 
-    TAMongo::FindRange<Person> result;
+    TAMongo::FindRange<FindResult> result;
 
     if (first == "" && last == "")
     {
@@ -218,15 +219,15 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
     }
     if (first == "")
     {
-        result = mongo["test"]["AddressBook"].find<Person>(FindByLName{last});
+        result = mongo["test"]["AddressBook"].find<FindResult>(FindByLName{last});
     }
     else if (last == "")
     {
-        result = mongo["test"]["AddressBook"].find<Person>(FindByFName{first});
+        result = mongo["test"]["AddressBook"].find<FindResult>(FindByFName{first});
     }
     else
     {
-        result = mongo["test"]["AddressBook"].find<Person>(FindByName{first, last});
+        result = mongo["test"]["AddressBook"].find<FindResult>(FindByName{first, last});
     }
 
     if (!result) {
@@ -242,7 +243,7 @@ void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& resp
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     std::string             tel = request.variables()["tel"];
 
-    auto result = mongo["test"]["AddressBook"].find<Person>(FindByTel{tel});
+    auto result = mongo["test"]["AddressBook"].find<FindResult>(FindByTel{tel});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
@@ -256,7 +257,7 @@ void MongoServer::personFindByZip(NHTTP::Request& request, NHTTP::Response& resp
     TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
     std::string             zip = request.variables()["zip"];
 
-    auto result = mongo["test"]["AddressBook"].find<Person>(FindByZip{zip});
+    auto result = mongo["test"]["AddressBook"].find<FindResult>(FindByZip{zip});
     if (!result) {
         return requestFailed(response, {result.getHRErrorMessage()});
     }
