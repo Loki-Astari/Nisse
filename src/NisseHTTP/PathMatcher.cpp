@@ -23,7 +23,6 @@ std::string PathMatcher::decode(std::string_view matched)
         }
         result += n;
     }
-    std::cerr << "Decode: >" << matched << "< => >" << result << "<\n";
     return result;
 }
 

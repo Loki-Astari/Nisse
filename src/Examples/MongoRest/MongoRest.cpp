@@ -39,7 +39,6 @@ class MongoRest: public TANS::NisseServer
     {
         std::error_code ec;
         FS::path        requestPath = FS::path{request.variables()["page"]}.lexically_normal();
-        std::cerr << "Getting Page: >" << requestPath << "<\n";
         FS::path        filePath = FS::canonical(FS::path{contentDir} /= requestPath, ec);
         if (requestPath.empty() || (*requestPath.begin()) == ".." || ec || !FS::is_regular_file(filePath)) {
             return response.error(404, "No File Found At Path");
