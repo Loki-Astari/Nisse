@@ -7,6 +7,7 @@ AsyncStream::AsyncStream(TAS::Socket& socket, Context& context, EventType initia
     , context{context}
 {
     context.registerLocalSocket(socket, initialWait);
+    socket.deferredAccept();
 }
 
 AsyncStream::~AsyncStream()

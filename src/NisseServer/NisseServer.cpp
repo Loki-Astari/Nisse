@@ -32,8 +32,11 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             int socketId = info.stream.getSocket().socketId();
             Context     context{server, yield, socketId};
             // Set the socket to work asynchronously.
-            info.stream.getSocket().setReadYield([&yield, socketId](){yield({TaskYieldState::RestoreRead, socketId});return true;});
-            info.stream.getSocket().setWriteYield([&yield, socketId](){yield({TaskYieldState::RestoreWrite, socketId});return true;});
+            TAS::Socket& streamSocket = info.stream.getSocket();
+
+            streamSocket.setReadYield([&yield, socketId](){yield({TaskYieldState::RestoreRead, socketId});return true;});
+            streamSocket.setWriteYield([&yield, socketId](){yield({TaskYieldState::RestoreWrite, socketId});return true;});
+            streamSocket.deferredAccept();
 
             // Return control to the creator.
             // The next call will happen when there is data available on the file descriptor.
@@ -70,7 +73,7 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
 
             while (true)
             {
-                TAS::Socket     accept = info.server.accept(TAS::Blocking::No);
+                TAS::Socket     accept = info.server.accept(TAS::Blocking::No, TAS::DeferAccept::Yes);
                 if (accept.isConnected())
                 {
                     // If everything worked then create a stream connection (see above)
