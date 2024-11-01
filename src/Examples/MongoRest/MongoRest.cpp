@@ -19,7 +19,7 @@ class MongoRest: public NisServer::NisseServer
 {
     NisHttp::HTTPHandler    http;
     NisServer::PyntControl  control;
-    MRest::MongoServer&     mongoServer;
+    MRest::MongoServer      mongoServer;
     FS::path                contentDir;
 
     TASock::ServerInit getServerInit(std::optional<FS::path> certPath, int port)
@@ -50,10 +50,10 @@ class MongoRest: public NisServer::NisseServer
         response.body(NisHttp::Encoding::Chunked) << file.rdbuf();
     }
     public:
-        MongoRest(std::size_t poolSize, int port, FS::path contentDir, std::optional<FS::path> certPath, MRest::MongoServer& ms)
+        MongoRest(std::size_t poolSize, std::size_t mongoConnectionCount, int port, FS::path contentDir, std::string_view mongoHost, int mongoPort, std::string_view mongoUser, std::string_view mongoPass, std::string_view mongoDB, std::optional<FS::path> certPath)
             : NisServer::NisseServer{poolSize}
             , control{*this}
-            , mongoServer{ms}
+            , mongoServer{mongoConnectionCount, mongoHost, 27017, mongoUser, mongoPass, mongoDB}
             , contentDir{contentDir}
         {
             // CRUD Person Interface
@@ -104,8 +104,7 @@ int main(int argc, char* argv[])
         static constexpr std::size_t mongoConnectionCount = 12;
         std::cout << "Nisse MongoRest: Port: " << port << " ConentDir: " << contentDir << " MongoHost: >" << mongoHost << "< Mongo User: >" << mongoUser << "< MongoPass: >" << mongoPass << "< MongoDB: >" << mongoDB << "< Certificate Path: >" << (argc == 7 ? "NONE" : argv[7]) << "<\n";
 
-        MRest::MongoServer  mongoServer{mongoConnectionCount, mongoHost, 27017, mongoUser, mongoPass, mongoDB};
-        MongoRest           server{poolSize, port, contentDir, certPath, mongoServer};
+        MongoRest           server{poolSize, mongoConnectionCount, port, contentDir, mongoHost, 27017, mongoUser, mongoPass, mongoDB, certPath};
         server.run();
     }
     catch (std::exception const& e)
