@@ -66,6 +66,9 @@ class WebServer: public TANS::NisseServer
 
 int main(int argc, char* argv[])
 {
+#if 0
+    loguru::g_stderr_verbosity = 9;
+#endif
     if (argc != 3 && argc != 4)
     {
         std::cerr << "Usage: WebServer <port> <contentDirectory> [<certificateDirectory>]\n";

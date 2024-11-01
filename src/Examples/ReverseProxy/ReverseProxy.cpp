@@ -73,6 +73,9 @@ class ReverseProxy: public TANS::NisseServer
 
 int main(int argc, char* argv[])
 {
+#if 0
+    loguru::g_stderr_verbosity = 9;
+#endif
     if (argc != 5 && argc != 4)
     {
         std::cerr << "Usage: ReverseProxy <port> <serviceHost> <servicePort> [<certificateDirectory>]\n";
