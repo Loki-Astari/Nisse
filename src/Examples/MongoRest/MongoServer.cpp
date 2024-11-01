@@ -103,8 +103,8 @@ void requestStreamRange(NisHttp::Response& response, TAMongo::FindRange<FindResu
     output << ']';
 }
 
-MongoServer::MongoServer(std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
-    : mongoPool(poolSize, host, port, user, password, db)
+MongoServer::MongoServer(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
+    : mongoPool(server, poolSize, host, port, user, password, db)
 {}
 
 TAMongo::ObjectID MongoServer::getIdFromRequest(NisHttp::Request& request)
@@ -119,7 +119,7 @@ TAMongo::ObjectID MongoServer::getIdFromRequest(NisHttp::Request& request)
 
 void MongoServer::personCreate(NisHttp::Request& request, NisHttp::Response& response)
 {
-    LeaseConnection         lease(mongoPool);
+    LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
     NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     NewPerson               person;
@@ -135,7 +135,7 @@ void MongoServer::personCreate(NisHttp::Request& request, NisHttp::Response& res
 
 void MongoServer::personGet(NisHttp::Request& request, NisHttp::Response& response)
 {
-    LeaseConnection         lease(mongoPool);
+    LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
     NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
@@ -157,7 +157,7 @@ void MongoServer::personGet(NisHttp::Request& request, NisHttp::Response& respon
 
 void MongoServer::personUpdate(NisHttp::Request& request, NisHttp::Response& response)
 {
-    LeaseConnection         lease(mongoPool);
+    LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
     NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
@@ -184,7 +184,7 @@ void MongoServer::personUpdate(NisHttp::Request& request, NisHttp::Response& res
 
 void MongoServer::personDelete(NisHttp::Request& request, NisHttp::Response& response)
 {
-    LeaseConnection         lease(mongoPool);
+    LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
     NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
@@ -208,7 +208,7 @@ void MongoServer::personDelete(NisHttp::Request& request, NisHttp::Response& res
 
 void MongoServer::personFindByName(NisHttp::Request& request, NisHttp::Response& response)
 {
-    LeaseConnection         lease(mongoPool);
+    LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
     NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             first = request.variables()["first"];
@@ -242,7 +242,7 @@ void MongoServer::personFindByName(NisHttp::Request& request, NisHttp::Response&
 
 void MongoServer::personFindByTel(NisHttp::Request& request, NisHttp::Response& response)
 {
-    LeaseConnection         lease(mongoPool);
+    LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
     NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             tel = request.variables()["tel"];
@@ -257,7 +257,7 @@ void MongoServer::personFindByTel(NisHttp::Request& request, NisHttp::Response& 
 
 void MongoServer::personFindByZip(NisHttp::Request& request, NisHttp::Response& response)
 {
-    LeaseConnection         lease(mongoPool);
+    LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
     NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             zip = request.variables()["zip"];

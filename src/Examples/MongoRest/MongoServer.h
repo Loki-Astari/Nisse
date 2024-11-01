@@ -1,12 +1,15 @@
 #ifndef THORSANVIL_NISSE_EXAMPLES_MONGO_SERVER_H
 #define THORSANVIL_NISSE_EXAMPLES_MONGO_SERVER_H
 
+#include "NisseServer/NisseServer.h"
+#include "NisseServer/Context.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
 #include "ThorsSocket/Socket.h"
 #include "ThorsMongo/ThorsMongo.h"
 #include <mutex>
 
+namespace NisServer = ThorsAnvil::Nisse::Server;
 namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace TASock    = ThorsAnvil::ThorsSocket;
 namespace TAMongo   = ThorsAnvil::DB::Mongo;
@@ -14,13 +17,14 @@ namespace TAMongo   = ThorsAnvil::DB::Mongo;
 namespace ThorsAnvil::Nisse::Examples::MongoRest
 {
 
+class LeaseConnection;
 class MongoConnectionPool
 {
     std::vector<TAMongo::ThorsMongo>    connections;
     std::mutex                          mutex;
     TASock::Socket                      pipe;
     public:
-        MongoConnectionPool(std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
+        MongoConnectionPool(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
             : pipe{TASock::PipeInfo{}, TASock::Blocking::Yes}
         {
             poolSize = std::max(std::size_t(1), poolSize);
@@ -29,13 +33,26 @@ class MongoConnectionPool
                 connections.emplace_back(TAMongo::MongoURL{std::string(host), port}, TAMongo::Auth::UserNamePassword{std::string(user), std::string(password), std::string(db)});
                 pipe.putMessageData(&loop, sizeof(loop));
             }
+
+            //server.registerResourcePipe(pipe.socketId());
         }
 
     private:
         friend class LeaseConnection;
-        std::size_t getConnection()
+        std::size_t getConnection(NisServer::Context& context)
         {
             std::unique_lock<std::mutex>    lock(mutex);
+            /*
+            int                             socketId = pipe.socketId();
+            pipe.setReadYield([&lock, &context, socketId]()
+            {
+                lock.unlock();
+                context.getYield()({NisServer::TaskYieldState::RestoreRead, socketId});
+                lock.lock();
+                return true;
+            });
+            */
+
             std::size_t                     nextValue;
             pipe.getMessageData(&nextValue, sizeof(nextValue));
             return nextValue;
@@ -53,9 +70,9 @@ class LeaseConnection
     std::size_t             mongo;
 
     public:
-        LeaseConnection(MongoConnectionPool& pool)
+        LeaseConnection(MongoConnectionPool& pool, NisServer::Context& context)
             : pool(pool)
-            , mongo(pool.getConnection())
+            , mongo(pool.getConnection(context))
         {}
         ~LeaseConnection()
         {
@@ -72,7 +89,7 @@ class MongoServer
 {
     MongoConnectionPool     mongoPool;
     public:
-        MongoServer(std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db);
+        MongoServer(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db);
         // CRUD
         void personCreate(NisHttp::Request& request, NisHttp::Response& response);
         void personGet(NisHttp::Request& request, NisHttp::Response& response);

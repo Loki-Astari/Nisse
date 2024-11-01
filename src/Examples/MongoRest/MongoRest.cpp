@@ -53,7 +53,7 @@ class MongoRest: public NisServer::NisseServer
         MongoRest(std::size_t poolSize, std::size_t mongoConnectionCount, int port, FS::path contentDir, std::string_view mongoHost, int mongoPort, std::string_view mongoUser, std::string_view mongoPass, std::string_view mongoDB, std::optional<FS::path> certPath)
             : NisServer::NisseServer{poolSize}
             , control{*this}
-            , mongoServer{mongoConnectionCount, mongoHost, 27017, mongoUser, mongoPass, mongoDB}
+            , mongoServer{*this, mongoConnectionCount, mongoHost, 27017, mongoUser, mongoPass, mongoDB}
             , contentDir{contentDir}
         {
             // CRUD Person Interface
