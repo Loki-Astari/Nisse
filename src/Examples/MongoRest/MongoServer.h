@@ -3,9 +3,12 @@
 
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
+#include "ThorsSocket/Socket.h"
 #include "ThorsMongo/ThorsMongo.h"
+#include <mutex>
 
 namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
+namespace TASock    = ThorsAnvil::ThorsSocket;
 namespace TAMongo   = ThorsAnvil::DB::Mongo;
 
 namespace ThorsAnvil::Nisse::Examples::MongoRest
@@ -14,23 +17,54 @@ namespace ThorsAnvil::Nisse::Examples::MongoRest
 class MongoConnectionPool
 {
     std::vector<TAMongo::ThorsMongo>    connections;
-    std::size_t                         next;
+    std::mutex                          mutex;
+    TASock::Socket                      pipe;
     public:
         MongoConnectionPool(std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
-            : next(0)
+            : pipe{TASock::PipeInfo{}, TASock::Blocking::Yes}
         {
             poolSize = std::max(std::size_t(1), poolSize);
             for (std::size_t loop = 0; loop < poolSize; ++loop)
             {
                 connections.emplace_back(TAMongo::MongoURL{std::string(host), port}, TAMongo::Auth::UserNamePassword{std::string(user), std::string(password), std::string(db)});
+                pipe.putMessageData(&loop, sizeof(loop));
             }
         }
 
-        TAMongo::ThorsMongo&    getConnection()
+    private:
+        friend class LeaseConnection;
+        std::size_t getConnection()
         {
-            // Bad implementation.
-            // Will work for low volume server that is only handling upto poolSize request simultaneously.
-            return connections[next++ % connections.size()];
+            std::unique_lock<std::mutex>    lock(mutex);
+            std::size_t                     nextValue;
+            pipe.getMessageData(&nextValue, sizeof(nextValue));
+            return nextValue;
+        }
+        void returnConnection(std::size_t value)
+        {
+            std::unique_lock<std::mutex>    lock(mutex);
+            pipe.putMessageData(&value, sizeof(value));
+        }
+};
+
+class LeaseConnection
+{
+    MongoConnectionPool&    pool;
+    std::size_t             mongo;
+
+    public:
+        LeaseConnection(MongoConnectionPool& pool)
+            : pool(pool)
+            , mongo(pool.getConnection())
+        {}
+        ~LeaseConnection()
+        {
+            pool.returnConnection(mongo);
+        }
+
+        TAMongo::ThorsMongo& connection() const
+        {
+            return pool.connections[mongo];
         }
 };
 
