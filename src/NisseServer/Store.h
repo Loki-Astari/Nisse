@@ -98,14 +98,26 @@ struct StateUpdateCreateLinkStream
     Event                   writeEvent;
 };
 
+struct StateUpdateRegPipe
+{
+    int                     fd;
+    Event                   readEvent;
+    Event                   writeEvent;
+};
+
 struct StateUpdateExternallClosed
 {
-    int     fd;
+    int fd;
 };
 
 struct StateUpdateRemove
 {
-    int     fd;
+    int fd;
+};
+
+struct StateUpdateUnRegPipe
+{
+    int fd;
 };
 
 struct StateUpdateRestoreRead
@@ -119,7 +131,7 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateRegPipe, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateUnRegPipe, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -148,16 +160,20 @@ class Store
             void operator()(StateUpdateCreateServer& update)    {store(update);}
             void operator()(StateUpdateCreateStream& update)    {store(update);}
             void operator()(StateUpdateCreateLinkStream& update){store(update);}
+            void operator()(StateUpdateRegPipe& update)         {store(update);}
             void operator()(StateUpdateExternallClosed& update) {store(update);}
             void operator()(StateUpdateRemove& update)          {store(update);}
+            void operator()(StateUpdateUnRegPipe& update)       {store(update);}
             void operator()(StateUpdateRestoreRead& update)     {store(update);}
             void operator()(StateUpdateRestoreWrite& update)    {store(update);}
         };
         void operator()(StateUpdateCreateServer& update);
         void operator()(StateUpdateCreateStream& update);
         void operator()(StateUpdateCreateLinkStream& update);
+        void operator()(StateUpdateRegPipe& update);
         void operator()(StateUpdateExternallClosed& update);
         void operator()(StateUpdateRemove& update);
+        void operator()(StateUpdateUnRegPipe& update);
         void operator()(StateUpdateRestoreRead& update);
         void operator()(StateUpdateRestoreWrite& update);
 };

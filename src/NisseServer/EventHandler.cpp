@@ -93,6 +93,19 @@ void EventHandler::remLinkedStream(int fd)
     store.requestChange(StateUpdateRemove{fd});
 }
 
+void EventHandler::addPipe(int fd)
+{
+    store.requestChange(StateUpdateRegPipe{fd,
+                                           Event{eventBase, fd, EventType::Read, *this},
+                                           Event{eventBase, fd, EventType::Write, *this}
+                                          });
+}
+
+void EventHandler::remPipe(int fd)
+{
+    store.requestChange(StateUpdateUnRegPipe{fd});
+}
+
 void EventHandler::eventAction(int fd, EventType type)
 {
     StoreData& info = store.getStoreData(fd);

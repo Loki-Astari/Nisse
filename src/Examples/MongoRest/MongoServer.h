@@ -20,12 +20,14 @@ namespace ThorsAnvil::Nisse::Examples::MongoRest
 class LeaseConnection;
 class MongoConnectionPool
 {
+    NisServer::NisseServer&             server;
     std::vector<TAMongo::ThorsMongo>    connections;
     std::mutex                          mutex;
     TASock::Socket                      pipe;
     public:
         MongoConnectionPool(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
-            : pipe{TASock::PipeInfo{}, TASock::Blocking::Yes}
+            : server(server)
+            , pipe{TASock::PipeInfo{}, TASock::Blocking::Yes}
         {
             poolSize = std::max(std::size_t(1), poolSize);
             for (std::size_t loop = 0; loop < poolSize; ++loop)
@@ -34,7 +36,11 @@ class MongoConnectionPool
                 pipe.putMessageData(&loop, sizeof(loop));
             }
 
-            server.registerResourcePipe(pipe.socketId());
+            server.addPipe(pipe.socketId());
+        }
+        ~MongoConnectionPool()
+        {
+            server.remPipe(pipe.socketId());
         }
 
     private:

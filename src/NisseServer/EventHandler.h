@@ -62,6 +62,8 @@ class EventHandler
         void add(TASock::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
         void addLinkedStream(int fd, int owner, EventType initialWait);
         void remLinkedStream(int fd);
+        void addPipe(int fd);
+        void remPipe(int fd);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);

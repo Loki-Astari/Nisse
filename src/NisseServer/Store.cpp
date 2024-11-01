@@ -30,8 +30,10 @@ void Store::requestChange(T&& update)
 template void Store::requestChange<StateUpdateCreateServer>(StateUpdateCreateServer&& update);
 template void Store::requestChange<StateUpdateCreateStream>(StateUpdateCreateStream&& update);
 template void Store::requestChange<StateUpdateCreateLinkStream>(StateUpdateCreateLinkStream&& update);
+template void Store::requestChange<StateUpdateRegPipe>(StateUpdateRegPipe&& update);
 template void Store::requestChange<StateUpdateExternallClosed>(StateUpdateExternallClosed&& update);
 template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
+template void Store::requestChange<StateUpdateUnRegPipe>(StateUpdateUnRegPipe&& update);
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
 template void Store::requestChange<StateUpdateRestoreWrite>(StateUpdateRestoreWrite&& update);
 
@@ -104,6 +106,18 @@ void Store::operator()(StateUpdateCreateLinkStream& update)
         data.writeEvent.add();
     }
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateLinkStream&)", "DONE");
+}
+
+void Store::operator()(StateUpdateRegPipe& update)
+{
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRegPipe&)", "Start: ", update.fd);
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRegPipe&)", "DONE");
+}
+
+void Store::operator()(StateUpdateUnRegPipe& update)
+{
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateUnRegPipe&)", "Start: ", update.fd);
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateUnRegPipe&)", "DONE");
 }
 
 void Store::operator()(StateUpdateExternallClosed& update)
