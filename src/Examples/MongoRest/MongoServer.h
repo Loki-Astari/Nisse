@@ -16,13 +16,13 @@ class MongoConnectionPool
     std::vector<TAMongo::ThorsMongo>    connections;
     std::size_t                         next;
     public:
-        MongoConnectionPool(std::size_t poolSize, std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
+        MongoConnectionPool(std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
             : next(0)
         {
             poolSize = std::max(std::size_t(1), poolSize);
             for (std::size_t loop = 0; loop < poolSize; ++loop)
             {
-                connections.emplace_back(TAMongo::MongoURL{host, port}, TAMongo::Auth::UserNamePassword{user, password, db});
+                connections.emplace_back(TAMongo::MongoURL{std::string(host), port}, TAMongo::Auth::UserNamePassword{std::string(user), std::string(password), std::string(db)});
             }
         }
 
@@ -38,7 +38,7 @@ class MongoServer
 {
     MongoConnectionPool     mongoPool;
     public:
-        MongoServer(std::size_t poolSize, std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db);
+        MongoServer(std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db);
         // CRUD
         void personCreate(NHTTP::Request& request, NHTTP::Response& response);
         void personGet(NHTTP::Request& request, NHTTP::Response& response);
