@@ -2,7 +2,8 @@
 #include "EventHandler.h"
 #include "Context.h"
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
+namespace TASock   = ThorsAnvil::ThorsSocket;
+
 using namespace ThorsAnvil::Nisse::Server;
 
 NisseServer::NisseServer(std::size_t workerCount)
@@ -32,7 +33,7 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             int socketId = info.stream.getSocket().socketId();
             Context     context{server, yield, socketId};
             // Set the socket to work asynchronously.
-            TAS::Socket& streamSocket = info.stream.getSocket();
+            TASock::Socket& streamSocket = info.stream.getSocket();
 
             streamSocket.setReadYield([&yield, &info, socketId]()
             {
@@ -101,13 +102,13 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
 
             while (true)
             {
-                TAS::Socket     accept = info.server.accept(TAS::Blocking::No, TAS::DeferAccept::Yes);
+                TASock::Socket     accept = info.server.accept(TASock::Blocking::No, TASock::DeferAccept::Yes);
                 if (accept.isConnected())
                 {
                     // If everything worked then create a stream connection (see above)
                     // Passing the "Pynt" as the object that will handle the request.
                     // Note: The "Pynt" functionality is not run yet. The socket must be available to use.
-                    eventHandler.add(TAS::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
+                    eventHandler.add(TASock::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
                 }
                 yield({TaskYieldState::RestoreRead, socketId});
             }
@@ -118,9 +119,9 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
     };
 }
 
-void NisseServer::listen(TAS::ServerInit&& listenerInit, Pynt& pynt)
+void NisseServer::listen(TASock::ServerInit&& listenerInit, Pynt& pynt)
 {
-    TAS::Server  server{std::move(listenerInit), TAS::Blocking::No};
+    TASock::Server  server{std::move(listenerInit), TASock::Blocking::No};
 
     eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pynt);
 }

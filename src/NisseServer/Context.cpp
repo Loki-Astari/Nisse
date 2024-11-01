@@ -2,6 +2,8 @@
 #include "NisseServer.h"
 #include "EventHandlerLibEvent.h"
 
+namespace TASock = ThorsAnvil::ThorsSocket;
+
 using namespace ThorsAnvil::Nisse::Server;
 
 Context::Context(NisseServer& server, Yield& yield, int owner)
@@ -10,7 +12,7 @@ Context::Context(NisseServer& server, Yield& yield, int owner)
     , owner{owner}
 {}
 
-void Context::registerLocalSocket(TAS::Socket& socket, EventType initialWait)
+void Context::registerLocalSocket(TASock::Socket& socket, EventType initialWait)
 {
     int fd = socket.socketId();
     server.eventHandler.addLinkedStream(fd, owner, initialWait);
@@ -22,7 +24,7 @@ void Context::registerLocalSocket(TAS::Socket& socket, EventType initialWait)
     socket.setWriteYield([&localYield, fd](){localYield({TaskYieldState::RestoreWrite, fd});return true;});
 }
 
-void Context::unregisterLocalSocket(TAS::Socket& socket)
+void Context::unregisterLocalSocket(TASock::Socket& socket)
 {
     server.eventHandler.remLinkedStream(socket.socketId());
 }

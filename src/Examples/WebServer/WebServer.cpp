@@ -7,14 +7,14 @@
 #include <filesystem>
 
 namespace TASock    = ThorsAnvil::ThorsSocket;
-namespace TANS      = ThorsAnvil::Nisse::Server;
-namespace TANH      = ThorsAnvil::Nisse::HTTP;
+namespace NisServer = ThorsAnvil::Nisse::Server;
+namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
 
-class WebServer: public TANS::NisseServer
+class WebServer: public NisServer::NisseServer
 {
-    TANH::HTTPHandler       http;
-    TANS::PyntControl       control;
+    NisHttp::HTTPHandler    http;
+    NisServer::PyntControl  control;
     FS::path                contentDir;
 
     TASock::ServerInit getServerInit(std::optional<FS::path> certPath, int port)
@@ -30,7 +30,7 @@ class WebServer: public TANS::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
-    void handleRequest(TANH::Request& request, TANH::Response& response)
+    void handleRequest(NisHttp::Request& request, NisHttp::Response& response)
     {
         FS::path        requestPath = FS::path{request.variables()["path"]}.lexically_normal();
         if (requestPath.empty() || (*requestPath.begin()) == "..") {
@@ -47,9 +47,9 @@ class WebServer: public TANS::NisseServer
         }
 
         TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
-        TANS::AsyncStream       async(file.getSocket(), request.getContext(), TANS::EventType::Read);
+        NisServer::AsyncStream       async(file.getSocket(), request.getContext(), NisServer::EventType::Read);
 
-        response.body(TANH::Encoding::Chunked) << file.rdbuf();
+        response.body(NisHttp::Encoding::Chunked) << file.rdbuf();
     }
 
     public:
@@ -57,7 +57,7 @@ class WebServer: public TANS::NisseServer
             : control(*this)
             , contentDir(contentDir)
         {
-            http.addPath(TANH::Method::GET, "/{path}", [&](TANH::Request& request, TANH::Response& response){handleRequest(request, response);});
+            http.addPath(NisHttp::Method::GET, "/{path}", [&](NisHttp::Request& request, NisHttp::Response& response){handleRequest(request, response);});
             listen(getServerInit(certPath, port), http);
             listen(TASock::ServerInfo{port+2}, control);
         }

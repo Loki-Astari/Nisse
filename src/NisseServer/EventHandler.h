@@ -32,7 +32,8 @@
 extern "C" void eventCallback(evutil_socket_t fd, short eventType, void* data);
 extern "C" void controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
+namespace TASock   = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::Server
 {
 
@@ -57,8 +58,8 @@ class EventHandler
 
         void run();
         void stop();
-        void add(TAS::Server&& stream, ServerCreator&& creator, Pynt& pynt);
-        void add(TAS::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
+        void add(TASock::Server&& stream, ServerCreator&& creator, Pynt& pynt);
+        void add(TASock::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
         void addLinkedStream(int fd, int owner, EventType initialWait);
         void remLinkedStream(int fd);
 

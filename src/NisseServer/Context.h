@@ -6,7 +6,8 @@
 #include "EventHandlerLibEvent.h"
 #include <ThorsSocket/Socket.h>
 
-namespace TAS = ThorsAnvil::ThorsSocket;
+namespace TASock = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::Server
 {
 
@@ -19,8 +20,8 @@ class Context
     int             owner;
     public:
         Context(NisseServer& server, Yield& yield, int owner);
-        void registerLocalSocket(TAS::Socket& socket, EventType initialWait);
-        void unregisterLocalSocket(TAS::Socket& socket);
+        void registerLocalSocket(TASock::Socket& socket, EventType initialWait);
+        void unregisterLocalSocket(TASock::Socket& socket);
 };
 
 }

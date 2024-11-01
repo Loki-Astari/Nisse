@@ -20,7 +20,8 @@ void controlTimerCallback(evutil_socket_t, short, void* data)
     eventHandler.controlTimerAction();
 }
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
+namespace TASock   = ThorsAnvil::ThorsSocket;
+
 using namespace ThorsAnvil::Nisse::Server;
 
 /*
@@ -54,7 +55,7 @@ void EventHandler::stop()
     finished = true;
 }
 
-void EventHandler::add(TAS::Server&& server, ServerCreator&& serverCreator, Pynt& pynt)
+void EventHandler::add(TASock::Server&& server, ServerCreator&& serverCreator, Pynt& pynt)
 {
     int fd = server.socketId();
     store.requestChange(StateUpdateCreateServer{fd,
@@ -65,7 +66,7 @@ void EventHandler::add(TAS::Server&& server, ServerCreator&& serverCreator, Pynt
                                                });
 }
 
-void EventHandler::add(TAS::SocketStream&& stream, StreamCreator&& streamCreator, Pynt& pynt)
+void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCreator, Pynt& pynt)
 {
     int fd = stream.getSocket().socketId();
     store.requestChange(StateUpdateCreateStream{fd,

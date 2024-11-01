@@ -2,9 +2,11 @@
 #include "Response.h"
 #include "Request.h"
 
+namespace TASock = ThorsAnvil::ThorsSocket;
+
 using namespace ThorsAnvil::Nisse::HTTP;
 
-ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TAS::SocketStream& stream, Server::Context& context)
+ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStream& stream, Server::Context& context)
 {
     Request     request(context, stream.getSocket().protocol(), stream);
     if (!request.isValidRequest())

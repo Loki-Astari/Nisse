@@ -1,8 +1,10 @@
 #include "AsyncStream.h"
 
+namespace TASock    = ThorsAnvil::ThorsSocket;
+
 using namespace ThorsAnvil::Nisse::Server;
 
-AsyncStream::AsyncStream(TAS::Socket& socket, Context& context, EventType initialWait)
+AsyncStream::AsyncStream(TASock::Socket& socket, Context& context, EventType initialWait)
     : socket{socket}
     , context{context}
 {

@@ -27,7 +27,8 @@
 #include "Context.h"
 #include <ThorsSocket/SocketStream.h>
 
-namespace TAS = ThorsAnvil::ThorsSocket;
+namespace TASock = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::Server
 {
 
@@ -37,7 +38,7 @@ class Pynt
 {
     public:
         virtual ~Pynt();
-        virtual PyntResult handleRequest(TAS::SocketStream& stream, Context& context) = 0;
+        virtual PyntResult handleRequest(TASock::SocketStream& stream, Context& context) = 0;
 };
 
 }

@@ -10,15 +10,15 @@
 
 
 namespace TASock    = ThorsAnvil::ThorsSocket;
-namespace TANS      = ThorsAnvil::Nisse::Server;
-namespace TANH      = ThorsAnvil::Nisse::HTTP;
+namespace NisServer = ThorsAnvil::Nisse::Server;
+namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace MRest     = ThorsAnvil::Nisse::Examples::MongoRest;
 namespace FS        = std::filesystem;
 
-class MongoRest: public TANS::NisseServer
+class MongoRest: public NisServer::NisseServer
 {
-    TANH::HTTPHandler       http;
-    TANS::PyntControl       control;
+    NisHttp::HTTPHandler    http;
+    NisServer::PyntControl  control;
     MRest::MongoServer&     mongoServer;
     FS::path                contentDir;
 
@@ -35,7 +35,7 @@ class MongoRest: public TANS::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
-    void sendPage(TANH::Request& request, TANH::Response& response)
+    void sendPage(NisHttp::Request& request, NisHttp::Response& response)
     {
         std::error_code ec;
         FS::path        requestPath = FS::path{request.variables()["page"]}.lexically_normal();
@@ -45,30 +45,30 @@ class MongoRest: public TANS::NisseServer
         }
 
         TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
-        TANS::AsyncStream       async(file.getSocket(), request.getContext(), TANS::EventType::Read);
+        NisServer::AsyncStream       async(file.getSocket(), request.getContext(), NisServer::EventType::Read);
 
-        response.body(TANH::Encoding::Chunked) << file.rdbuf();
+        response.body(NisHttp::Encoding::Chunked) << file.rdbuf();
     }
     public:
         MongoRest(std::size_t poolSize, int port, FS::path contentDir, std::optional<FS::path> certPath, MRest::MongoServer& ms)
-            : TANS::NisseServer{poolSize}
+            : NisServer::NisseServer{poolSize}
             , control{*this}
             , mongoServer{ms}
             , contentDir{contentDir}
         {
             // CRUD Person Interface
-            http.addPath(TANH::Method::POST,   "/person/",        [&](TANH::Request& request, TANH::Response& response) {mongoServer.personCreate(request, response);});
-            http.addPath(TANH::Method::GET,    "/person/Id-{id}", [&](TANH::Request& request, TANH::Response& response) {mongoServer.personGet(request, response);});
-            http.addPath(TANH::Method::PUT,    "/person/Id-{id}", [&](TANH::Request& request, TANH::Response& response) {mongoServer.personUpdate(request, response);});
-            http.addPath(TANH::Method::DELETE, "/person/Id-{id}", [&](TANH::Request& request, TANH::Response& response) {mongoServer.personDelete(request, response);});
+            http.addPath(NisHttp::Method::POST,   "/person/",        [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personCreate(request, response);});
+            http.addPath(NisHttp::Method::GET,    "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personGet(request, response);});
+            http.addPath(NisHttp::Method::PUT,    "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personUpdate(request, response);});
+            http.addPath(NisHttp::Method::DELETE, "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personDelete(request, response);});
 
             // Search Person Interface
-            http.addPath(TANH::Method::GET,    "/person/findByName/{first}/{last}",[&](TANH::Request& request, TANH::Response& response) {mongoServer.personFindByName(request, response);});
-            http.addPath(TANH::Method::GET,    "/person/findByTel/{tel}",          [&](TANH::Request& request, TANH::Response& response) {mongoServer.personFindByTel(request, response);});
-            http.addPath(TANH::Method::GET,    "/person/findByZip/{zip}",          [&](TANH::Request& request, TANH::Response& response) {mongoServer.personFindByZip(request, response);});
+            http.addPath(NisHttp::Method::GET,    "/person/findByName/{first}/{last}",[&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByName(request, response);});
+            http.addPath(NisHttp::Method::GET,    "/person/findByTel/{tel}",          [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByTel(request, response);});
+            http.addPath(NisHttp::Method::GET,    "/person/findByZip/{zip}",          [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByZip(request, response);});
 
             // WebInterface
-            http.addPath(TANH::Method::GET,    "/{page}",         [&](TANH::Request& request, TANH::Response& response) {sendPage(request, response);});
+            http.addPath(NisHttp::Method::GET,    "/{page}",         [&](NisHttp::Request& request, NisHttp::Response& response) {sendPage(request, response);});
 
             listen(getServerInit(certPath, port), http);
             listen(TASock::ServerInfo{port+2}, control);

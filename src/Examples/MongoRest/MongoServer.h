@@ -5,7 +5,7 @@
 #include "NisseHTTP/Response.h"
 #include "ThorsMongo/ThorsMongo.h"
 
-namespace NHTTP     = ThorsAnvil::Nisse::HTTP;
+namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace TAMongo   = ThorsAnvil::DB::Mongo;
 
 namespace ThorsAnvil::Nisse::Examples::MongoRest
@@ -40,18 +40,18 @@ class MongoServer
     public:
         MongoServer(std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db);
         // CRUD
-        void personCreate(NHTTP::Request& request, NHTTP::Response& response);
-        void personGet(NHTTP::Request& request, NHTTP::Response& response);
-        void personUpdate(NHTTP::Request& request, NHTTP::Response& response);
-        void personDelete(NHTTP::Request& request, NHTTP::Response& response);
+        void personCreate(NisHttp::Request& request, NisHttp::Response& response);
+        void personGet(NisHttp::Request& request, NisHttp::Response& response);
+        void personUpdate(NisHttp::Request& request, NisHttp::Response& response);
+        void personDelete(NisHttp::Request& request, NisHttp::Response& response);
 
         // FIND
-        void personFindByName(NHTTP::Request& request, NHTTP::Response& response);
-        void personFindByTel(NHTTP::Request& request, NHTTP::Response& response);
-        void personFindByZip(NHTTP::Request& request, NHTTP::Response& response);
+        void personFindByName(NisHttp::Request& request, NisHttp::Response& response);
+        void personFindByTel(NisHttp::Request& request, NisHttp::Response& response);
+        void personFindByZip(NisHttp::Request& request, NisHttp::Response& response);
     private:
-        TAMongo::ObjectID   getIdFromRequest(NHTTP::Request& request);
-        void                requestFailed(NHTTP::Response& response, std::initializer_list<std::string> messages);
+        TAMongo::ObjectID   getIdFromRequest(NisHttp::Request& request);
+        void                requestFailed(NisHttp::Response& response, std::initializer_list<std::string> messages);
 };
 
 }

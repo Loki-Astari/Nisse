@@ -6,10 +6,11 @@
 #include <ranges>
 
 
-using namespace ThorsAnvil::Nisse::Examples::MongoRest;
-namespace TAMongo   = ThorsAnvil::DB::Mongo;
-namespace TANS      = ThorsAnvil::Nisse::Server;
 namespace TAJson    = ThorsAnvil::Serialize;
+namespace TAMongo   = ThorsAnvil::DB::Mongo;
+namespace NisServer = ThorsAnvil::Nisse::Server;
+
+using namespace ThorsAnvil::Nisse::Examples::MongoRest;
 
 struct Address
 {
@@ -78,20 +79,20 @@ using FindByName    = TAMongo::QueryOp::And<FindByFName, FindByLName>;
 using FindByTel     = ThorsMongo_FilterFromAccess(Eq, Person, contactInfo, telephone, number);
 using FindByZip     = ThorsMongo_FilterFromAccess(Eq, Person, contactInfo, address, zip);
 
-void MongoServer::requestFailed(NHTTP::Response& response, std::initializer_list<std::string> messages)
+void MongoServer::requestFailed(NisHttp::Response& response, std::initializer_list<std::string> messages)
 {
     response.setStatus(404);
 
-    NHTTP::HeaderResponse   headers;
+    NisHttp::HeaderResponse   headers;
     for (auto const& message: messages) {
         headers.add("Error", message);
     }
     response.addHeaders(headers);
 }
 
-void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<FindResult>& result)
+void requestStreamRange(NisHttp::Response& response, TAMongo::FindRange<FindResult>& result)
 {
-    std::ostream& output = response.body(NHTTP::Encoding::Chunked);
+    std::ostream& output = response.body(NisHttp::Encoding::Chunked);
     output << '[';
     std::string sep = "";
     for (auto const& p: result)
@@ -106,7 +107,7 @@ MongoServer::MongoServer(std::size_t poolSize, std::string_view host, int port, 
     : mongoPool(poolSize, host, port, user, password, db)
 {}
 
-TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
+TAMongo::ObjectID MongoServer::getIdFromRequest(NisHttp::Request& request)
 {
     TAMongo::ObjectID   result;
 
@@ -116,10 +117,10 @@ TAMongo::ObjectID MongoServer::getIdFromRequest(NHTTP::Request& request)
     return result;
 }
 
-void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& response)
+void MongoServer::personCreate(NisHttp::Request& request, NisHttp::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
+    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     NewPerson               person;
     request.body() >> TAJson::jsonImporter(person);
 
@@ -128,13 +129,13 @@ void MongoServer::personCreate(NHTTP::Request& request, NHTTP::Response& respons
         return requestFailed(response, {result.getHRErrorMessage()});
     }
 
-    response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(result.inserted);
+    response.body(NisHttp::Encoding::Chunked) << TAJson::jsonExporter(result.inserted);
 }
 
-void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
+void MongoServer::personGet(NisHttp::Request& request, NisHttp::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
+    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
     auto range = mongo["test"]["AddressBook"].find<Person>(FindById{id});
@@ -144,7 +145,7 @@ void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
 
     for (auto const& person: range)
     {
-        response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(person);
+        response.body(NisHttp::Encoding::Chunked) << TAJson::jsonExporter(person);
         return;
     }
 
@@ -152,10 +153,10 @@ void MongoServer::personGet(NHTTP::Request& request, NHTTP::Response& response)
     requestFailed(response, {"No Value Found"});
 }
 
-void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& response)
+void MongoServer::personUpdate(NisHttp::Request& request, NisHttp::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
+    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
     NewPerson               person;
     std::istream& stream = request.body();
@@ -169,19 +170,19 @@ void MongoServer::personUpdate(NHTTP::Request& request, NHTTP::Response& respons
     if (!result.value)
     {
         // No original value.
-        response.body(NHTTP::Encoding::Chunked) << "{}";
+        response.body(NisHttp::Encoding::Chunked) << "{}";
     }
     else
     {
         // This was the value we replaced.
-        response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(*result.value);
+        response.body(NisHttp::Encoding::Chunked) << TAJson::jsonExporter(*result.value);
     }
 }
 
-void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& response)
+void MongoServer::personDelete(NisHttp::Request& request, NisHttp::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
+    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
     auto result = mongo["test"]["AddressBook"].findAndRemoveOne<Person>(FindById{id});
@@ -192,19 +193,19 @@ void MongoServer::personDelete(NHTTP::Request& request, NHTTP::Response& respons
     if (!result.value)
     {
         // No original value.
-        response.body(NHTTP::Encoding::Chunked) << "{}";
+        response.body(NisHttp::Encoding::Chunked) << "{}";
     }
     else
     {
         // This was the value we removed.
-        response.body(NHTTP::Encoding::Chunked) << TAJson::jsonExporter(*result.value);
+        response.body(NisHttp::Encoding::Chunked) << TAJson::jsonExporter(*result.value);
     }
 }
 
-void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& response)
+void MongoServer::personFindByName(NisHttp::Request& request, NisHttp::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
+    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             first = request.variables()["first"];
     std::string             last  = request.variables()["last"];
 
@@ -234,10 +235,10 @@ void MongoServer::personFindByName(NHTTP::Request& request, NHTTP::Response& res
     requestStreamRange(response, result);
 }
 
-void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& response)
+void MongoServer::personFindByTel(NisHttp::Request& request, NisHttp::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
+    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             tel = request.variables()["tel"];
 
     auto result = mongo["test"]["AddressBook"].find<FindResult>(FindByTel{tel});
@@ -248,10 +249,10 @@ void MongoServer::personFindByTel(NHTTP::Request& request, NHTTP::Response& resp
     requestStreamRange(response, result);
 }
 
-void MongoServer::personFindByZip(NHTTP::Request& request, NHTTP::Response& response)
+void MongoServer::personFindByZip(NisHttp::Request& request, NisHttp::Response& response)
 {
     TAMongo::ThorsMongo&    mongo = mongoPool.getConnection();
-    TANS::AsyncStream       async(mongo.getStream().getSocket(), request.getContext(), TANS::EventType::Write);
+    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             zip = request.variables()["zip"];
 
     auto result = mongo["test"]["AddressBook"].find<FindResult>(FindByZip{zip});

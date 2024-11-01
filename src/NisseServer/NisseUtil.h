@@ -7,7 +7,8 @@
 #include <boost/coroutine2/all.hpp>
 #include <functional>
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
+namespace TASock   = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::Server
 {
 /*
@@ -35,8 +36,8 @@ struct TaskYieldAction
  */
 using CoRoutine     = boost::coroutines2::coroutine<TaskYieldAction>::pull_type;
 using Yield         = boost::coroutines2::coroutine<TaskYieldAction>::push_type;
-using ServerTask    = std::function<void(TAS::Server& stream, Yield& yield)>;
-using StreamTask    = std::function<void(TAS::SocketStream& stream, Yield& yield)>;
+using ServerTask    = std::function<void(TASock::Server& stream, Yield& yield)>;
+using StreamTask    = std::function<void(TASock::SocketStream& stream, Yield& yield)>;
 using ServerCreator = std::function<CoRoutine(ServerData&)>;
 using StreamCreator = std::function<CoRoutine(StreamData&)>;
 
