@@ -102,7 +102,7 @@ void requestStreamRange(NHTTP::Response& response, TAMongo::FindRange<FindResult
     output << ']';
 }
 
-MongoServer::MongoServer(int poolSize, std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
+MongoServer::MongoServer(std::size_t poolSize, std::string const& host, int port, std::string const& user, std::string const& password, std::string const& db)
     : mongoPool(poolSize, host, port, user, password, db)
 {}
 

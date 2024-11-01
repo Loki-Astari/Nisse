@@ -5,7 +5,7 @@
 namespace TAS   = ThorsAnvil::ThorsSocket;
 using namespace ThorsAnvil::Nisse::Server;
 
-NisseServer::NisseServer(int workerCount)
+NisseServer::NisseServer(std::size_t workerCount)
     : jobQueue{workerCount}
     , store{}
     , eventHandler{jobQueue, store}

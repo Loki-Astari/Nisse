@@ -36,7 +36,7 @@ class NisseServer
     EventHandler                    eventHandler;
 
     public:
-        NisseServer(int workerCount = 1);
+        NisseServer(std::size_t workerCount = 1);
 
         void run();
         void stop();

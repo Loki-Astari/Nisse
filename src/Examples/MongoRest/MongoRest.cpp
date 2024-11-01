@@ -50,7 +50,7 @@ class MongoRest: public TANS::NisseServer
         response.body(TANH::Encoding::Chunked) << file.rdbuf();
     }
     public:
-        MongoRest(int poolSize, int port, FS::path contentDir, std::optional<FS::path> certPath, MRest::MongoServer& ms)
+        MongoRest(std::size_t poolSize, int port, FS::path contentDir, std::optional<FS::path> certPath, MRest::MongoServer& ms)
             : TANS::NisseServer{poolSize}
             , control{*this}
             , mongoServer{ms}
@@ -100,8 +100,8 @@ int main(int argc, char* argv[])
             certPath = FS::canonical(argv[7]);
         }
 
-        static constexpr int poolSize             = 6;
-        static constexpr int mongoConnectionCount = 12;
+        static constexpr std::size_t poolSize             = 6;
+        static constexpr std::size_t mongoConnectionCount = 12;
         std::cout << "Nisse MongoRest: Port: " << port << " ConentDir: " << contentDir << " MongoHost: >" << mongoHost << "< Mongo User: >" << mongoUser << "< MongoPass: >" << mongoPass << "< MongoDB: >" << mongoDB << "< Certificate Path: >" << (argc == 7 ? "NONE" : argv[7]) << "<\n";
 
         MRest::MongoServer  mongoServer{mongoConnectionCount, mongoHost, 27017, mongoUser, mongoPass, mongoDB};
