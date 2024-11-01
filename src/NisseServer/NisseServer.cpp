@@ -34,13 +34,41 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             // Set the socket to work asynchronously.
             TAS::Socket& streamSocket = info.stream.getSocket();
 
-            streamSocket.setReadYield([&yield, socketId](){yield({TaskYieldState::RestoreRead, socketId});return true;});
-            streamSocket.setWriteYield([&yield, socketId](){yield({TaskYieldState::RestoreWrite, socketId});return true;});
-            streamSocket.deferredAccept();
+            streamSocket.setReadYield([&yield, &info, socketId]()
+            {
+                // If yield() throws we are unwinding the stack.
+                // This lambda is being called from deep inside the iostream but we want the
+                // exception to propagate out of the stream, thus we set the exception bit here,
+                // but if yield() does not throw put the exception mask back.
+                std::ios_base::iostate e = info.stream.exceptions();
+                info.stream.exceptions(std::ios::badbit);
+                yield({TaskYieldState::RestoreRead, socketId});
+                info.stream.exceptions(e);
+                return true;
+            });
+            streamSocket.setWriteYield([&yield, &info, socketId]()
+            {
+                // If yield() throws we are unwinding the stack.
+                // This lambda is being called from deep inside the iostream but we want the
+                // exception to propagate out of the stream, thus we set the exception bit here,
+                // but if yield() does not throw put the exception mask back.
+                std::ios_base::iostate e = info.stream.exceptions();
+                info.stream.exceptions(std::ios::badbit);
+                yield({TaskYieldState::RestoreWrite, socketId});
+                info.stream.exceptions(e);
+                return true;
+            });
 
             // Return control to the creator.
             // The next call will happen when there is data available on the file descriptor.
+            // We do this as the co-routine is created outside a JobQueue context.
+            // once we return a Job will be added to correctly continue the Job.
+            // See Store: StateUpdateCreateStream and StateUpdateCreateServer
             yield({TaskYieldState::RestoreRead, socketId});
+
+            // On normal sockets this does nothing.
+            // ON SSL we do the SSL handshake.
+            streamSocket.deferredAccept();
 
             PyntResult result = info.pynt->handleRequest(info.stream, context);
             while (result == PyntResult::More)

@@ -49,6 +49,7 @@ void Store::processUpdateRequest()
 
 void Store::operator()(StateUpdateCreateServer& update)
 {
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateServer&)", "Start: ", update.fd);
     auto [iter, ok] = data.insert_or_assign(update.fd,
                                             ServerData{std::move(update.server),
                                                        std::move(invalid),
@@ -59,10 +60,12 @@ void Store::operator()(StateUpdateCreateServer& update)
     ServerData& data = std::get<ServerData>(iter->second);
     data.coRoutine = update.coRoutineCreator(data);
     data.readEvent.add();
-};
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateServer&)", "DONE");
+}
 
 void Store::operator()(StateUpdateCreateStream& update)
 {
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateStream&)", "Start: ", update.fd);
     auto [iter, ok] = data.insert_or_assign(update.fd,
                                             StreamData{std::move(update.stream),
                                                        std::move(invalid),
@@ -74,10 +77,12 @@ void Store::operator()(StateUpdateCreateStream& update)
     StreamData& data = std::get<StreamData>(iter->second);
     data.coRoutine = update.coRoutineCreator(data);
     data.readEvent.add();
-};
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateStream&)", "DONE");
+}
 
 void Store::operator()(StateUpdateCreateLinkStream& update)
 {
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateLinkStream&)", "Start: ", update.fd);
     auto find = data.find(update.linkedStream);
     if (find == data.end()) {
         return;
@@ -98,10 +103,12 @@ void Store::operator()(StateUpdateCreateLinkStream& update)
     else {
         data.writeEvent.add();
     }
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateLinkStream&)", "DONE");
 }
 
 void Store::operator()(StateUpdateExternallClosed& update)
 {
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateExternallClosed&)", "Start: ", update.fd);
     struct ExternallyClosed
     {
         void operator()(ServerData&)        {}
@@ -113,15 +120,19 @@ void Store::operator()(StateUpdateExternallClosed& update)
         std::visit(ExternallyClosed{}, find->second);
     }
     data.erase(update.fd);
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateExternallClosed&)", "DONE");
 }
 
 void Store::operator()(StateUpdateRemove& update)
 {
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRemove&)", "Start: ", update.fd);
     data.erase(update.fd);
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRemove&)", "DONE");
 }
 
 void Store::operator()(StateUpdateRestoreRead& update)
 {
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRestoreRead&)", "Start: ", update.fd);
     struct RestoreRead
     {
         void operator()(ServerData& update)         {update.readEvent.add();}
@@ -132,10 +143,12 @@ void Store::operator()(StateUpdateRestoreRead& update)
     if (find != data.end()) {
         std::visit(RestoreRead{}, find->second);
     }
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRestoreRead&)", "DONE");
 }
 
 void Store::operator()(StateUpdateRestoreWrite& update)
 {
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRestoreWrite&)", "Start: ", update.fd);
     struct RestoreWrite
     {
         void operator()(ServerData&)                {}
@@ -146,4 +159,5 @@ void Store::operator()(StateUpdateRestoreWrite& update)
     if (find != data.end()) {
         std::visit(RestoreWrite{}, find->second);
     }
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRestoreWrite&)", "DONE");
 }
