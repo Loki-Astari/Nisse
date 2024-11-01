@@ -43,6 +43,8 @@ class NisseServer
         void stop();
         void listen(TASock::ServerInit&& listenerInit, Pynt& pynt);
 
+        void registerResourcePipe(int fd);
+
     private:
         CoRoutine  createStreamJob(StreamData& info);
         CoRoutine  createAcceptJob(ServerData& info);

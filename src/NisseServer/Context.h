@@ -22,6 +22,8 @@ class Context
         Context(NisseServer& server, Yield& yield, int owner);
         void registerLocalSocket(TASock::Socket& socket, EventType initialWait);
         void unregisterLocalSocket(TASock::Socket& socket);
+
+        Yield&      getYield()  {return yield;}
 };
 
 }

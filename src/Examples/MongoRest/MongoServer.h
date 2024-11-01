@@ -34,7 +34,7 @@ class MongoConnectionPool
                 pipe.putMessageData(&loop, sizeof(loop));
             }
 
-            //server.registerResourcePipe(pipe.socketId());
+            server.registerResourcePipe(pipe.socketId());
         }
 
     private:
@@ -42,7 +42,6 @@ class MongoConnectionPool
         std::size_t getConnection(NisServer::Context& context)
         {
             std::unique_lock<std::mutex>    lock(mutex);
-            /*
             int                             socketId = pipe.socketId();
             pipe.setReadYield([&lock, &context, socketId]()
             {
@@ -51,7 +50,6 @@ class MongoConnectionPool
                 lock.lock();
                 return true;
             });
-            */
 
             std::size_t                     nextValue;
             pipe.getMessageData(&nextValue, sizeof(nextValue));
