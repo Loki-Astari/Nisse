@@ -84,10 +84,18 @@ class EventHandler
                 , fd(fd)
                 , type(type)
             {}
-            void operator()(ServerData& info)       {handler.addJob(info.coRoutine, fd);}
-            void operator()(StreamData& info)       {if (handler.checkFileDescriptorOK(fd, type)) {handler.addJob(info.coRoutine, fd);}}
-            void operator()(LinkedStreamData& info) {handler.addJob(*(info.linkedStreamCoRoutine), fd);}
+            void operator()(ServerData& info)       {handler.handleServerEvent(info, fd, type);}
+            void operator()(StreamData& info)       {handler.handleStreamEvent(info, fd, type);}
+            void operator()(LinkedStreamData& info) {handler.handleLinkStreamEvent(info, fd, type);}
+            void operator()(PipeData& info)         {handler.handlePipeStreamEvent(info, fd, type);}
         };
+
+        // --- Handlers
+        void handleServerEvent(ServerData& info, int fd, EventType type);
+        void handleStreamEvent(StreamData& info, int fd, EventType type);
+        void handleLinkStreamEvent(LinkedStreamData& info, int fd, EventType type);
+        void handlePipeStreamEvent(PipeData& info, int fd, EventType type);
+        // --- Handler Utility
         bool checkFileDescriptorOK(int fd, EventType type);
         void addJob(CoRoutine& work, int fd);
 };

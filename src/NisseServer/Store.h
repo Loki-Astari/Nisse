@@ -10,6 +10,7 @@
 #include <variant>
 #include <functional>
 #include <map>
+#include <deque>
 #include <vector>
 #include <mutex>
 
@@ -62,8 +63,15 @@ struct LinkedStreamData
     Event                   readEvent;
     Event                   writeEvent;
 };
+struct PipeData
+{
+    std::deque<CoRoutine*>  waitingRead;
+    std::deque<CoRoutine*>  waitingWrite;
+    Event                   readEvent;
+    Event                   writeEvent;
+};
 
-using StoreData = std::variant<ServerData, StreamData, LinkedStreamData>;
+using StoreData = std::variant<ServerData, StreamData, LinkedStreamData, PipeData>;
 
 
 /*
@@ -115,23 +123,20 @@ struct StateUpdateRemove
     int fd;
 };
 
-struct StateUpdateUnRegPipe
-{
-    int fd;
-};
-
 struct StateUpdateRestoreRead
 {
     int fd;
+    int owner;
 };
 
 struct StateUpdateRestoreWrite
 {
     int fd;
+    int owner;
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateRegPipe, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateUnRegPipe, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateRegPipe, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -163,7 +168,6 @@ class Store
             void operator()(StateUpdateRegPipe& update)         {store(update);}
             void operator()(StateUpdateExternallClosed& update) {store(update);}
             void operator()(StateUpdateRemove& update)          {store(update);}
-            void operator()(StateUpdateUnRegPipe& update)       {store(update);}
             void operator()(StateUpdateRestoreRead& update)     {store(update);}
             void operator()(StateUpdateRestoreWrite& update)    {store(update);}
         };
@@ -173,7 +177,6 @@ class Store
         void operator()(StateUpdateRegPipe& update);
         void operator()(StateUpdateExternallClosed& update);
         void operator()(StateUpdateRemove& update);
-        void operator()(StateUpdateUnRegPipe& update);
         void operator()(StateUpdateRestoreRead& update);
         void operator()(StateUpdateRestoreWrite& update);
 };

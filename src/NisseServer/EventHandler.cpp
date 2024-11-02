@@ -103,14 +103,50 @@ void EventHandler::addPipe(int fd)
 
 void EventHandler::remPipe(int fd)
 {
-    store.requestChange(StateUpdateUnRegPipe{fd});
+    store.requestChange(StateUpdateRemove{fd});
 }
 
 void EventHandler::eventAction(int fd, EventType type)
 {
     StoreData& info = store.getStoreData(fd);
     std::visit(ApplyEvent{*this, fd, type},  info);
-    /* The std::visit ApplyEvent object to call checkFileDescriptorOK()/addJob() below */
+    /* The std::visit ApplyEvent object to call the appropriate of
+     * handleServerEvent/ handleStreamEvent/ handleLinkStreamEvent/ handlePipeStreamEvent
+     */
+}
+
+
+void EventHandler::handleServerEvent(ServerData& info, int fd, EventType)
+{
+    addJob(info.coRoutine, fd);
+}
+
+void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
+{
+    if (checkFileDescriptorOK(fd, type)) {
+        addJob(info.coRoutine, fd);
+    }
+}
+
+void EventHandler::handleLinkStreamEvent(LinkedStreamData& info, int fd, EventType)
+{
+    addJob(*(info.linkedStreamCoRoutine), fd);
+}
+
+void EventHandler::handlePipeStreamEvent(PipeData& info, int fd, EventType type)
+{
+    std::deque<CoRoutine*>& nextData = (type == EventType::Read) ? info.waitingRead : info.waitingWrite;
+    Event&                  nextEvent= (type == EventType::Read) ? info.readEvent   : info.writeEvent;
+    if (nextData.size() != 0)
+    {
+        CoRoutine* next = nextData.front();
+        nextData.pop_front();
+
+        addJob(*next, fd);
+        if (nextData.size() != 0) {
+            nextEvent.add();
+        }
+    }
 }
 
 bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
@@ -165,10 +201,10 @@ void EventHandler::addJob(CoRoutine& work, int fd)
                 store.requestChange(StateUpdateRemove{task.fd});
                 break;
             case TaskYieldState::RestoreRead:
-                store.requestChange(StateUpdateRestoreRead{task.fd});
+                store.requestChange(StateUpdateRestoreRead{task.fd, fd});
                 break;
             case TaskYieldState::RestoreWrite:
-                store.requestChange(StateUpdateRestoreWrite{task.fd});
+                store.requestChange(StateUpdateRestoreWrite{task.fd, fd});
                 break;
         }
     });
