@@ -63,15 +63,15 @@ struct LinkedStreamData
     Event                   readEvent;
     Event                   writeEvent;
 };
-struct PipeData
+struct ResQueueData
 {
-    std::deque<CoRoutine*>  waitingRead;
-    std::deque<CoRoutine*>  waitingWrite;
+    std::deque<CoRoutine*>  readWaiting;
+    std::deque<CoRoutine*>  writeWaiting;
     Event                   readEvent;
     Event                   writeEvent;
 };
 
-using StoreData = std::variant<ServerData, StreamData, LinkedStreamData, PipeData>;
+using StoreData = std::variant<ServerData, StreamData, LinkedStreamData, ResQueueData>;
 
 
 /*
@@ -106,7 +106,7 @@ struct StateUpdateCreateLinkStream
     Event                   writeEvent;
 };
 
-struct StateUpdateRegPipe
+struct StateUpdateResQueue
 {
     int                     fd;
     Event                   readEvent;
@@ -136,7 +136,7 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateRegPipe, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateResQueue, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -165,7 +165,7 @@ class Store
             void operator()(StateUpdateCreateServer& update)    {store(update);}
             void operator()(StateUpdateCreateStream& update)    {store(update);}
             void operator()(StateUpdateCreateLinkStream& update){store(update);}
-            void operator()(StateUpdateRegPipe& update)         {store(update);}
+            void operator()(StateUpdateResQueue& update)        {store(update);}
             void operator()(StateUpdateExternallClosed& update) {store(update);}
             void operator()(StateUpdateRemove& update)          {store(update);}
             void operator()(StateUpdateRestoreRead& update)     {store(update);}
@@ -174,7 +174,7 @@ class Store
         void operator()(StateUpdateCreateServer& update);
         void operator()(StateUpdateCreateStream& update);
         void operator()(StateUpdateCreateLinkStream& update);
-        void operator()(StateUpdateRegPipe& update);
+        void operator()(StateUpdateResQueue& update);
         void operator()(StateUpdateExternallClosed& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);

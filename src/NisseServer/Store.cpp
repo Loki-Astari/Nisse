@@ -30,7 +30,7 @@ void Store::requestChange(T&& update)
 template void Store::requestChange<StateUpdateCreateServer>(StateUpdateCreateServer&& update);
 template void Store::requestChange<StateUpdateCreateStream>(StateUpdateCreateStream&& update);
 template void Store::requestChange<StateUpdateCreateLinkStream>(StateUpdateCreateLinkStream&& update);
-template void Store::requestChange<StateUpdateRegPipe>(StateUpdateRegPipe&& update);
+template void Store::requestChange<StateUpdateResQueue>(StateUpdateResQueue&& update);
 template void Store::requestChange<StateUpdateExternallClosed>(StateUpdateExternallClosed&& update);
 template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
@@ -107,18 +107,18 @@ void Store::operator()(StateUpdateCreateLinkStream& update)
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateLinkStream&)", "DONE");
 }
 
-void Store::operator()(StateUpdateRegPipe& update)
+void Store::operator()(StateUpdateResQueue& update)
 {
-    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRegPipe&)", "Start: ", update.fd);
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateResQueue&)", "Start: ", update.fd);
     auto [iter, ok] = data.insert_or_assign(update.fd,
-                                            PipeData{{},    // Empty Read List
-                                                     {},    // Empty Write List
-                                                     std::move(update.readEvent),
-                                                     std::move(update.writeEvent),
-                                                    });
+                                            ResQueueData{{},    // Empty Read List
+                                                         {},    // Empty Write List
+                                                         std::move(update.readEvent),
+                                                         std::move(update.writeEvent),
+                                                        });
     ((void)iter);
     ((void)ok);
-    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRegPipe&)", "DONE");
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateResQueue&)", "DONE");
 }
 
 void Store::operator()(StateUpdateExternallClosed& update)
@@ -129,7 +129,7 @@ void Store::operator()(StateUpdateExternallClosed& update)
         void operator()(ServerData&)            {}
         void operator()(StreamData& data)       {data.stream.getSocket().externalyClosed();}
         void operator()(LinkedStreamData&)      {}
-        void operator()(PipeData&)              {}
+        void operator()(ResQueueData&)          {}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {
@@ -160,7 +160,7 @@ void Store::operator()(StateUpdateRestoreRead& update)
         void operator()(ServerData& data)       {data.readEvent.add();}
         void operator()(StreamData& data)       {data.readEvent.add();}
         void operator()(LinkedStreamData& data) {data.readEvent.add();}
-        void operator()(PipeData& data)
+        void operator()(ResQueueData& data)
         {
             auto find = store.data.find(update.owner);
             if (find == store.data.end()) {
@@ -170,7 +170,7 @@ void Store::operator()(StateUpdateRestoreRead& update)
             if (std::holds_alternative<StreamData>(ownerDataRef))
             {
                 StreamData& ownerStreamRef  = std::get<StreamData>(ownerDataRef);
-                data.waitingRead.emplace_back(&ownerStreamRef.coRoutine);
+                data.readWaiting.emplace_back(&ownerStreamRef.coRoutine);
                 data.readEvent.add();
             }
         }
@@ -196,7 +196,7 @@ void Store::operator()(StateUpdateRestoreWrite& update)
         void operator()(ServerData&)            {}
         void operator()(StreamData& data)       {data.writeEvent.add();}
         void operator()(LinkedStreamData& data) {data.writeEvent.add();}
-        void operator()(PipeData& data)
+        void operator()(ResQueueData& data)
         {
             auto find = store.data.find(update.owner);
             if (find == store.data.end()) {
@@ -206,7 +206,7 @@ void Store::operator()(StateUpdateRestoreWrite& update)
             if (std::holds_alternative<StreamData>(ownerDataRef))
             {
                 StreamData& ownerStreamRef  = std::get<StreamData>(ownerDataRef);
-                data.waitingWrite.emplace_back(&ownerStreamRef.coRoutine);
+                data.writeWaiting.emplace_back(&ownerStreamRef.coRoutine);
                 data.writeEvent.add();
             }
         }

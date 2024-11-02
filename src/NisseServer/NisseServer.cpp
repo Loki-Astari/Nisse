@@ -126,12 +126,12 @@ void NisseServer::listen(TASock::ServerInit&& listenerInit, Pynt& pynt)
     eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pynt);
 }
 
-void NisseServer::addPipe(int fd)
+void NisseServer::addResourceQueue(int fd)
 {
-    eventHandler.addPipe(fd);
+    eventHandler.addResourceQueue(fd);
 }
 
-void NisseServer::remPipe(int fd)
+void NisseServer::remResourceQueue(int fd)
 {
-    eventHandler.remPipe(fd);
+    eventHandler.remResourceQueue(fd);
 }

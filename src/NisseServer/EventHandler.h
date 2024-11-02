@@ -62,8 +62,8 @@ class EventHandler
         void add(TASock::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
         void addLinkedStream(int fd, int owner, EventType initialWait);
         void remLinkedStream(int fd);
-        void addPipe(int fd);
-        void remPipe(int fd);
+        void addResourceQueue(int fd);
+        void remResourceQueue(int fd);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
@@ -87,14 +87,14 @@ class EventHandler
             void operator()(ServerData& info)       {handler.handleServerEvent(info, fd, type);}
             void operator()(StreamData& info)       {handler.handleStreamEvent(info, fd, type);}
             void operator()(LinkedStreamData& info) {handler.handleLinkStreamEvent(info, fd, type);}
-            void operator()(PipeData& info)         {handler.handlePipeStreamEvent(info, fd, type);}
+            void operator()(ResQueueData& info)     {handler.handlePipeStreamEvent(info, fd, type);}
         };
 
         // --- Handlers
         void handleServerEvent(ServerData& info, int fd, EventType type);
         void handleStreamEvent(StreamData& info, int fd, EventType type);
         void handleLinkStreamEvent(LinkedStreamData& info, int fd, EventType type);
-        void handlePipeStreamEvent(PipeData& info, int fd, EventType type);
+        void handlePipeStreamEvent(ResQueueData& info, int fd, EventType type);
         // --- Handler Utility
         bool checkFileDescriptorOK(int fd, EventType type);
         void addJob(CoRoutine& work, int fd);

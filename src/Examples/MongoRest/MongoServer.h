@@ -36,11 +36,11 @@ class MongoConnectionPool
                 pipe.putMessageData(&loop, sizeof(loop));
             }
 
-            server.addPipe(pipe.socketId());
+            server.addResourceQueue(pipe.socketId());
         }
         ~MongoConnectionPool()
         {
-            server.remPipe(pipe.socketId());
+            server.remResourceQueue(pipe.socketId());
         }
 
     private:
