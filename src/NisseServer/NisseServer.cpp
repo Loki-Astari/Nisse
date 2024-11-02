@@ -69,7 +69,7 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
 
             // On normal sockets this does nothing.
             // ON SSL we do the SSL handshake.
-            streamSocket.deferredAccept();
+            streamSocket.deferInit();
 
             PyntResult result = info.pynt->handleRequest(info.stream, context);
             while (result == PyntResult::More)

@@ -9,7 +9,7 @@ AsyncStream::AsyncStream(TASock::SocketStream& stream, Context& context, EventTy
     , context{context}
 {
     context.registerLocalSocketStream(stream, initialWait);
-    stream.getSocket().deferredAccept();
+    stream.getSocket().deferInit();
 }
 
 AsyncStream::~AsyncStream()
@@ -22,7 +22,7 @@ AsyncSocket::AsyncSocket(TASock::Socket& socket, Context& context, EventType ini
     , context{context}
 {
     context.registerLocalSocket(socket, initialWait);
-    socket.deferredAccept();
+    socket.deferInit();
 }
 
 AsyncSocket::~AsyncSocket()
