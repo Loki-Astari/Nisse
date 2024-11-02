@@ -11,7 +11,8 @@
 #include <ThorsSocket/SocketStream.h>
 #include <string_view>
 
-namespace TAS = ThorsAnvil::ThorsSocket;
+namespace TASock = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::HTTP
 {
 
@@ -21,7 +22,7 @@ class Response;
 class PyntHTTP: public Server::Pynt
 {
     public:
-        virtual Server::PyntResult  handleRequest(TAS::SocketStream& stream, Server::Context& context) override;
+        virtual Server::PyntResult  handleRequest(TASock::SocketStream& stream, Server::Context& context) override;
         virtual void                processRequest(Request& request, Response& response) = 0;
 };
 

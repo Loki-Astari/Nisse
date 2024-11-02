@@ -32,7 +32,8 @@
 extern "C" void eventCallback(evutil_socket_t fd, short eventType, void* data);
 extern "C" void controlTimerCallback(evutil_socket_t fd, short eventType, void* data);
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
+namespace TASock   = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::Server
 {
 
@@ -57,10 +58,12 @@ class EventHandler
 
         void run();
         void stop();
-        void add(TAS::Server&& stream, ServerCreator&& creator, Pynt& pynt);
-        void add(TAS::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
+        void add(TASock::Server&& stream, ServerCreator&& creator, Pynt& pynt);
+        void add(TASock::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
         void addLinkedStream(int fd, int owner, EventType initialWait);
         void remLinkedStream(int fd);
+        void addResourceQueue(int fd);
+        void remResourceQueue(int fd);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
@@ -81,10 +84,18 @@ class EventHandler
                 , fd(fd)
                 , type(type)
             {}
-            void operator()(ServerData& info)       {handler.addJob(info.coRoutine, fd);}
-            void operator()(StreamData& info)       {if (handler.checkFileDescriptorOK(fd, type)) {handler.addJob(info.coRoutine, fd);}}
-            void operator()(LinkedStreamData& info) {handler.addJob(*(info.linkedStreamCoRoutine), fd);}
+            void operator()(ServerData& info)       {handler.handleServerEvent(info, fd, type);}
+            void operator()(StreamData& info)       {handler.handleStreamEvent(info, fd, type);}
+            void operator()(LinkedStreamData& info) {handler.handleLinkStreamEvent(info, fd, type);}
+            void operator()(ResQueueData& info)     {handler.handlePipeStreamEvent(info, fd, type);}
         };
+
+        // --- Handlers
+        void handleServerEvent(ServerData& info, int fd, EventType type);
+        void handleStreamEvent(StreamData& info, int fd, EventType type);
+        void handleLinkStreamEvent(LinkedStreamData& info, int fd, EventType type);
+        void handlePipeStreamEvent(ResQueueData& info, int fd, EventType type);
+        // --- Handler Utility
         bool checkFileDescriptorOK(int fd, EventType type);
         void addJob(CoRoutine& work, int fd);
 };

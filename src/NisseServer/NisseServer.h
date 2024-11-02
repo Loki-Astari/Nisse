@@ -21,7 +21,8 @@
 #include "Pynt.h"
 #include <ThorsSocket/SocketStream.h>
 
-namespace TAS = ThorsAnvil::ThorsSocket;
+namespace TASock = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::Server
 {
 
@@ -36,11 +37,14 @@ class NisseServer
     EventHandler                    eventHandler;
 
     public:
-        NisseServer(int workerCount = 1);
+        NisseServer(std::size_t workerCount = 1);
 
         void run();
         void stop();
-        void listen(TAS::ServerInit&& listenerInit, Pynt& pynt);
+        void listen(TASock::ServerInit&& listenerInit, Pynt& pynt);
+
+        void addResourceQueue(int fd);
+        void remResourceQueue(int fd);
 
     private:
         CoRoutine  createStreamJob(StreamData& info);

@@ -3,12 +3,12 @@
 
 using namespace ThorsAnvil::Nisse::Server;
 
-JobQueue::JobQueue(int workerCount)
+JobQueue::JobQueue(std::size_t workerCount)
     : finished{false}
 {
     try
     {
-        for (int loop = 0; loop < workerCount; ++loop) {
+        for (std::size_t loop = 0; loop < workerCount; ++loop) {
             workers.emplace_back(&JobQueue::processWork, this);
         }
     }

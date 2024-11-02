@@ -10,6 +10,7 @@
 #include <variant>
 #include <functional>
 #include <map>
+#include <deque>
 #include <vector>
 #include <mutex>
 
@@ -33,7 +34,8 @@
  * via the `requestChange()` method that enqueues a request to be done by the main thread.
  */
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
+namespace TASock   = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::Server
 {
 
@@ -42,27 +44,34 @@ namespace ThorsAnvil::Nisse::Server
  */
 struct ServerData
 {
-    TAS::Server         server;
-    CoRoutine           coRoutine;
-    Event               readEvent;
-    Pynt*               pynt;
+    TASock::Server          server;
+    CoRoutine               coRoutine;
+    Event                   readEvent;
+    Pynt*                   pynt;
 };
 struct StreamData
 {
-    TAS::SocketStream   stream;
-    CoRoutine           coRoutine;
-    Event               readEvent;
-    Event               writeEvent;
-    Pynt*               pynt;
+    TASock::SocketStream    stream;
+    CoRoutine               coRoutine;
+    Event                   readEvent;
+    Event                   writeEvent;
+    Pynt*                   pynt;
 };
 struct LinkedStreamData
 {
-    CoRoutine*          linkedStreamCoRoutine;
-    Event               readEvent;
-    Event               writeEvent;
+    CoRoutine*              linkedStreamCoRoutine;
+    Event                   readEvent;
+    Event                   writeEvent;
+};
+struct ResQueueData
+{
+    std::deque<CoRoutine*>  readWaiting;
+    std::deque<CoRoutine*>  writeWaiting;
+    Event                   readEvent;
+    Event                   writeEvent;
 };
 
-using StoreData = std::variant<ServerData, StreamData, LinkedStreamData>;
+using StoreData = std::variant<ServerData, StreamData, LinkedStreamData, ResQueueData>;
 
 
 /*
@@ -71,54 +80,63 @@ using StoreData = std::variant<ServerData, StreamData, LinkedStreamData>;
  */
 struct StateUpdateCreateServer
 {
-    int                 fd;
-    TAS::Server         server;
-    ServerCreator       coRoutineCreator;
-    Event               readEvent;
-    Pynt&               pynt;
+    int                     fd;
+    TASock::Server          server;
+    ServerCreator           coRoutineCreator;
+    Event                   readEvent;
+    Pynt&                   pynt;
 };
 
 struct StateUpdateCreateStream
 {
-    int                 fd;
-    TAS::SocketStream   stream;
-    StreamCreator       coRoutineCreator;
-    Event               readEvent;
-    Event               writeEvent;
-    Pynt&               pynt;
+    int                     fd;
+    TASock::SocketStream    stream;
+    StreamCreator           coRoutineCreator;
+    Event                   readEvent;
+    Event                   writeEvent;
+    Pynt&                   pynt;
 };
 
 struct StateUpdateCreateLinkStream
 {
-    int                 fd;
-    int                 linkedStream;
-    EventType           initialWait;
-    Event               readEvent;
-    Event               writeEvent;
+    int                     fd;
+    int                     linkedStream;
+    EventType               initialWait;
+    Event                   readEvent;
+    Event                   writeEvent;
+};
+
+struct StateUpdateResQueue
+{
+    int                     fd;
+    Event                   readEvent;
+    Event                   writeEvent;
 };
 
 struct StateUpdateExternallClosed
 {
-    int     fd;
+    int fd;
 };
 
 struct StateUpdateRemove
 {
-    int     fd;
+    int fd;
 };
 
 struct StateUpdateRestoreRead
 {
     int fd;
+    int owner;
 };
 
 struct StateUpdateRestoreWrite
 {
     int fd;
+    int owner;
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateResQueue, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -147,6 +165,7 @@ class Store
             void operator()(StateUpdateCreateServer& update)    {store(update);}
             void operator()(StateUpdateCreateStream& update)    {store(update);}
             void operator()(StateUpdateCreateLinkStream& update){store(update);}
+            void operator()(StateUpdateResQueue& update)        {store(update);}
             void operator()(StateUpdateExternallClosed& update) {store(update);}
             void operator()(StateUpdateRemove& update)          {store(update);}
             void operator()(StateUpdateRestoreRead& update)     {store(update);}
@@ -155,6 +174,7 @@ class Store
         void operator()(StateUpdateCreateServer& update);
         void operator()(StateUpdateCreateStream& update);
         void operator()(StateUpdateCreateLinkStream& update);
+        void operator()(StateUpdateResQueue& update);
         void operator()(StateUpdateExternallClosed& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);

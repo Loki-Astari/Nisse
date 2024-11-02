@@ -30,7 +30,7 @@ class JobQueue
     bool                            finished;
 
     public:
-        JobQueue(int workerCount);
+        JobQueue(std::size_t workerCount);
         ~JobQueue();
 
         void addJob(Work&& action);

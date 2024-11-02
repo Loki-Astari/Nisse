@@ -2,10 +2,11 @@
 #include "EventHandler.h"
 #include "Context.h"
 
-namespace TAS   = ThorsAnvil::ThorsSocket;
+namespace TASock   = ThorsAnvil::ThorsSocket;
+
 using namespace ThorsAnvil::Nisse::Server;
 
-NisseServer::NisseServer(int workerCount)
+NisseServer::NisseServer(std::size_t workerCount)
     : jobQueue{workerCount}
     , store{}
     , eventHandler{jobQueue, store}
@@ -32,15 +33,43 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             int socketId = info.stream.getSocket().socketId();
             Context     context{server, yield, socketId};
             // Set the socket to work asynchronously.
-            TAS::Socket& streamSocket = info.stream.getSocket();
+            TASock::Socket& streamSocket = info.stream.getSocket();
 
-            streamSocket.setReadYield([&yield, socketId](){yield({TaskYieldState::RestoreRead, socketId});return true;});
-            streamSocket.setWriteYield([&yield, socketId](){yield({TaskYieldState::RestoreWrite, socketId});return true;});
-            streamSocket.deferredAccept();
+            streamSocket.setReadYield([&yield, &info, socketId]()
+            {
+                // If yield() throws we are unwinding the stack.
+                // This lambda is being called from deep inside the iostream but we want the
+                // exception to propagate out of the stream, thus we set the exception bit here,
+                // but if yield() does not throw put the exception mask back.
+                std::ios_base::iostate e = info.stream.exceptions();
+                info.stream.exceptions(std::ios::badbit);
+                yield({TaskYieldState::RestoreRead, socketId});
+                info.stream.exceptions(e);
+                return true;
+            });
+            streamSocket.setWriteYield([&yield, &info, socketId]()
+            {
+                // If yield() throws we are unwinding the stack.
+                // This lambda is being called from deep inside the iostream but we want the
+                // exception to propagate out of the stream, thus we set the exception bit here,
+                // but if yield() does not throw put the exception mask back.
+                std::ios_base::iostate e = info.stream.exceptions();
+                info.stream.exceptions(std::ios::badbit);
+                yield({TaskYieldState::RestoreWrite, socketId});
+                info.stream.exceptions(e);
+                return true;
+            });
 
             // Return control to the creator.
             // The next call will happen when there is data available on the file descriptor.
+            // We do this as the co-routine is created outside a JobQueue context.
+            // once we return a Job will be added to correctly continue the Job.
+            // See Store: StateUpdateCreateStream and StateUpdateCreateServer
             yield({TaskYieldState::RestoreRead, socketId});
+
+            // On normal sockets this does nothing.
+            // ON SSL we do the SSL handshake.
+            streamSocket.deferredAccept();
 
             PyntResult result = info.pynt->handleRequest(info.stream, context);
             while (result == PyntResult::More)
@@ -73,13 +102,13 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
 
             while (true)
             {
-                TAS::Socket     accept = info.server.accept(TAS::Blocking::No, TAS::DeferAccept::Yes);
+                TASock::Socket     accept = info.server.accept(TASock::Blocking::No, TASock::DeferAccept::Yes);
                 if (accept.isConnected())
                 {
                     // If everything worked then create a stream connection (see above)
                     // Passing the "Pynt" as the object that will handle the request.
                     // Note: The "Pynt" functionality is not run yet. The socket must be available to use.
-                    eventHandler.add(TAS::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
+                    eventHandler.add(TASock::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
                 }
                 yield({TaskYieldState::RestoreRead, socketId});
             }
@@ -90,9 +119,19 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
     };
 }
 
-void NisseServer::listen(TAS::ServerInit&& listenerInit, Pynt& pynt)
+void NisseServer::listen(TASock::ServerInit&& listenerInit, Pynt& pynt)
 {
-    TAS::Server  server{std::move(listenerInit), TAS::Blocking::No};
+    TASock::Server  server{std::move(listenerInit), TASock::Blocking::No};
 
     eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pynt);
+}
+
+void NisseServer::addResourceQueue(int fd)
+{
+    eventHandler.addResourceQueue(fd);
+}
+
+void NisseServer::remResourceQueue(int fd)
+{
+    eventHandler.remResourceQueue(fd);
 }

@@ -7,14 +7,14 @@
 #include <filesystem>
 
 namespace TASock    = ThorsAnvil::ThorsSocket;
-namespace TANS      = ThorsAnvil::Nisse::Server;
-namespace TANH      = ThorsAnvil::Nisse::HTTP;
+namespace NisServer = ThorsAnvil::Nisse::Server;
+namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
 
-class HelloWorld: public TANS::NisseServer
+class HelloWorld: public NisServer::NisseServer
 {
-    TANH::HTTPHandler       http;
-    TANS::PyntControl       control;
+    NisHttp::HTTPHandler    http;
+    NisServer::PyntControl  control;
 
     TASock::ServerInit getServerInit(std::optional<FS::path> certPath, int port)
     {
@@ -29,7 +29,7 @@ class HelloWorld: public TANS::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
-    void handleRequestLenght(TANH::Request& request, TANH::Response& response)
+    void handleRequestLenght(NisHttp::Request& request, NisHttp::Response& response)
     {
         std::string who  = request.variables()["Who"];
         std::string data = R"(
@@ -41,9 +41,9 @@ class HelloWorld: public TANS::NisseServer
 )";
         response.body(data.size()) << data;
     }
-    void handleRequestChunked(TANH::Request& request, TANH::Response& response)
+    void handleRequestChunked(NisHttp::Request& request, NisHttp::Response& response)
     {
-        response.body(TANH::Encoding::Chunked) << R"(
+        response.body(NisHttp::Encoding::Chunked) << R"(
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html>
 <head><title>Nisse server 1.1</title></head>
@@ -56,8 +56,8 @@ class HelloWorld: public TANS::NisseServer
         HelloWorld(int port, std::optional<FS::path> certPath)
             : control(*this)
         {
-            http.addPath(TANH::Method::GET, "/HW{Who}.html", [&](TANH::Request& request, TANH::Response& response){handleRequestLenght(request, response);});
-            http.addPath(TANH::Method::GET, "/CK{Who}.html", [&](TANH::Request& request, TANH::Response& response){handleRequestChunked(request, response);});
+            http.addPath(NisHttp::Method::GET, "/HW{Who}.html", [&](NisHttp::Request& request, NisHttp::Response& response){handleRequestLenght(request, response);});
+            http.addPath(NisHttp::Method::GET, "/CK{Who}.html", [&](NisHttp::Request& request, NisHttp::Response& response){handleRequestChunked(request, response);});
             listen(getServerInit(certPath, port), http);
             listen(TASock::ServerInfo{port+2}, control);
         }
@@ -65,6 +65,9 @@ class HelloWorld: public TANS::NisseServer
 
 int main(int argc, char* argv[])
 {
+#if 0
+    loguru::g_stderr_verbosity = 9;
+#endif
     if (argc != 2 && argc != 3)
     {
         std::cerr << "Usage: HelloWorld <port> [<certificateDirectory>]\n";

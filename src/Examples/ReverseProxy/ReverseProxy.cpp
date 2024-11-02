@@ -8,14 +8,14 @@
 #include <filesystem>
 
 namespace TASock    = ThorsAnvil::ThorsSocket;
-namespace TANS      = ThorsAnvil::Nisse::Server;
-namespace TANH      = ThorsAnvil::Nisse::HTTP;
+namespace NisServer = ThorsAnvil::Nisse::Server;
+namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
 
-class ReverseProxy: public TANS::NisseServer
+class ReverseProxy: public NisServer::NisseServer
 {
-    TANH::HTTPHandler       http;
-    TANS::PyntControl       control;
+    NisHttp::HTTPHandler    http;
+    NisServer::PyntControl  control;
     std::string             dest;
     int                     destPort;
 
@@ -32,11 +32,11 @@ class ReverseProxy: public TANS::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
-    void handleRequest(TANH::Request& request, TANH::Response& response)
+    void handleRequest(NisHttp::Request& request, NisHttp::Response& response)
     {
         TASock::SocketInfo      init{dest, destPort};
         TASock::SocketStream    stream{TASock::Socket{init, TASock::Blocking::No}};
-        TANS::AsyncStream       async(stream.getSocket(), request.getContext(), TANS::EventType::Write);
+        NisServer::AsyncStream  async(stream.getSocket(), request.getContext(), NisServer::EventType::Write);
 
         if (!stream) {
             return response.error(500, "Failed to open socket");
@@ -50,8 +50,8 @@ class ReverseProxy: public TANS::NisseServer
 
         // Step 2: Read the reply and return.
         stream >> response;
-        TANH::HeaderPassThrough headers(stream);
-        TANH::StreamInput       body(stream, headers.getEncoding());
+        NisHttp::HeaderPassThrough  headers(stream);
+        NisHttp::StreamInput        body(stream, headers.getEncoding());
 
         // Step 3: Send the reply back to the originator.
         response.addHeaders(headers);
@@ -64,7 +64,7 @@ class ReverseProxy: public TANS::NisseServer
             , dest(dest)
             , destPort(destPort)
         {
-            http.addPath(TANH::All::Method, "/{command}", [&](TANH::Request& request, TANH::Response& response){handleRequest(request, response);});
+            http.addPath(NisHttp::All::Method, "/{command}", [&](NisHttp::Request& request, NisHttp::Response& response){handleRequest(request, response);});
             listen(getServerInit(certPath, port), http);
 
             listen(TASock::ServerInfo{port+2}, control);
@@ -73,6 +73,9 @@ class ReverseProxy: public TANS::NisseServer
 
 int main(int argc, char* argv[])
 {
+#if 0
+    loguru::g_stderr_verbosity = 9;
+#endif
     if (argc != 5 && argc != 4)
     {
         std::cerr << "Usage: ReverseProxy <port> <serviceHost> <servicePort> [<certificateDirectory>]\n";

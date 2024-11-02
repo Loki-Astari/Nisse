@@ -11,7 +11,8 @@
 #include "Pynt.h"
 #include <ThorsSocket/SocketStream.h>
 
-namespace TAS = ThorsAnvil::ThorsSocket;
+namespace TASock = ThorsAnvil::ThorsSocket;
+
 namespace ThorsAnvil::Nisse::Server
 {
 
@@ -20,7 +21,7 @@ class PyntControl: public Pynt
     NisseServer&    server;
     public:
         PyntControl(NisseServer& server);
-        virtual PyntResult handleRequest(TAS::SocketStream& stream, Context& context) override;
+        virtual PyntResult handleRequest(TASock::SocketStream& stream, Context& context) override;
 };
 
 }
