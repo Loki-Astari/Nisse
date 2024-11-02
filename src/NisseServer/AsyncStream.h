@@ -12,11 +12,19 @@ namespace ThorsAnvil::Nisse::Server
 
 class AsyncStream
 {
-    TASock::Socket&        socket;
-    Context&            context;
+    TASock::SocketStream&   stream;
+    Context&                context;
     public:
-        AsyncStream(TASock::Socket& socket, Context& context, EventType initialWait);
+        AsyncStream(TASock::SocketStream& stream, Context& context, EventType initialWait);
         ~AsyncStream();
+};
+class AsyncSocket
+{
+    TASock::Socket&         socket;
+    Context&                context;
+    public:
+        AsyncSocket(TASock::Socket& socket, Context& context, EventType initialWait);
+        ~AsyncSocket();
 };
 
 }

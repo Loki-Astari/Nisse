@@ -4,7 +4,20 @@ namespace TASock    = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::Server;
 
-AsyncStream::AsyncStream(TASock::Socket& socket, Context& context, EventType initialWait)
+AsyncStream::AsyncStream(TASock::SocketStream& stream, Context& context, EventType initialWait)
+    : stream{stream}
+    , context{context}
+{
+    context.registerLocalSocketStream(stream, initialWait);
+    stream.getSocket().deferredAccept();
+}
+
+AsyncStream::~AsyncStream()
+{
+    context.unregisterLocalSocketStream(stream);
+}
+
+AsyncSocket::AsyncSocket(TASock::Socket& socket, Context& context, EventType initialWait)
     : socket{socket}
     , context{context}
 {
@@ -12,7 +25,7 @@ AsyncStream::AsyncStream(TASock::Socket& socket, Context& context, EventType ini
     socket.deferredAccept();
 }
 
-AsyncStream::~AsyncStream()
+AsyncSocket::~AsyncSocket()
 {
     context.unregisterLocalSocket(socket);
 }

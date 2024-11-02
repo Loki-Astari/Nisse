@@ -45,7 +45,7 @@ class MongoRest: public NisServer::NisseServer
         }
 
         TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
-        NisServer::AsyncStream       async(file.getSocket(), request.getContext(), NisServer::EventType::Read);
+        NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
 
         response.body(NisHttp::Encoding::Chunked) << file.rdbuf();
     }
