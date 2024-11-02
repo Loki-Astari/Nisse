@@ -57,13 +57,13 @@ struct StreamData
     Event                   writeEvent;
     Pynt*                   pynt;
 };
-struct LinkedStreamData
+struct OwnedFD
 {
     CoRoutine*              linkedStreamCoRoutine;
     Event                   readEvent;
     Event                   writeEvent;
 };
-struct ResQueueData
+struct SharedFD
 {
     std::deque<CoRoutine*>  readWaiting;
     std::deque<CoRoutine*>  writeWaiting;
@@ -71,7 +71,7 @@ struct ResQueueData
     Event                   writeEvent;
 };
 
-using StoreData = std::variant<ServerData, StreamData, LinkedStreamData, ResQueueData>;
+using StoreData = std::variant<ServerData, StreamData, OwnedFD, SharedFD>;
 
 
 /*
@@ -97,7 +97,7 @@ struct StateUpdateCreateStream
     Pynt&                   pynt;
 };
 
-struct StateUpdateCreateLinkStream
+struct StateUpdateCreateOwnedFD
 {
     int                     fd;
     int                     linkedStream;
@@ -106,7 +106,7 @@ struct StateUpdateCreateLinkStream
     Event                   writeEvent;
 };
 
-struct StateUpdateResQueue
+struct StateUpdateCreateSharedFD
 {
     int                     fd;
     Event                   readEvent;
@@ -136,7 +136,7 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateLinkStream, StateUpdateResQueue, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateOwnedFD, StateUpdateCreateSharedFD, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -164,8 +164,8 @@ class Store
             {}
             void operator()(StateUpdateCreateServer& update)    {store(update);}
             void operator()(StateUpdateCreateStream& update)    {store(update);}
-            void operator()(StateUpdateCreateLinkStream& update){store(update);}
-            void operator()(StateUpdateResQueue& update)        {store(update);}
+            void operator()(StateUpdateCreateOwnedFD& update)   {store(update);}
+            void operator()(StateUpdateCreateSharedFD& update)  {store(update);}
             void operator()(StateUpdateExternallClosed& update) {store(update);}
             void operator()(StateUpdateRemove& update)          {store(update);}
             void operator()(StateUpdateRestoreRead& update)     {store(update);}
@@ -173,8 +173,8 @@ class Store
         };
         void operator()(StateUpdateCreateServer& update);
         void operator()(StateUpdateCreateStream& update);
-        void operator()(StateUpdateCreateLinkStream& update);
-        void operator()(StateUpdateResQueue& update);
+        void operator()(StateUpdateCreateOwnedFD& update);
+        void operator()(StateUpdateCreateSharedFD& update);
         void operator()(StateUpdateExternallClosed& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);

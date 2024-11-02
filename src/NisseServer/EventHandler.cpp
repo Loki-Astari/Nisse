@@ -80,12 +80,12 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
 
 void EventHandler::addLinkedStream(int fd, int owner, EventType initialWait)
 {
-    store.requestChange(StateUpdateCreateLinkStream{fd,
-                                                    owner,
-                                                    initialWait,
-                                                    Event{eventBase, fd, EventType::Read, *this},
-                                                    Event{eventBase, fd, EventType::Write, *this},
-                                                   });
+    store.requestChange(StateUpdateCreateOwnedFD{fd,
+                                                 owner,
+                                                 initialWait,
+                                                 Event{eventBase, fd, EventType::Read, *this},
+                                                 Event{eventBase, fd, EventType::Write, *this},
+                                                });
 }
 
 void EventHandler::remLinkedStream(int fd)
@@ -95,10 +95,10 @@ void EventHandler::remLinkedStream(int fd)
 
 void EventHandler::addResourceQueue(int fd)
 {
-    store.requestChange(StateUpdateResQueue{fd,
-                                            Event{eventBase, fd, EventType::Read, *this},
-                                            Event{eventBase, fd, EventType::Write, *this}
-                                           });
+    store.requestChange(StateUpdateCreateSharedFD{fd,
+                                                  Event{eventBase, fd, EventType::Read, *this},
+                                                  Event{eventBase, fd, EventType::Write, *this}
+                                                 });
 }
 
 void EventHandler::remResourceQueue(int fd)
@@ -128,12 +128,12 @@ void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
     }
 }
 
-void EventHandler::handleLinkStreamEvent(LinkedStreamData& info, int fd, EventType)
+void EventHandler::handleLinkStreamEvent(OwnedFD& info, int fd, EventType)
 {
     addJob(*(info.linkedStreamCoRoutine), fd);
 }
 
-void EventHandler::handlePipeStreamEvent(ResQueueData& info, int fd, EventType type)
+void EventHandler::handlePipeStreamEvent(SharedFD& info, int fd, EventType type)
 {
     std::deque<CoRoutine*>& nextData = (type == EventType::Read) ? info.readWaiting : info.writeWaiting;
     Event&                  nextEvent= (type == EventType::Read) ? info.readEvent   : info.writeEvent;

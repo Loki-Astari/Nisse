@@ -41,7 +41,7 @@ class JobQueue;
 class Store;
 struct StreamData;
 struct ServerData;
-struct LinkedStreamData;
+struct OwnedFD;
 
 class EventHandler
 {
@@ -86,15 +86,15 @@ class EventHandler
             {}
             void operator()(ServerData& info)       {handler.handleServerEvent(info, fd, type);}
             void operator()(StreamData& info)       {handler.handleStreamEvent(info, fd, type);}
-            void operator()(LinkedStreamData& info) {handler.handleLinkStreamEvent(info, fd, type);}
-            void operator()(ResQueueData& info)     {handler.handlePipeStreamEvent(info, fd, type);}
+            void operator()(OwnedFD& info)          {handler.handleLinkStreamEvent(info, fd, type);}
+            void operator()(SharedFD& info)         {handler.handlePipeStreamEvent(info, fd, type);}
         };
 
         // --- Handlers
         void handleServerEvent(ServerData& info, int fd, EventType type);
         void handleStreamEvent(StreamData& info, int fd, EventType type);
-        void handleLinkStreamEvent(LinkedStreamData& info, int fd, EventType type);
-        void handlePipeStreamEvent(ResQueueData& info, int fd, EventType type);
+        void handleLinkStreamEvent(OwnedFD& info, int fd, EventType type);
+        void handlePipeStreamEvent(SharedFD& info, int fd, EventType type);
         // --- Handler Utility
         bool checkFileDescriptorOK(int fd, EventType type);
         void addJob(CoRoutine& work, int fd);
