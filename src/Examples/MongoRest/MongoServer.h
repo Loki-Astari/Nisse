@@ -27,7 +27,7 @@ class MongoConnectionPool
     public:
         MongoConnectionPool(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
             : server(server)
-            , pipe{TASock::PipeInfo{}, TASock::Blocking::Yes}
+            , pipe{TASock::PipeInfo{}, TASock::Blocking::No}
         {
             poolSize = std::max(std::size_t(1), poolSize);
             for (std::size_t loop = 0; loop < poolSize; ++loop)
