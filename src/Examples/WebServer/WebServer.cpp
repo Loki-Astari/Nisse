@@ -1,6 +1,6 @@
 #include "NisseServer/NisseServer.h"
 #include "NisseServer/PyntControl.h"
-#include "NisseServer/AsyncStream.h"
+#include "NisseServer/Context.h"
 #include "NisseHTTP/HTTPHandler.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
@@ -47,7 +47,7 @@ class WebServer: public NisServer::NisseServer
         }
 
         TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
-        NisServer::AsyncStream       async(file.getSocket(), request.getContext(), NisServer::EventType::Read);
+        NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
 
         response.body(NisHttp::Encoding::Chunked) << file.rdbuf();
     }

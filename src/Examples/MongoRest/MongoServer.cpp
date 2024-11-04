@@ -1,6 +1,6 @@
 #include "MongoServer.h"
 #include "ThorsMongo/MongoUtil.h"
-#include "NisseServer/AsyncStream.h"
+#include "NisseServer/Context.h"
 #include "ThorSerialize/Traits.h"
 #include "ThorSerialize/JsonThor.h"
 #include <ranges>
@@ -121,7 +121,7 @@ void MongoServer::personCreate(NisHttp::Request& request, NisHttp::Response& res
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
-    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
+    NisServer::AsyncSocket  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     NewPerson               person;
     request.body() >> TAJson::jsonImporter(person);
 
@@ -137,7 +137,7 @@ void MongoServer::personGet(NisHttp::Request& request, NisHttp::Response& respon
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
-    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
+    NisServer::AsyncSocket  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
     auto range = mongo["test"]["AddressBook"].find<Person>(FindById{id});
@@ -159,7 +159,7 @@ void MongoServer::personUpdate(NisHttp::Request& request, NisHttp::Response& res
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
-    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
+    NisServer::AsyncSocket  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
     NewPerson               person;
     std::istream& stream = request.body();
@@ -186,7 +186,7 @@ void MongoServer::personDelete(NisHttp::Request& request, NisHttp::Response& res
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
-    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
+    NisServer::AsyncSocket  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     TAMongo::ObjectID       id  = getIdFromRequest(request);
 
     auto result = mongo["test"]["AddressBook"].findAndRemoveOne<Person>(FindById{id});
@@ -210,7 +210,7 @@ void MongoServer::personFindByName(NisHttp::Request& request, NisHttp::Response&
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
-    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
+    NisServer::AsyncSocket  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             first = request.variables()["first"];
     std::string             last  = request.variables()["last"];
 
@@ -244,7 +244,7 @@ void MongoServer::personFindByTel(NisHttp::Request& request, NisHttp::Response& 
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
-    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
+    NisServer::AsyncSocket  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             tel = request.variables()["tel"];
 
     auto result = mongo["test"]["AddressBook"].find<FindResult>(FindByTel{tel});
@@ -259,7 +259,7 @@ void MongoServer::personFindByZip(NisHttp::Request& request, NisHttp::Response& 
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
-    NisServer::AsyncStream  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
+    NisServer::AsyncSocket  async(mongo.getStream().getSocket(), request.getContext(), NisServer::EventType::Write);
     std::string             zip = request.variables()["zip"];
 
     auto result = mongo["test"]["AddressBook"].find<FindResult>(FindByZip{zip});

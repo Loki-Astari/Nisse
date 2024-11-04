@@ -29,8 +29,8 @@ void Store::requestChange(T&& update)
 
 template void Store::requestChange<StateUpdateCreateServer>(StateUpdateCreateServer&& update);
 template void Store::requestChange<StateUpdateCreateStream>(StateUpdateCreateStream&& update);
-template void Store::requestChange<StateUpdateCreateLinkStream>(StateUpdateCreateLinkStream&& update);
-template void Store::requestChange<StateUpdateResQueue>(StateUpdateResQueue&& update);
+template void Store::requestChange<StateUpdateCreateOwnedFD>(StateUpdateCreateOwnedFD&& update);
+template void Store::requestChange<StateUpdateCreateSharedFD>(StateUpdateCreateSharedFD&& update);
 template void Store::requestChange<StateUpdateExternallClosed>(StateUpdateExternallClosed&& update);
 template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
@@ -81,9 +81,9 @@ void Store::operator()(StateUpdateCreateStream& update)
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateStream&)", "DONE");
 }
 
-void Store::operator()(StateUpdateCreateLinkStream& update)
+void Store::operator()(StateUpdateCreateOwnedFD& update)
 {
-    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateLinkStream&)", "Start: ", update.fd);
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateOwnedFD&)", "Start: ", update.fd);
     auto find = data.find(update.linkedStream);
     if (find == data.end()) {
         return;
@@ -93,32 +93,32 @@ void Store::operator()(StateUpdateCreateLinkStream& update)
     CoRoutine&  linkedStreamCo      = linkedStreamData.coRoutine;
 
     auto [iter, ok] = data.insert_or_assign(update.fd,
-                                            LinkedStreamData{&linkedStreamCo,
-                                                             std::move(update.readEvent),
-                                                             std::move(update.writeEvent)
-                                                            });
-    LinkedStreamData& data = std::get<LinkedStreamData>(iter->second);
+                                            OwnedFD{&linkedStreamCo,
+                                                    std::move(update.readEvent),
+                                                    std::move(update.writeEvent)
+                                                   });
+    OwnedFD& data = std::get<OwnedFD>(iter->second);
     if (update.initialWait == EventType::Read) {
         data.readEvent.add();
     }
     else {
         data.writeEvent.add();
     }
-    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateLinkStream&)", "DONE");
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateOwnedFD&)", "DONE");
 }
 
-void Store::operator()(StateUpdateResQueue& update)
+void Store::operator()(StateUpdateCreateSharedFD& update)
 {
-    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateResQueue&)", "Start: ", update.fd);
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateSharedFD&)", "Start: ", update.fd);
     auto [iter, ok] = data.insert_or_assign(update.fd,
-                                            ResQueueData{{},    // Empty Read List
-                                                         {},    // Empty Write List
-                                                         std::move(update.readEvent),
-                                                         std::move(update.writeEvent),
-                                                        });
+                                            SharedFD{{},    // Empty Read List
+                                                     {},    // Empty Write List
+                                                     std::move(update.readEvent),
+                                                     std::move(update.writeEvent),
+                                                    });
     ((void)iter);
     ((void)ok);
-    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateResQueue&)", "DONE");
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateSharedFD&)", "DONE");
 }
 
 void Store::operator()(StateUpdateExternallClosed& update)
@@ -128,8 +128,8 @@ void Store::operator()(StateUpdateExternallClosed& update)
     {
         void operator()(ServerData&)            {}
         void operator()(StreamData& data)       {data.stream.getSocket().externalyClosed();}
-        void operator()(LinkedStreamData&)      {}
-        void operator()(ResQueueData&)          {}
+        void operator()(OwnedFD&)               {}
+        void operator()(SharedFD&)              {}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {
@@ -159,8 +159,8 @@ void Store::operator()(StateUpdateRestoreRead& update)
         {}
         void operator()(ServerData& data)       {data.readEvent.add();}
         void operator()(StreamData& data)       {data.readEvent.add();}
-        void operator()(LinkedStreamData& data) {data.readEvent.add();}
-        void operator()(ResQueueData& data)
+        void operator()(OwnedFD& data)          {data.readEvent.add();}
+        void operator()(SharedFD& data)
         {
             auto find = store.data.find(update.owner);
             if (find == store.data.end()) {
@@ -195,8 +195,8 @@ void Store::operator()(StateUpdateRestoreWrite& update)
         {}
         void operator()(ServerData&)            {}
         void operator()(StreamData& data)       {data.writeEvent.add();}
-        void operator()(LinkedStreamData& data) {data.writeEvent.add();}
-        void operator()(ResQueueData& data)
+        void operator()(OwnedFD& data)          {data.writeEvent.add();}
+        void operator()(SharedFD& data)
         {
             auto find = store.data.find(update.owner);
             if (find == store.data.end()) {

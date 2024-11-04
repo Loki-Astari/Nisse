@@ -69,7 +69,7 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
 
             // On normal sockets this does nothing.
             // ON SSL we do the SSL handshake.
-            streamSocket.deferredAccept();
+            streamSocket.deferInit();
 
             PyntResult result = info.pynt->handleRequest(info.stream, context);
             while (result == PyntResult::More)
@@ -124,14 +124,4 @@ void NisseServer::listen(TASock::ServerInit&& listenerInit, Pynt& pynt)
     TASock::Server  server{std::move(listenerInit), TASock::Blocking::No};
 
     eventHandler.add(std::move(server), [&](ServerData& info){return createAcceptJob(info);}, pynt);
-}
-
-void NisseServer::addResourceQueue(int fd)
-{
-    eventHandler.addResourceQueue(fd);
-}
-
-void NisseServer::remResourceQueue(int fd)
-{
-    eventHandler.remResourceQueue(fd);
 }

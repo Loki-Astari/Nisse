@@ -1,6 +1,6 @@
 #include "NisseServer/NisseServer.h"
 #include "NisseServer/PyntControl.h"
-#include "NisseServer/AsyncStream.h"
+#include "NisseServer/Context.h"
 #include "NisseHTTP/HTTPHandler.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
@@ -36,7 +36,7 @@ class ReverseProxy: public NisServer::NisseServer
     {
         TASock::SocketInfo      init{dest, destPort};
         TASock::SocketStream    stream{TASock::Socket{init, TASock::Blocking::No}};
-        NisServer::AsyncStream  async(stream.getSocket(), request.getContext(), NisServer::EventType::Write);
+        NisServer::AsyncStream  async(stream, request.getContext(), NisServer::EventType::Write);
 
         if (!stream) {
             return response.error(500, "Failed to open socket");
