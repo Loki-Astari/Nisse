@@ -12,7 +12,7 @@ Context::Context(NisseServer& server, Yield& yield, int owner)
     , owner{owner}
 {}
 
-void Context::registerLocalSocketStream(TASock::SocketStream& stream, EventType initialWait)
+void Context::registerOwnedSocketStream(TASock::SocketStream& stream, EventType initialWait)
 {
     TASock::Socket& socket      = stream.getSocket();
     int             fd          = socket.socketId();
@@ -41,12 +41,12 @@ void Context::registerLocalSocketStream(TASock::SocketStream& stream, EventType 
     );
 }
 
-void Context::unregisterLocalSocketStream(TASock::SocketStream& stream)
+void Context::unregisterOwnedSocketStream(TASock::SocketStream& stream)
 {
     unregisterYield(stream.getSocket().socketId());
 }
 
-void Context::registerLocalSocket(TASock::Socket& socket, EventType initialWait)
+void Context::registerOwnedSocket(TASock::Socket& socket, EventType initialWait)
 {
     int     fd          = socket.socketId();
     Yield&  localYield  = yield;
@@ -68,14 +68,24 @@ void Context::registerLocalSocket(TASock::Socket& socket, EventType initialWait)
     );
 }
 
-void Context::unregisterLocalSocket(TASock::Socket& socket)
+void Context::unregisterOwnedSocket(TASock::Socket& socket)
 {
     unregisterYield(socket.socketId());
 }
 
+void Context::registerSharedSocket(NisseServer& server, TASock::Socket& socket)
+{
+    server.eventHandler.addSharedFD(socket.socketId());
+}
+
+void Context::unregisterSharedSocket(NisseServer& server, TASock::Socket& socket)
+{
+    server.eventHandler.remSharedFD(socket.socketId());
+}
+
 void Context::registerYield(int fd, EventType initialWait, TASock::Socket& socket, TASock::YieldFunc&& readYield, TASock::YieldFunc&& writeYield)
 {
-    server.eventHandler.addLinkedStream(fd, owner, initialWait);
+    server.eventHandler.addOwnedFD(fd, owner, initialWait);
     TaskYieldState  yieldType = initialWait == EventType::Read ? TaskYieldState::RestoreRead : TaskYieldState::RestoreWrite;
     yield({yieldType, fd});
 
@@ -85,5 +95,44 @@ void Context::registerYield(int fd, EventType initialWait, TASock::Socket& socke
 
 void Context::unregisterYield(int fd)
 {
-    server.eventHandler.remLinkedStream(fd);
+    server.eventHandler.remOwnedFD(fd);
+}
+
+AsyncStream::AsyncStream(TASock::SocketStream& stream, Context& context, EventType initialWait)
+    : stream{stream}
+    , context{context}
+{
+    context.registerOwnedSocketStream(stream, initialWait);
+    stream.getSocket().deferInit();
+}
+
+AsyncStream::~AsyncStream()
+{
+    context.unregisterOwnedSocketStream(stream);
+}
+
+AsyncSocket::AsyncSocket(TASock::Socket& socket, Context& context, EventType initialWait)
+    : socket{socket}
+    , context{context}
+{
+    context.registerOwnedSocket(socket, initialWait);
+    socket.deferInit();
+}
+
+AsyncSocket::~AsyncSocket()
+{
+    context.unregisterOwnedSocket(socket);
+}
+
+AsyncSharedSocket::AsyncSharedSocket(TASock::Socket& socket, NisseServer& server)
+    : socket{socket}
+    , server{server}
+{
+    Context::registerSharedSocket(server, socket);
+    socket.deferInit();
+}
+
+AsyncSharedSocket::~AsyncSharedSocket()
+{
+    Context::unregisterSharedSocket(server, socket);
 }

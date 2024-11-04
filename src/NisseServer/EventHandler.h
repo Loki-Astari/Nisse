@@ -60,10 +60,10 @@ class EventHandler
         void stop();
         void add(TASock::Server&& stream, ServerCreator&& creator, Pynt& pynt);
         void add(TASock::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
-        void addLinkedStream(int fd, int owner, EventType initialWait);
-        void remLinkedStream(int fd);
-        void addResourceQueue(int fd);
-        void remResourceQueue(int fd);
+        void addOwnedFD(int fd, int owner, EventType initialWait);
+        void remOwnedFD(int fd);
+        void addSharedFD(int fd);
+        void remSharedFD(int fd);
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);

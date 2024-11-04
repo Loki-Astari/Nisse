@@ -78,7 +78,7 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
                                                });
 }
 
-void EventHandler::addLinkedStream(int fd, int owner, EventType initialWait)
+void EventHandler::addOwnedFD(int fd, int owner, EventType initialWait)
 {
     store.requestChange(StateUpdateCreateOwnedFD{fd,
                                                  owner,
@@ -88,12 +88,12 @@ void EventHandler::addLinkedStream(int fd, int owner, EventType initialWait)
                                                 });
 }
 
-void EventHandler::remLinkedStream(int fd)
+void EventHandler::remOwnedFD(int fd)
 {
     store.requestChange(StateUpdateRemove{fd});
 }
 
-void EventHandler::addResourceQueue(int fd)
+void EventHandler::addSharedFD(int fd)
 {
     store.requestChange(StateUpdateCreateSharedFD{fd,
                                                   Event{eventBase, fd, EventType::Read, *this},
@@ -101,7 +101,7 @@ void EventHandler::addResourceQueue(int fd)
                                                  });
 }
 
-void EventHandler::remResourceQueue(int fd)
+void EventHandler::remSharedFD(int fd)
 {
     store.requestChange(StateUpdateRemove{fd});
 }
