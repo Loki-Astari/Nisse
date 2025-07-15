@@ -10,6 +10,7 @@ AX_THOR_FUNC_INIT_BUILD([Nisse], [src/NisseServer/NisseServer.cpp], [20])
 #
 # Add extra configuration here
 #
+AX_THOR_CHECK_USE_MAGIC_ENUM
 AX_THOR_CHECK_USE_EVENT
 AX_THOR_CHECK_USE_BOOST([1.70], [], [
     AC_MSG_ERROR([
