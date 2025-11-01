@@ -15,6 +15,58 @@ TEST(URLTest, URLDefaultConstruct)
     EXPECT_EQ("", url.hash());
 }
 
+TEST(URLTest, URLShortURL)
+{
+    ThorsAnvil::Nisse::HTTP::URL     url("http", "localhost", "/page1");
+    EXPECT_EQ("http://localhost/page1", url.href());
+    EXPECT_EQ("http", url.protocol());
+    EXPECT_EQ("http://localhost", url.origin());
+    EXPECT_EQ("localhost", url.host());
+    EXPECT_EQ("localhost", url.hostname());
+    EXPECT_EQ("", url.port());
+    EXPECT_EQ("/page1", url.pathname());
+    EXPECT_EQ("", url.query());
+    EXPECT_EQ("", url.hash());
+}
+
+TEST(URLTest, URLShortURLWithCopy)
+{
+    ThorsAnvil::Nisse::HTTP::URL    original("http", "localhost", "/page1");
+    ThorsAnvil::Nisse::HTTP::URL    url(original);
+    EXPECT_EQ("http://localhost/page1", url.href());
+    EXPECT_EQ("http", url.protocol());
+    EXPECT_EQ("http://localhost", url.origin());
+    EXPECT_EQ("localhost", url.host());
+    EXPECT_EQ("localhost", url.hostname());
+    EXPECT_EQ("", url.port());
+    EXPECT_EQ("/page1", url.pathname());
+    EXPECT_EQ("", url.query());
+    EXPECT_EQ("", url.hash());
+}
+
+/*
+ * Short string optimization is messing up the URL.
+ * when you do a move. The code assumed that the string
+ * would dynamically allocate storage so that a move would
+ * result in the transfer of that memory thus keeping all views intact.
+ * But the short string optimization makes the move do an effective copy
+ * thus any internal views are no longer valid.
+ */
+TEST(URLTest, URLShortURLWithMove)
+{
+    ThorsAnvil::Nisse::HTTP::URL    original("http", "localhost", "/page1");
+    ThorsAnvil::Nisse::HTTP::URL    url(std::move(original));
+    EXPECT_EQ("http://localhost/page1", url.href());
+    EXPECT_EQ("http", url.protocol());
+    EXPECT_EQ("http://localhost", url.origin());
+    EXPECT_EQ("localhost", url.host());
+    EXPECT_EQ("localhost", url.hostname());
+    EXPECT_EQ("", url.port());
+    EXPECT_EQ("/page1", url.pathname());
+    EXPECT_EQ("", url.query());
+    EXPECT_EQ("", url.hash());
+}
+
 TEST(URLTest, URLConstructParts)
 {
     ThorsAnvil::Nisse::HTTP::URL     url("http", "thorsanvil.dev:8080", "/Plop/path/twin.stuff?ace=4#1234");

@@ -52,16 +52,31 @@ URL& URL::operator=(URL copyORmove) noexcept
 
 void URL::swap(URL& other) noexcept
 {
+    char* original = other.hrefValue.data();
     using std::swap;
     swap(hrefValue,     other.hrefValue);
-    swap(protocolRef,   other.protocolRef);
-    swap(originRef,     other.originRef);
-    swap(hostRef,       other.hostRef);
-    swap(portRef,       other.portRef);
-    swap(hostnameRef,   other.hostnameRef);
-    swap(pathRef,       other.pathRef);
-    swap(queryRef,      other.queryRef);
-    swap(hashRef,       other.hashRef);
+    if (hrefValue.data() != original)
+    {
+        protocolRef = findProtocol(hrefValue);
+        originRef   = findOrigin(hrefValue);
+        hostRef     = findHost(hrefValue);
+        portRef     = findPort(hrefValue);
+        hostnameRef = findHostname(hrefValue);
+        pathRef     = findPath(hrefValue);
+        queryRef    = findQuery(hrefValue);
+        hashRef     = findHash(hrefValue);
+    }
+    else
+    {
+        swap(protocolRef,   other.protocolRef);
+        swap(originRef,     other.originRef);
+        swap(hostRef,       other.hostRef);
+        swap(portRef,       other.portRef);
+        swap(hostnameRef,   other.hostnameRef);
+        swap(pathRef,       other.pathRef);
+        swap(queryRef,      other.queryRef);
+        swap(hashRef,       other.hashRef);
+    }
 }
 
 std::string URL::buildHref(std::string_view prot, std::string_view host, std::string_view request)
