@@ -44,7 +44,7 @@ void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& a
         nameEnd  = std::min(size, pathMatch.find('}', nameBeg));
 
         if (!first && prefix == nameBeg) {
-            ThorsLogAndThrowDebug("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Multiple name sections with no gap");
+            ThorsLogAndThrowDebug(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Multiple name sections with no gap");
         }
         matchSections.emplace_back(pathMatch.substr(prefix, nameBeg - prefix));
         first = false;
@@ -53,10 +53,10 @@ void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& a
         }
 
         if (nameEnd == size) {
-            ThorsLogAndThrowDebug("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Badly nested braces.");
+            ThorsLogAndThrowDebug(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Badly nested braces.");
         }
         if (nameBeg + 1 == nameEnd) {
-            ThorsLogAndThrowDebug("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Name section with no name");
+            ThorsLogAndThrowDebug(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Name section with no name");
         }
 
         names.emplace_back(pathMatch.substr(nameBeg + 1, nameEnd - nameBeg - 1));

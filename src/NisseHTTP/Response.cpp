@@ -122,7 +122,7 @@ void Response::setStatus(int newStatusCode)
 void Response::addHeaders(Header const& headers)
 {
     if (stream.rdbuf() != nullptr) {
-        ThorsLogAndThrowWarning("ThorsAnvil::Nisse::Response", "addHeaders", "Headers can not be sent after the body has been started");
+        ThorsLogAndThrowWarning(std::runtime_error, "ThorsAnvil::Nisse::Response", "addHeaders", "Headers can not be sent after the body has been started");
     }
 
     if (!headerSent)
