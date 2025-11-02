@@ -63,13 +63,16 @@ Response::Response(std::ostream& stream, Version version, int responseCode)
 
 Response::~Response()
 {
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "~Response", "Responce object destruction");
     if (stream.rdbuf() == nullptr)
     {
         if (!headerSent)
         {
+            ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "~Response", "Sending header: ", statusCode);
             baseStream << version << " " << statusCode << "\r\n";
             headerSent = true;
         }
+        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "~Response", "Setting content length to zero and flushing");
         baseStream << "content-length: 0\r\n"
                    << "\r\n"
                    << std::flush;
@@ -119,7 +122,7 @@ void Response::setStatus(int newStatusCode)
 void Response::addHeaders(Header const& headers)
 {
     if (stream.rdbuf() != nullptr) {
-        ThorsLogAndThrowLogical("ThorsAnvil::Nisse::Response", "addHeaders", "Headers can not be sent after the body has been started");
+        ThorsLogAndThrowWarning("ThorsAnvil::Nisse::Response", "addHeaders", "Headers can not be sent after the body has been started");
     }
 
     if (!headerSent)
@@ -133,11 +136,14 @@ void Response::addHeaders(Header const& headers)
 
 std::ostream& Response::body(BodyEncoding bodyEncoding)
 {
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "body", "adding body");
     if (!headerSent)
     {
+        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "body", "sending header");
         baseStream << version << " " << statusCode << "\r\n";
         headerSent = true;
     }
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "body", "adding body to stream");
     baseStream << bodyEncoding
                << "\r\n"
                << std::flush;

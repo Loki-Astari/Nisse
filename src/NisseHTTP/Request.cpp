@@ -24,6 +24,7 @@ Request::Request(Server::Context& context, std::string_view proto, std::istream&
 
 void Request::init(std::string_view proto, std::istream& stream)
 {
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Request", "init", "Creating a request");
     std::string_view path = readFirstLine(stream);
     if (path.size() != 0)
     {
@@ -73,6 +74,7 @@ std::string_view Request::readFirstLine(std::istream& stream)
     version = findVersion(pv);
     method = findMethod(meth);
 
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", "Request: Method:", method, " Path:", path, " Protocol:", prot, " Version:", version);
     if (meth.size() == 0 || path.size() == 0 || pv.size() == 0 || version == Version::Unknown || method == Method::Other)
     {
         ThorsLogInfo("ThorsAnvil::Nisse::PyntHTTP::Request", "readFirstLine", ": Bad Request: ", "Method: >", meth, "< Path: >", path, "< Proto: >", pv, "<");

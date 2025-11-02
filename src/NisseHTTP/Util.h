@@ -25,6 +25,7 @@ std::ostream& operator<<(std::ostream&, Version const& v);
 std::istream& operator>>(std::istream&, Version& v);
 std::ostream& operator<<(std::ostream&, BodyEncoding const& bodyEncoding);
 std::ostream& operator<<(std::ostream&, Encoding const& e);
+std::ostream& operator<<(std::ostream&, Method const& method);
 
 using RequestVariables = std::map<std::string, std::string>;
 

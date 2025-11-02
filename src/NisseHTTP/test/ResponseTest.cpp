@@ -353,7 +353,7 @@ TEST(ResponseTest, HeadersAfterBody)
 
     EXPECT_THROW(
         action(),
-        ThorsAnvil::Logging::LogicalException
+        ThorsAnvil::Logging::LogWarningException
     );
 }
 

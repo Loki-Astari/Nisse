@@ -58,6 +58,8 @@ class Response
 
         // Simplifications to handling common cases.
         void          error(int code, std::string_view errorMessage);   // Call(s) setStatus() adds A single header with the Error Message.
+
+        StatusCode const& getCode() const {return statusCode;}
 };
 
 }

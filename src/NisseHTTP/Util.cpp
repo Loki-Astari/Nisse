@@ -53,4 +53,10 @@ std::ostream& operator<<(std::ostream& stream, BodyEncoding const& bodyEncoding)
     return std::visit(BodyEncodingStream{stream}, bodyEncoding);
 }
 
+std::ostream& operator<<(std::ostream& stream, Method const& method)
+{
+    static char const* out[] = {"GET", "HEAD", "OPTIONS", "TRACE", "PUT", "DELETE", "POST", "PATCH", "CONNECT", "BAD"};
+    return stream << out[static_cast<int>(method)];
+}
+
 }

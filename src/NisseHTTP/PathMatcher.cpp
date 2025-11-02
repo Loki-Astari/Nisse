@@ -28,6 +28,7 @@ std::string PathMatcher::decode(std::string_view matched)
 
 void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& action)
 {
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath", pathMatch);
     MatchList   matchSections;
     NameList    names;
 
@@ -43,7 +44,7 @@ void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& a
         nameEnd  = std::min(size, pathMatch.find('}', nameBeg));
 
         if (!first && prefix == nameBeg) {
-            ThorsLogAndThrow("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Multiple name sections with no gap");
+            ThorsLogAndThrowDebug("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Multiple name sections with no gap");
         }
         matchSections.emplace_back(pathMatch.substr(prefix, nameBeg - prefix));
         first = false;
@@ -52,10 +53,10 @@ void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& a
         }
 
         if (nameEnd == size) {
-            ThorsLogAndThrow("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Badly nested braces.");
+            ThorsLogAndThrowDebug("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Badly nested braces.");
         }
         if (nameBeg + 1 == nameEnd) {
-            ThorsLogAndThrow("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Name section with no name");
+            ThorsLogAndThrowDebug("ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Name section with no name");
         }
 
         names.emplace_back(pathMatch.substr(nameBeg + 1, nameEnd - nameBeg - 1));
@@ -106,11 +107,14 @@ bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_vie
 
 bool PathMatcher::findMatch(std::string_view path, Request& request, Response& response)
 {
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Looking for: ", path);
     for (auto const& pathMatchInfo: paths)
     {
         if (checkPathMatch(pathMatchInfo, path, request, response)) {
+            ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Found");
             return true;
         }
     }
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "No Match");
     return false;
 }
