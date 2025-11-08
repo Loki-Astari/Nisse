@@ -4,6 +4,7 @@
 #include "NisseConfig.h"
 #include "NisseUtil.h"
 #include "Pynt.h"
+#include "TimerAction.h"
 #include "EventHandlerLibEvent.h"
 #include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
@@ -70,8 +71,16 @@ struct SharedFD
     Event                   readEvent;
     Event                   writeEvent;
 };
+struct TimerData
+{
+    int                     timerId;
+    int                     waitTime;       // microseconds. Be careful => 1,000,000 per second.
+    TimerAction*            timerAction;
+    EventHandler*           eventHandler;
+    Event                   timerEvent;
+};
 
-using StoreData = std::variant<ServerData, StreamData, OwnedFD, SharedFD>;
+using StoreData = std::variant<ServerData, StreamData, OwnedFD, SharedFD, TimerData>;
 
 
 /*
@@ -113,6 +122,15 @@ struct StateUpdateCreateSharedFD
     Event                   writeEvent;
 };
 
+struct StateUpdateCreateTimer
+{
+    int                     timerId;
+    int                     waitTime;       // microseconds. Be careful => 1,000,000 per second.
+    TimerAction*            timerAction;
+    EventBase*              eventBase;
+    EventHandler*           eventHandler;
+};
+
 struct StateUpdateExternallClosed
 {
     int fd;
@@ -136,7 +154,7 @@ struct StateUpdateRestoreWrite
 };
 
 
-using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateOwnedFD, StateUpdateCreateSharedFD, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
+using StateUpdate = std::variant<StateUpdateCreateServer, StateUpdateCreateStream, StateUpdateCreateOwnedFD, StateUpdateCreateSharedFD, StateUpdateCreateTimer, StateUpdateExternallClosed, StateUpdateRemove, StateUpdateRestoreRead, StateUpdateRestoreWrite>;
 
 /*
  * The store data
@@ -151,6 +169,8 @@ class Store
 
     public:
         StoreData&      getStoreData(int fd);
+        template<typename T>
+        T&              getData(int fd)    {return std::get<T>(getStoreData(fd));}
         void            processUpdateRequest();
 
         template<typename T>
@@ -166,6 +186,7 @@ class Store
             void operator()(StateUpdateCreateStream& update)    {store(update);}
             void operator()(StateUpdateCreateOwnedFD& update)   {store(update);}
             void operator()(StateUpdateCreateSharedFD& update)  {store(update);}
+            void operator()(StateUpdateCreateTimer& update)     {store(update);}
             void operator()(StateUpdateExternallClosed& update) {store(update);}
             void operator()(StateUpdateRemove& update)          {store(update);}
             void operator()(StateUpdateRestoreRead& update)     {store(update);}
@@ -175,6 +196,7 @@ class Store
         void operator()(StateUpdateCreateStream& update);
         void operator()(StateUpdateCreateOwnedFD& update);
         void operator()(StateUpdateCreateSharedFD& update);
+        void operator()(StateUpdateCreateTimer& update);
         void operator()(StateUpdateExternallClosed& update);
         void operator()(StateUpdateRemove& update);
         void operator()(StateUpdateRestoreRead& update);

@@ -20,6 +20,7 @@ using LibEventEvent         = ::event;
 using LibEventTimeOut       = ::timeval;
 
 class EventHandler;
+struct TimerData;
 enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
 
 
@@ -57,7 +58,7 @@ class Event
     LibEventEvent*          event;
 
     public:
-        Event(EventBase& eventBase, EventHandler& eventHandler);
+        Event(EventBase& eventBase, TimerData& timerData);
         Event(EventBase& eventBase, int fd, EventType type, EventHandler& eventHandler);
 
         Event()

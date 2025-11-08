@@ -25,6 +25,7 @@
 #include "NisseUtil.h"
 #include "EventHandlerLibEvent.h"
 #include "Store.h"
+#include <chrono>
 
 /*
  * C-Callback registered with LibEvent
@@ -45,13 +46,23 @@ struct OwnedFD;
 
 class EventHandler
 {
-    static constexpr int controlTimerPause = 1000;  // microseconds between iterations.
+    class InternalTimerAction: public TimerAction
+    {
+        EventHandler&   parent;
+        public:
+            InternalTimerAction(EventHandler& parent)
+                : parent(parent)
+            {}
+            virtual void handleRequest(int) override {parent.controlTimerAction();}
+    };
+    static           int                        nextTImerId;
 
     JobQueue&       jobQueue;
     Store&          store;
     EventBase       eventBase;
-    Event           timer;
     bool            finished;
+    InternalTimerAction     internalTimerAction;
+    int                     internalTimerId;
 
     public:
         EventHandler(JobQueue& jobQueue, Store& store);
@@ -60,10 +71,15 @@ class EventHandler
         void stop();
         void add(TASock::Server&& stream, ServerCreator&& creator, Pynt& pynt);
         void add(TASock::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
+        int  addTimer(int microseconds, TimerAction& action);
         void addOwnedFD(int fd, int owner, EventType initialWait);
+
         void remOwnedFD(int fd);
         void addSharedFD(int fd);
         void remSharedFD(int fd);
+        void remTimer(int timerId);
+
+    private:
 
     private:
         friend void ::eventCallback(evutil_socket_t fd, short eventType, void* data);
@@ -88,6 +104,7 @@ class EventHandler
             void operator()(StreamData& info)       {handler.handleStreamEvent(info, fd, type);}
             void operator()(OwnedFD& info)          {handler.handleLinkStreamEvent(info, fd, type);}
             void operator()(SharedFD& info)         {handler.handlePipeStreamEvent(info, fd, type);}
+            void operator()(TimerData& info)        {handler.handleTimerEvent(info, fd, type);}
         };
 
         // --- Handlers
@@ -95,6 +112,7 @@ class EventHandler
         void handleStreamEvent(StreamData& info, int fd, EventType type);
         void handleLinkStreamEvent(OwnedFD& info, int fd, EventType type);
         void handlePipeStreamEvent(SharedFD& info, int fd, EventType type);
+        void handleTimerEvent(TimerData& info, int fd, EventType type);
         // --- Handler Utility
         bool checkFileDescriptorOK(int fd, EventType type);
         void addJob(CoRoutine& work, int fd);

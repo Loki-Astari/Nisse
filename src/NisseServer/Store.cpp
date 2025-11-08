@@ -1,4 +1,5 @@
 #include "Store.h"
+#include "EventHandlerLibEvent.h"
 
 using namespace ThorsAnvil::Nisse::Server;
 
@@ -31,6 +32,7 @@ template void Store::requestChange<StateUpdateCreateServer>(StateUpdateCreateSer
 template void Store::requestChange<StateUpdateCreateStream>(StateUpdateCreateStream&& update);
 template void Store::requestChange<StateUpdateCreateOwnedFD>(StateUpdateCreateOwnedFD&& update);
 template void Store::requestChange<StateUpdateCreateSharedFD>(StateUpdateCreateSharedFD&& update);
+template void Store::requestChange<StateUpdateCreateTimer>(StateUpdateCreateTimer&& update);
 template void Store::requestChange<StateUpdateExternallClosed>(StateUpdateExternallClosed&& update);
 template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update);
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
@@ -121,6 +123,22 @@ void Store::operator()(StateUpdateCreateSharedFD& update)
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateSharedFD&)", "DONE");
 }
 
+void Store::operator()(StateUpdateCreateTimer& update)
+{
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateTimer&)", "Start: ", update.timerId);
+    auto [iter, ok] = data.insert_or_assign(update.timerId,
+                                            TimerData{update.timerId,
+                                                      update.waitTime,
+                                                      update.timerAction,
+                                                      update.eventHandler,
+                                                      {}
+                                                    });
+    TimerData& data = std::get<TimerData>(iter->second);
+    data.timerEvent = Event{*update.eventBase, data};
+    data.timerEvent.add(update.waitTime);
+    ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateTimer&)", "DONE");
+}
+
 void Store::operator()(StateUpdateExternallClosed& update)
 {
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateExternallClosed&)", "Start: ", update.fd);
@@ -130,6 +148,7 @@ void Store::operator()(StateUpdateExternallClosed& update)
         void operator()(StreamData& data)       {data.stream.getSocket().externalyClosed();}
         void operator()(OwnedFD&)               {}
         void operator()(SharedFD&)              {}
+        void operator()(TimerData&)             {}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {
@@ -174,6 +193,7 @@ void Store::operator()(StateUpdateRestoreRead& update)
                 data.readEvent.add();
             }
         }
+        void operator()(TimerData&)             {}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {
@@ -210,6 +230,7 @@ void Store::operator()(StateUpdateRestoreWrite& update)
                 data.writeEvent.add();
             }
         }
+        void operator()(TimerData&)             {}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {

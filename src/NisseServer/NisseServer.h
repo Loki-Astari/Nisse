@@ -42,6 +42,11 @@ class NisseServer
         void run();
         void stop();
         void listen(TASock::ServerInit&& listenerInit, Pynt& pynt);
+        template<typename rep>
+        int  addTimer(std::chrono::duration<long long, rep> time, TimerAction& action)
+        {
+            return eventHandler.addTimer(std::chrono::microseconds(time).count(), action);
+        }
 
     private:
         CoRoutine  createStreamJob(StreamData& info);

@@ -14,15 +14,18 @@ void eventCallback(evutil_socket_t fd, short eventType, void* data)
     eventHandler.eventAction(fd, static_cast<ThorsAnvil::Nisse::Server::EventType>(eventType));
 }
 
-void controlTimerCallback(evutil_socket_t, short, void* data)
+void controlTimerCallback(evutil_socket_t, short eventType, void* data)
 {
-    ThorsAnvil::Nisse::Server::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::Server::EventHandler*>(data);
-    eventHandler.controlTimerAction();
+    ThorsAnvil::Nisse::Server::TimerData&    timerData = *reinterpret_cast<ThorsAnvil::Nisse::Server::TimerData*>(data);
+    timerData.eventHandler->eventAction(timerData.timerId,static_cast<ThorsAnvil::Nisse::Server::EventType>(eventType));
+    timerData.timerEvent.add(timerData.waitTime);
 }
 
 namespace TASock   = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::Server;
+
+int EventHandler::nextTImerId = 1'000'000;
 
 /*
  * EventLib wrapper. Set up C-Function callbacks
@@ -31,17 +34,19 @@ Event::Event(EventBase& eventBase, int fd, EventType type, EventHandler& eventHa
     : event{event_new(eventBase.eventBase, fd, static_cast<short>(type), &eventCallback, &eventHandler)}
 {}
 
-Event::Event(EventBase& eventBase, EventHandler& eventHandler)
-    : event{evtimer_new(eventBase.eventBase, controlTimerCallback, &eventHandler)}
+Event::Event(EventBase& eventBase, TimerData& timerData)
+    : event{evtimer_new(eventBase.eventBase, controlTimerCallback, &timerData)}
 {}
 
 EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
     : jobQueue{jobQueue}
     , store{store}
-    , timer{eventBase, *this}
     , finished{false}
+    , internalTimerAction{*this}
 {
-    timer.add(controlTimerPause);
+    using namespace std::chrono_literals;
+    internalTimerId = addTimer(10'000, internalTimerAction);
+    controlTimerAction();
 }
 
 void EventHandler::run()
@@ -78,6 +83,19 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
                                                });
 }
 
+int EventHandler::addTimer(int microseconds, TimerAction& action)
+{
+    int result = nextTImerId++;
+    store.requestChange(StateUpdateCreateTimer{result,
+                                               microseconds,
+                                               &action,
+                                               // Event{eventBase, *this, result}
+                                               &eventBase,
+                                               this
+                                              });
+    return result;
+}
+
 void EventHandler::addOwnedFD(int fd, int owner, EventType initialWait)
 {
     store.requestChange(StateUpdateCreateOwnedFD{fd,
@@ -104,6 +122,11 @@ void EventHandler::addSharedFD(int fd)
 void EventHandler::remSharedFD(int fd)
 {
     store.requestChange(StateUpdateRemove{fd});
+}
+
+void EventHandler::remTimer(int timerId)
+{
+    store.requestChange(StateUpdateRemove{timerId});
 }
 
 void EventHandler::eventAction(int fd, EventType type)
@@ -147,6 +170,11 @@ void EventHandler::handlePipeStreamEvent(SharedFD& info, int fd, EventType type)
             nextEvent.add();
         }
     }
+}
+
+void EventHandler::handleTimerEvent(TimerData& info, int timerId, EventType /*type*/)
+{
+    info.timerAction->handleRequest(timerId);
 }
 
 bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
@@ -226,6 +254,4 @@ void EventHandler::controlTimerAction()
 
     // Update all the state information.
     store.processUpdateRequest();
-    // Put the timer back.
-    timer.add(controlTimerPause);
 }
