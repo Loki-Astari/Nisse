@@ -1,4 +1,5 @@
 THORSANVIL_ROOT             = $(realpath ../../)
+COVERAGE_REQUIRED			= 10
 
 TARGET						= NisseServer.defer
 NAMESPACE					= ThorsAnvil::Nisse
