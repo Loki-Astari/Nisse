@@ -131,6 +131,7 @@ void EventHandler::remTimer(int timerId)
 
 void EventHandler::eventAction(int fd, EventType type)
 {
+    ThorsLogTrace("EventHandler", "eventAction", "Event callback", fd);
     StoreData& info = store.getStoreData(fd);
     std::visit(ApplyEvent{*this, fd, type},  info);
     /* The std::visit ApplyEvent object to call the appropriate of
@@ -141,11 +142,13 @@ void EventHandler::eventAction(int fd, EventType type)
 
 void EventHandler::handleServerEvent(ServerData& info, int fd, EventType)
 {
+    ThorsLogTrace("EventHandler", "handleServerEvent", "Connection established");
     addJob(info.coRoutine, fd);
 }
 
 void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
 {
+    ThorsLogTrace("EventHandler", "handleStreamEvent", "Streaming data");
     if (checkFileDescriptorOK(fd, type)) {
         addJob(info.coRoutine, fd);
     }
@@ -153,11 +156,13 @@ void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
 
 void EventHandler::handleLinkStreamEvent(OwnedFD& info, int fd, EventType)
 {
+    ThorsLogTrace("EventHandler", "handleLinkStreamEvent", "Link stream");
     addJob(*(info.linkedStreamCoRoutine), fd);
 }
 
 void EventHandler::handlePipeStreamEvent(SharedFD& info, int fd, EventType type)
 {
+    ThorsLogTrace("EventHandler", "handlePipeStreamEvent", "Pipe Streaming");
     std::deque<CoRoutine*>& nextData = (type == EventType::Read) ? info.readWaiting : info.writeWaiting;
     Event&                  nextEvent= (type == EventType::Read) ? info.readEvent   : info.writeEvent;
     if (nextData.size() != 0)
@@ -174,6 +179,7 @@ void EventHandler::handlePipeStreamEvent(SharedFD& info, int fd, EventType type)
 
 void EventHandler::handleTimerEvent(TimerData& info, int timerId, EventType /*type*/)
 {
+    ThorsLogTrace("EventHandler", "handleTimerEvent", "Timer Activated");
     info.timerAction->handleRequest(timerId);
 }
 
