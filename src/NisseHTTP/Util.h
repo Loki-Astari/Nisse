@@ -27,7 +27,34 @@ std::ostream& operator<<(std::ostream&, BodyEncoding const& bodyEncoding);
 std::ostream& operator<<(std::ostream&, Encoding const& e);
 std::ostream& operator<<(std::ostream&, Method const& method);
 
-using RequestVariables = std::map<std::string, std::string>;
+class RequestVariables
+{
+    std::map<std::string, std::string>      store;
+    public:
+        std::size_t size()                  const {return store.size();}
+        bool exists(std::string const& key) const {return store.find(key) != std::end(store);}
+        std::string const& operator[](std::string const& key) const
+        {
+            static std::string empty;
+            auto find = store.find(key);
+            if (find == std::end(store)) {
+                return empty;
+            }
+            return find->second;
+        }
+        void insert_or_assign(std::string const& key, std::string const& value)
+        {
+            store.insert_or_assign(key, value);
+        }
+        void insert_or_assign(std::string const& key, std::string&& value)
+        {
+            store.insert_or_assign(key, std::move(value));
+        }
+        void insert_or_assign(std::string&& key, std::string&& value)
+        {
+            store.insert_or_assign(std::move(key), std::move(value));
+        }
+};
 
 static auto ichar_equals = [](char a, char b)
 {

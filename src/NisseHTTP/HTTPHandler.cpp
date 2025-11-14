@@ -23,7 +23,7 @@ void HTTPHandler::addHeaders(RequestVariables& var, HeaderRequest const& headers
 {
     for (auto const& head: headers) {
         ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addHeaders", head.first, " => ", head.second.back());
-        var[head.first] = head.second.back();
+        var.insert_or_assign(head.first, head.second.back());
     }
 }
 
@@ -45,7 +45,7 @@ void HTTPHandler::addQueryParam(RequestVariables& var, std::string_view query)
     while (std::regex_search(queryStr, queryParamMatch, queryParamExpr))
     {
         ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addQueryParam", queryParamMatch[1].str(), " => ", queryParamMatch[2].str());
-        var[queryParamMatch[1].str()] = queryParamMatch[2].str();
+        var.insert_or_assign(queryParamMatch[1].str(), queryParamMatch[2].str());
         queryStr = queryParamMatch.suffix().str();
     }
 }
@@ -54,7 +54,7 @@ void HTTPHandler::addPathMatch(RequestVariables& var, Match const& matches)
 {
     for (auto const& match: matches) {
         ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPathMatch", match.first, " => ", match.second);
-        var[match.first] = match.second;
+        var.insert_or_assign(match.first, match.second);
     }
 }
 
