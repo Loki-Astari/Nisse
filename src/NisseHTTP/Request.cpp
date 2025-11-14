@@ -157,6 +157,11 @@ Method Request::findMethod(std::string_view method)
     return Method::Other;
 }
 
+std::string_view Request::preloadStreamIntoBuffer()
+{
+    return input.preloadStreamIntoBuffer();
+}
+
 bool Request::buildStream(std::istream& stream)
 {
     auto&   contentLength    = head.getHeader("content-length");

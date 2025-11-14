@@ -49,6 +49,7 @@ class Request
                                                     // It will auto eof() when no more data is available in the body.
                                                     // Note this stream will auto decode the incoming message body based
                                                     // on the 'content-encoding'
+        std::string_view        preloadStreamIntoBuffer();
 
         friend std::ostream& operator<<(std::ostream& stream, Request const& request)   {request.print(stream);return stream;}
         void print(std::ostream& stream) const;

@@ -74,6 +74,47 @@ void StreamBufInput::swap(StreamBufInput& other) noexcept
     swap(chunkBuffer,   other.chunkBuffer);
 }
 
+void StreamBufInput::preloadStreamIntoBufferNow()
+{
+    if (chunked) {
+        return;
+    }
+    if (remaining == 0) {
+        return;
+    }
+
+    auto beg = eback();
+    auto end = egptr();
+    auto cur = gptr();
+
+    std::streamsize used = end - beg;
+    std::streamsize current = chunkBuffer.size();
+    std::streamsize avail = current - used;
+    if (remaining > avail) {
+        std::streamsize needed = remaining - avail;
+        chunkBuffer.resize(chunkBuffer.size() + needed);
+    }
+    if (end == nullptr) {
+        end = &chunkBuffer[0] + (end - beg);
+    }
+    while (remaining != 0)
+    {
+        std::streamsize extra = buffer->sgetn(end, remaining);
+        if (extra == 0) {
+            break;
+        }
+        remaining -= extra;
+        end += extra;
+    }
+    setg(&chunkBuffer[0], &chunkBuffer[0] + (cur - beg), end);
+}
+
+std::string_view StreamBufInput::preloadStreamIntoBuffer()
+{
+    preloadStreamIntoBufferNow();
+    return std::string_view{eback(), egptr()};
+}
+
 StreamBufInput::int_type StreamBufInput::underflow()
 {
     if (remaining == 0)

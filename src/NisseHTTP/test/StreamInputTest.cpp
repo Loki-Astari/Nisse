@@ -1,4 +1,7 @@
 #include <gtest/gtest.h>
+#include <ranges>
+#include <sstream>
+#include <string_view>
 #include "StreamInput.h"
 #include "Util.h"
 
@@ -310,5 +313,53 @@ TEST(StreamInputTest, BufSeekAbsoluteInBackFromCurrentFail)
     streamInput.read(buffer, 5);
     StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekpos(3, std::ios_base::in);
     EXPECT_EQ(5, newPos);
+}
+
+TEST(StreamInputTest, ReadingUptoEndShouldEnterWhile)
+{
+    std::stringstream   stream("1234567890MoreToIgnore");
+    StreamInput         streamInput(stream, 10);
+
+    bool readDone = false;
+    char buffer[1000];
+    while (streamInput.read(buffer, 10)) {
+        auto size = streamInput.gcount();
+        EXPECT_EQ(10, size);
+        readDone = true;
+    }
+    EXPECT_TRUE(readDone);
+}
+
+TEST(StreamInputTest, ReadingPastEndShoulNotEnterWhile)
+{
+    std::stringstream   stream("1234567890MoreToIgnore");
+    StreamInput         streamInput(stream, 10);
+
+    bool readDone = false;
+    char buffer[1000];
+    while (streamInput.read(buffer, 100)) {
+        readDone = true;
+    }
+    EXPECT_FALSE(readDone);
+    EXPECT_EQ(10, streamInput.gcount());
+}
+
+TEST(StreamInputTest, PreloadStreamIntoBuffer)
+{
+    std::stringstream   stream("1234567890MoreToIgnore");
+    StreamInput         streamInput(stream, 10);
+
+    char                buffer[10];
+    std::string_view    bufferView{buffer, buffer + 10};
+    std::string_view    view = streamInput.preloadStreamIntoBuffer();
+    EXPECT_EQ("1234567890", view);
+
+    bool                ok = false;
+    if (streamInput.read(buffer, 10)) {
+        ok = true;
+    }
+    EXPECT_TRUE(ok);
+    EXPECT_EQ(10, streamInput.gcount());
+    EXPECT_EQ("1234567890", bufferView);
 }
 
