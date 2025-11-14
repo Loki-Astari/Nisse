@@ -42,6 +42,8 @@ class Response
     std::ostream&   baseStream;
     StreamOutput    stream;
 
+    void sendHeaderIfNotSent();
+
     public:
         Response(std::ostream& stream, Version version, int code = 200);
         ~Response();
