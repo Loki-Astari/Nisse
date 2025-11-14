@@ -1,10 +1,12 @@
 #ifndef THORSANVIL_NISSE_NISSEHTTP_PATH_MATCHER_H
 #define THORSANVIL_NISSE_NISSEHTTP_PATH_MATCHER_H
 
+#include "NisseHTTPConfig.h"
 #include "Util.h"
 #include <map>
 #include <vector>
 #include <string>
+#include <string_view>
 #include <functional>
 
 namespace ThorsAnvil::Nisse::HTTP

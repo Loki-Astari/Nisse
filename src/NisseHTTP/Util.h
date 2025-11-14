@@ -4,10 +4,13 @@
 #include "NisseHTTPConfig.h"
 #include <set>
 #include <map>
-#include <vector>
 #include <string>
 #include <string_view>
-#include <algorithm>
+#include <variant>
+#include <iostream>
+#include <functional>
+#include <utility>
+#include <cctype>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
@@ -26,6 +29,29 @@ std::istream& operator>>(std::istream&, Version& v);
 std::ostream& operator<<(std::ostream&, BodyEncoding const& bodyEncoding);
 std::ostream& operator<<(std::ostream&, Encoding const& e);
 std::ostream& operator<<(std::ostream&, Method const& method);
+
+struct StatusCode
+{
+    int                 code;
+    std::string_view    message;
+
+    friend std::ostream& operator<<(std::ostream& stream, StatusCode const& statusCode) {statusCode.print(stream);return stream;}
+    void print(std::ostream& stream) const;
+};
+
+class StandardStatusCodeMap
+{
+    using StatusCodeMap = std::set<StatusCode, std::function<bool(StatusCode const& lhs, StatusCode const& rhs)>>;
+
+    static StatusCodeMap const standardCodes;
+    public:
+        StatusCode const& operator[](int code);
+};
+
+// TODO Move to Util
+class HeaderResponse;
+class HeaderPassThrough;
+using Header = std::variant<std::reference_wrapper<HeaderResponse const>, std::reference_wrapper<HeaderPassThrough const>>;
 
 class RequestVariables
 {

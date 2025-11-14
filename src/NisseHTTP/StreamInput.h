@@ -4,6 +4,10 @@
 #include "NisseHTTPConfig.h"
 #include "Util.h"
 #include <iostream>
+#include <functional>
+#include <vector>
+#include <string_view>
+#include <utility>
 
 namespace ThorsAnvil::Nisse::HTTP
 {

@@ -2,7 +2,6 @@
 #include "Request.h"
 #include "Response.h"
 #include <regex>
-#include <string>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
@@ -61,7 +60,7 @@ void HTTPHandler::addPathMatch(RequestVariables& var, Match const& matches)
 
 namespace
 {
-    static constexpr int ASCIIHexToInt[] =
+    static constexpr int asciiHexToInt[] =
 {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -81,8 +80,8 @@ namespace
     -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
 };
 
-    bool isHex(unsigned char c)      {return ASCIIHexToInt[c] >= 0;}
-    int  decodeHex(unsigned char c)  {return ASCIIHexToInt[c];}
+    bool isHex(unsigned char c)      {return asciiHexToInt[c] >= 0;}
+    int  decodeHex(unsigned char c)  {return asciiHexToInt[c];}
 }
 std::string decode(std::string_view view)
 {

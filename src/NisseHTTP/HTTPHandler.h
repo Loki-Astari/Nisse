@@ -4,8 +4,11 @@
 #include "NisseHTTPConfig.h"
 #include "PyntHTTP.h"
 #include "PathMatcher.h"
-#include "Util.h"
+#include <string>
 #include <string_view>
+#include <functional>
+#include <vector>
+#include <istream>
 
 namespace ThorsAnvil::Nisse::HTTP
 {

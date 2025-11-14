@@ -7,7 +7,10 @@
 #include "HeaderResponse.h"
 #include "StreamInput.h"
 #include "NisseServer/Context.h"
-#include <istream>
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <memory>
 
 namespace ThorsAnvil::Nisse::HTTP
 {

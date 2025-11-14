@@ -2,6 +2,7 @@
 #define THORSANVIL_NISSE_NISSEHTTP_HEADER_REQUEST_H
 
 #include "NisseHTTPConfig.h"
+#include <ostream>
 #include <map>
 #include <vector>
 #include <string>

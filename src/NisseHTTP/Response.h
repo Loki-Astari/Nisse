@@ -3,35 +3,12 @@
 
 #include "NisseHTTPConfig.h"
 #include "Util.h"
-#include "HeaderResponse.h"
-#include "HeaderPassThrough.h"
 #include "StreamOutput.h"
-#include <set>
-#include <ostream>
-#include <functional>
+#include <iostream>
+#include <string_view>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
-
-struct StatusCode
-{
-    int                 code;
-    std::string_view    message;
-
-    friend std::ostream& operator<<(std::ostream& stream, StatusCode const& statusCode) {statusCode.print(stream);return stream;}
-    void print(std::ostream& stream) const;
-};
-
-class StandardStatusCodeMap
-{
-    using StatusCodeMap = std::set<StatusCode, std::function<bool(StatusCode const& lhs, StatusCode const& rhs)>>;
-
-    static StatusCodeMap const standardCodes;
-    public:
-        StatusCode const& operator[](int code);
-};
-
-using Header = std::variant<std::reference_wrapper<HeaderResponse const>, std::reference_wrapper<HeaderPassThrough const>>;
 
 class Response
 {
