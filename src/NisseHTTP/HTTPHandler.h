@@ -29,6 +29,7 @@ class HTTPHandler: public PyntHTTP
         void addHeaders(RequestVariables& var, HeaderRequest const& headers);
         void addQueryParam(RequestVariables& var, std::string_view query);
         void addPathMatch(RequestVariables& var, Match const& matches);
+        void addFormVariables(RequestVariables& var, std::istream& stream);
 };
 
 }

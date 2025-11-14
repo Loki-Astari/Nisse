@@ -142,4 +142,24 @@ TEST(HTTPHandlerTest, PathMatchMAtchOverride)
     EXPECT_EQ("path2", request.variables()["host"]);
 }
 
+TEST(HTTPHandlerTest, FormParameterPassed)
+{
+    HTTPHandler         httpHandler;
+    int                 count = 0;
+    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&count](Request&, Response&){++count;});
+
+    std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
+                           "host: google.com\r\n"
+                           "content-type: application/x-www-form-urlencoded\r\n"
+                           "content-length: 56\r\n"
+                           "\r\n"
+                           "Name=Loki&Address=12345+address&funny=%20%26%23%21+Stuff"};
+    Request     request("http", ss);
+    Response    response(ss, Version::HTTP1_1);
+    httpHandler.processRequest(request, response);
+
+    EXPECT_EQ("Loki", request.variables()["Name"]);
+    EXPECT_EQ("12345 address", request.variables()["Address"]);
+    EXPECT_EQ(" &#! Stuff", request.variables()["funny"]);
+}
 
