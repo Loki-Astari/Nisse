@@ -1,0 +1,34 @@
+#ifndef THORSANVIL_NISSE_NISSEHTTP_CLIENTRESPONSE_H
+#define THORSANVIL_NISSE_NISSEHTTP_CLIENTRESPONSE_H
+
+#include "NisseHTTPConfig.h"
+#include "Util.h"
+#include <iostream>
+#include <string>
+#include <map>
+
+namespace ThorsAnvil::Nisse::HTTP
+{
+
+struct StatusResponse
+{
+    int                 code;
+    std::string         message;
+};
+
+class ClientResponse
+{
+    protected:
+        Version         version;
+        StatusResponse  status;
+        std::map<std::string, std::string>  headers;
+
+    public:
+        ClientResponse(std::istream& baseStream);
+        void print(std::ostream& stream) const;
+        friend std::ostream& operator<<(std::ostream& stream, ClientResponse const& data) {data.print(stream);return stream;}
+};
+
+}
+
+#endif
