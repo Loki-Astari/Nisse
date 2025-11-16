@@ -62,18 +62,12 @@ TEST(StreamOutputTest, ConstructAssignedLength)
 }
 TEST(StreamOutputTest, ConstructAssignedChunked)
 {
-    std::cerr << "ConstructAssignedChunked:: TEST 1\n";
     std::stringstream   ss;
     StreamOutput        streamOutput;
-    std::cerr << "ConstructAssignedChunked:: TEST 2\n";
     EXPECT_FALSE(static_cast<bool>(streamOutput));
-    std::cerr << "ConstructAssignedChunked:: TEST 3\n";
 
-    std::cerr << "ConstructAssignedChunked:: TEST 4\n";
     streamOutput.addBuffer(StreamBufOutput(ss, Encoding::Chunked));
-    std::cerr << "ConstructAssignedChunked:: TEST 5\n";
     EXPECT_TRUE(static_cast<bool>(streamOutput));
-    std::cerr << "ConstructAssignedChunked:: TEST DONE\n";
 }
 TEST(StreamOutputTest, WriteLengthStream)
 {

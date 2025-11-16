@@ -230,9 +230,7 @@ TEST(StreamInputTest, BufSeekCurIn)
     streamInput.peek();
 
     char buffer[100] = {0};
-    std::cerr << "Reading 5\n";
     streamInput.read(buffer, 5);
-    std::cerr << "Seeking 3\n";
     StreamInput::pos_type newPos = streamInput.rdbuf()->pubseekoff(3, std::ios_base::cur, std::ios_base::in);
     EXPECT_EQ(8, newPos);
 }
