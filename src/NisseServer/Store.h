@@ -177,6 +177,9 @@ class Store
 
         template<typename T>
         void requestChange(T&& update);
+
+        void incActive()    {++openStreamCount;}
+        void decActive()    {--openStreamCount;}
     private:
         struct ApplyUpdate
         {

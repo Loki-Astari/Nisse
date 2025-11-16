@@ -80,7 +80,6 @@ void Store::operator()(StateUpdateCreateStream& update)
     StreamData& data = std::get<StreamData>(iter->second);
     data.coRoutine = update.coRoutineCreator(data);
     data.readEvent.add();
-    ++openStreamCount;
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateStream&)", "DONE");
 }
 
@@ -145,15 +144,17 @@ void Store::operator()(StateUpdateExternallClosed& update)
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateExternallClosed&)", "Start: ", update.fd);
     struct ExternallyClosed
     {
+        Store&  store;
+
         void operator()(ServerData&)            {}
-        void operator()(StreamData& data)       {data.stream.getSocket().externalyClosed();}
+        void operator()(StreamData& data)       {data.stream.getSocket().externalyClosed();store.decActive();}
         void operator()(OwnedFD&)               {}
         void operator()(SharedFD&)              {}
         void operator()(TimerData&)             {}
     };
     auto find = data.find(update.fd);
     if (find != data.end()) {
-        std::visit(ExternallyClosed{}, find->second);
+        std::visit(ExternallyClosed{*this}, find->second);
     }
     data.erase(update.fd);
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateExternallClosed&)", "DONE");
@@ -163,8 +164,10 @@ void Store::operator()(StateUpdateRemove& update)
 {
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRemove&)", "Start: ", update.fd);
     auto find = data.find(update.fd);
-    if ((find != std::end(data)) && (std::holds_alternative<StreamData>(find->second))) {
-        --openStreamCount;
+    if (find != std::end(data)) {
+        if (std::holds_alternative<StreamData>(find->second)) {
+            decActive();
+        }
     }
     data.erase(update.fd);
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRemove&)", "DONE");
@@ -182,7 +185,7 @@ void Store::operator()(StateUpdateRestoreRead& update)
             , update(update)
         {}
         void operator()(ServerData& data)       {data.readEvent.add();}
-        void operator()(StreamData& data)       {data.readEvent.add();}
+        void operator()(StreamData& data)       {data.readEvent.add();store.decActive();}
         void operator()(OwnedFD& data)          {data.readEvent.add();}
         void operator()(SharedFD& data)
         {

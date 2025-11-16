@@ -59,6 +59,7 @@ void EventHandler::run()
 
 void EventHandler::stopSoft()
 {
+    ThorsLogDebug("EventHandler", "stopSoft", "Initiating a soft stop. Connection Count: ", store.getOpenConnections());
     if (store.getOpenConnections() == 0) {
         stopHard();
         return;
@@ -68,6 +69,7 @@ void EventHandler::stopSoft()
 
 void EventHandler::stopHard()
 {
+    ThorsLogDebug("EventHandler", "stopHard", "Initiating a hard stop. Connection Count: ", store.getOpenConnections());
     finished = true;
 }
 
@@ -86,6 +88,7 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
 {
     // If we are stopping then we will not accept any more connections.
     if (stopping) {
+        ThorsLogDebug("EventHandler", "add", "Ignoring new connection as we are stopping");
         return;
     }
     int fd = stream.getSocket().socketId();
@@ -165,6 +168,7 @@ void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
 {
     ThorsLogTrace("EventHandler", "handleStreamEvent", "Streaming data");
     if (checkFileDescriptorOK(fd, type)) {
+        store.incActive();
         addJob(info.coRoutine, fd);
     }
 }
@@ -267,10 +271,14 @@ void EventHandler::addJob(CoRoutine& work, int fd)
  */
 void EventHandler::controlTimerAction()
 {
-    if (stopping && store.getOpenConnections() == 0) {
-        finished = true;
+    if (stopping) {
+        ThorsLogDebug("EventHandler", "controlTimerAction", "Checking up on soft stop. Connection Count: ", store.getOpenConnections());
+        if (store.getOpenConnections() == 0) {
+            finished = true;
+        }
     }
     if (finished) {
+        ThorsLogDebug("EventHandler", "controlTimerAction", "Event Loop breaking now");
         eventBase.loopBreak();
         return;
     }
