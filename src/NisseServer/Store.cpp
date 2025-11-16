@@ -80,6 +80,7 @@ void Store::operator()(StateUpdateCreateStream& update)
     StreamData& data = std::get<StreamData>(iter->second);
     data.coRoutine = update.coRoutineCreator(data);
     data.readEvent.add();
+    ++openStreamCount;
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateCreateStream&)", "DONE");
 }
 
@@ -161,6 +162,10 @@ void Store::operator()(StateUpdateExternallClosed& update)
 void Store::operator()(StateUpdateRemove& update)
 {
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRemove&)", "Start: ", update.fd);
+    auto find = data.find(update.fd);
+    if ((find != std::end(data)) && (std::holds_alternative<StreamData>(find->second))) {
+        --openStreamCount;
+    }
     data.erase(update.fd);
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRemove&)", "DONE");
 }

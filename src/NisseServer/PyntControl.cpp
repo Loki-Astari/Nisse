@@ -10,6 +10,8 @@ PyntControl::PyntControl(NisseServer& server)
 
 PyntResult PyntControl::handleRequest(TASock::SocketStream& /*stream*/, Context&)
 {
-    server.stop();
+    // This is a very simple control.
+    // Please checkout HTTPPyntControl for a slightly more sophisticated option.
+    server.stopHard();
     return PyntResult::Done;
 }

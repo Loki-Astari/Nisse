@@ -40,7 +40,8 @@ class NisseServer
         NisseServer(std::size_t workerCount = 1);
 
         void run();
-        void stop();
+        void stopSoft();
+        void stopHard();
         void listen(TASock::ServerInit&& listenerInit, Pynt& pynt);
         template<typename rep>
         int  addTimer(std::chrono::duration<long long, rep> time, TimerAction& action)

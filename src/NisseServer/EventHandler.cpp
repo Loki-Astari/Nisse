@@ -42,6 +42,7 @@ EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
     : jobQueue{jobQueue}
     , store{store}
     , finished{false}
+    , stopping{false}
     , internalTimerAction{*this}
 {
     using namespace std::chrono_literals;
@@ -52,10 +53,20 @@ EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
 void EventHandler::run()
 {
     finished = false;
+    stopping = false;
     eventBase.run();
 }
 
-void EventHandler::stop()
+void EventHandler::stopSoft()
+{
+    if (store.getOpenConnections() == 0) {
+        stopHard();
+        return;
+    }
+    stopping = true;
+}
+
+void EventHandler::stopHard()
 {
     finished = true;
 }
@@ -73,6 +84,10 @@ void EventHandler::add(TASock::Server&& server, ServerCreator&& serverCreator, P
 
 void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCreator, Pynt& pynt)
 {
+    // If we are stopping then we will not accept any more connections.
+    if (stopping) {
+        return;
+    }
     int fd = stream.getSocket().socketId();
     store.requestChange(StateUpdateCreateStream{fd,
                                                 std::move(stream),
@@ -252,8 +267,10 @@ void EventHandler::addJob(CoRoutine& work, int fd)
  */
 void EventHandler::controlTimerAction()
 {
-    if (finished)
-    {
+    if (stopping && store.getOpenConnections() == 0) {
+        finished = true;
+    }
+    if (finished) {
         eventBase.loopBreak();
         return;
     }

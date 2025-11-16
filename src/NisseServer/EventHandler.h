@@ -61,6 +61,7 @@ class EventHandler
     Store&          store;
     EventBase       eventBase;
     bool            finished;
+    bool            stopping;
     InternalTimerAction     internalTimerAction;
     int                     internalTimerId;
 
@@ -68,7 +69,8 @@ class EventHandler
         EventHandler(JobQueue& jobQueue, Store& store);
 
         void run();
-        void stop();
+        void stopSoft();
+        void stopHard();
         void add(TASock::Server&& stream, ServerCreator&& creator, Pynt& pynt);
         void add(TASock::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
         int  addTimer(int microseconds, TimerAction& action);

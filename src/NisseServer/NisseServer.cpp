@@ -17,9 +17,14 @@ void NisseServer::run()
     eventHandler.run();
 }
 
-void NisseServer::stop()
+void NisseServer::stopSoft()
 {
-    eventHandler.stop();
+    eventHandler.stopSoft();
+}
+
+void NisseServer::stopHard()
+{
+    eventHandler.stopHard();
 }
 
 CoRoutine NisseServer::createStreamJob(StreamData& info)

@@ -35,6 +35,6 @@ TEST(NisseServerTimerTest, TestTimer)
     std::this_thread::sleep_for(2s);
     EXPECT_EQ(5, value);
 
-    server.stop();
+    server.stopHard();
 }
 

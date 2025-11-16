@@ -110,6 +110,8 @@ bool PathMatcher::findMatch(std::string_view path, Request& request, Response& r
     ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Looking for: ", path);
     for (auto const& pathMatchInfo: paths)
     {
+        // TODO: Match Differences.
+        //       POST/GET differences has a specific error code.
         if (checkPathMatch(pathMatchInfo, path, request, response)) {
             ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Found");
             return true;
