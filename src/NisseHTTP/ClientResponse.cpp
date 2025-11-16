@@ -7,8 +7,11 @@ namespace ThorsAnvil::Nisse::HTTP
 {
     std::istream& operator>>(std::istream& stream, StatusResponse& data)
     {
-        stream >> data.code;
+        stream >> data.code >> std::ws;
         std::getline(stream, data.message);
+        if (data.message.size() > 0 && data.message[data.message.size() - 1] == '\r') {
+            data.message.resize(data.message.size() - 1);
+        }
         return stream;
     }
     std::ostream& operator<<(std::ostream& stream, StatusResponse const& data)
@@ -30,7 +33,7 @@ ClientResponse::ClientResponse(std::istream& stream)
             auto colon = std::min(std::size(line), line.find(':'));
             auto value = colon == std::size(line) ? colon : line.find_first_not_of(" ", colon + 1);
 
-            headers.insert_or_assign(line.substr(0, colon), line.substr(value));
+            headers.insert_or_assign(line.substr(0, colon), line.substr(value, line.size() - value - 1));
         }
     }
 }
