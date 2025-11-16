@@ -55,10 +55,15 @@ using Header = std::variant<std::reference_wrapper<HeaderResponse const>, std::r
 
 class RequestVariables
 {
-    std::map<std::string, std::string>      store;
+    using Store = std::map<std::string, std::string>;
+    Store       store;
     public:
+        using const_iterator = Store::const_iterator;
+
         std::size_t size()                  const {return store.size();}
         bool exists(std::string const& key) const {return store.find(key) != std::end(store);}
+        const_iterator begin() const    {return store.begin();}
+        const_iterator end()   const    {return store.end();}
         std::string const& operator[](std::string const& key) const
         {
             static std::string empty;
