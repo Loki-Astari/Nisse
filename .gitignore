@@ -13,6 +13,8 @@ report/
 vera/
 makedependency/
 
+MockHeaderInclude.h
+
 makefile_tmp
 Makefile.extra
 Makefile.config
