@@ -26,6 +26,7 @@ class ClientResponse
     public:
         ClientResponse(std::istream& baseStream);
         void print(std::ostream& stream) const;
+        std::size_t getContentSize() const;
         friend std::ostream& operator<<(std::ostream& stream, ClientResponse const& data) {data.print(stream);return stream;}
 };
 

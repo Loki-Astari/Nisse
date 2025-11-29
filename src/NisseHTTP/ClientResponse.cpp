@@ -46,3 +46,13 @@ void ClientResponse::print(std::ostream& stream) const
     }
     stream << "\r\n";
 }
+
+std::size_t ClientResponse::getContentSize() const
+{
+    auto find = headers.find("content-length");
+    if (find != std::end(headers)) {
+        //std::cerr << "Found Size: " << find->second << " : " << std::stoi(find->second) << "\n";
+        return std::stoi(find->second);
+    }
+    return 0;
+}
