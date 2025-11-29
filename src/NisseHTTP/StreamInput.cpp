@@ -112,7 +112,7 @@ void StreamBufInput::preloadStreamIntoBufferNow()
 std::string_view StreamBufInput::preloadStreamIntoBuffer()
 {
     preloadStreamIntoBufferNow();
-    return std::string_view{eback(), egptr()};
+    return std::string_view{gptr(), egptr()};
 }
 
 StreamBufInput::int_type StreamBufInput::underflow()
