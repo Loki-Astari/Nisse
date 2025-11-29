@@ -347,12 +347,12 @@ TEST(StreamInputTest, PreloadStreamIntoBuffer)
     std::stringstream   stream("1234567890MoreToIgnore");
     StreamInput         streamInput(stream, 10);
 
-    char                buffer[10];
-    std::string_view    bufferView{buffer, buffer + 10};
     std::string_view    view = streamInput.preloadStreamIntoBuffer();
     EXPECT_EQ("1234567890", view);
 
     bool                ok = false;
+    char                buffer[10];
+    std::string_view    bufferView{buffer, buffer + 10};
     if (streamInput.read(buffer, 10)) {
         ok = true;
     }
