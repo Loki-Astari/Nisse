@@ -9,6 +9,21 @@ using ThorsAnvil::Nisse::Server::Pynt;
 using ThorsAnvil::Nisse::Server::PyntResult;
 using ThorsAnvil::Nisse::Server::Context;
 
+/*
+ * Some locations were we build do not currently support std::jthread.
+ * This is a simplified version just for testing purposes.
+ */
+//    std::jthread
+class LocalJthread: public std::thread
+{
+    public:
+        using std::thread::thread;
+        ~LocalJthread()
+        {
+            join();
+        }
+};
+
 namespace TASock = ThorsAnvil::ThorsSocket;
 
 class PyntTest: public Pynt
@@ -30,7 +45,7 @@ TEST(NisseServerTest, stopSoft)
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
     auto action = [&](){server.run();};
-    std::jthread    work(action);
+    LocalJthread    work(action);
 
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(1s);
@@ -44,7 +59,7 @@ TEST(NisseServerTest, stopHard)
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
     auto action = [&](){server.run();};
-    std::jthread    work(action);
+    LocalJthread    work(action);
 
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(1s);
@@ -63,8 +78,8 @@ TEST(NisseServerTest, stopSoftWithWork)
         socketData << "Check" << std::flush;
     };
 
-    std::jthread    work1(action1);
-    std::jthread    work2(action2);
+    LocalJthread    work1(action1);
+    LocalJthread    work2(action2);
 
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(1s);
@@ -82,8 +97,8 @@ TEST(NisseServerTest, stopHardWithWork)
         TASock::SocketStream socketData({"localhost", 8070});
         socketData << "Check" << std::flush;
     };
-    std::jthread    work1(action1);
-    std::jthread    work2(action2);
+    LocalJthread    work1(action1);
+    LocalJthread    work2(action2);
 
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(1s);

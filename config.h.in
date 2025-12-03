@@ -86,9 +86,6 @@
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
-/* Name of package for header files */
-#undef THOR_PACKAGE_NAME
-
 /* Version number of package */
 #undef VERSION
 

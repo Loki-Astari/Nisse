@@ -1,3 +1,4 @@
+CONFIG_NAME					= Nisse
 THORSANVIL_ROOT             = $(realpath ../../)
 
 LDLIBS_EXTERN_BUILD			= ThorSerialize

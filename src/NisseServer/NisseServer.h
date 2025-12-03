@@ -43,8 +43,8 @@ class NisseServer
         void stopSoft();
         void stopHard();
         void listen(TASock::ServerInit&& listenerInit, Pynt& pynt);
-        template<typename rep>
-        int  addTimer(std::chrono::duration<long long, rep> time, TimerAction& action)
+        template<typename T, typename rep>
+        int  addTimer(std::chrono::duration<T, rep> time, TimerAction& action)
         {
             return eventHandler.addTimer(std::chrono::microseconds(time).count(), action);
         }

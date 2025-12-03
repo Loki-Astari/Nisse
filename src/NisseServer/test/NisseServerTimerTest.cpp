@@ -4,6 +4,21 @@
 
 using namespace ThorsAnvil::Nisse::Server;
 
+/*
+ * Some locations were we build do not currently support std::jthread.
+ * This is a simplified version just for testing purposes.
+ */
+//    std::jthread
+class LocalJthread: public std::thread
+{
+    public:
+        using std::thread::thread;
+        ~LocalJthread()
+        {
+            join();
+        }
+};
+
 class TestAction: public ThorsAnvil::Nisse::Server::TimerAction
 {
     int& value;
@@ -20,14 +35,14 @@ class TestAction: public ThorsAnvil::Nisse::Server::TimerAction
 TEST(NisseServerTimerTest, TestTimer)
 {
     int                 value = 0;
-    NisseServer         server;
     TestAction          action(value);
+    NisseServer         server;
 
     using namespace std::chrono_literals;
     server.addTimer(2s, action);
 
     auto work = [&server](){server.run();};
-    std::jthread    test(work);
+    LocalJthread    test(work);
 
     EXPECT_EQ(0, value);
     std::this_thread::sleep_for(1s);
