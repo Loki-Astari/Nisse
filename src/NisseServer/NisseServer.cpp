@@ -40,7 +40,7 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             // Set the socket to work asynchronously.
             TASock::Socket& streamSocket = info.stream.getSocket();
 
-            streamSocket.setReadYield([&yield, &info, socketId]()
+            streamSocket.setReadYield([&yield, &server, &info, socketId]()
             {
                 // If yield() throws we are unwinding the stack.
                 // This lambda is being called from deep inside the iostream but we want the
@@ -49,10 +49,17 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
                 std::ios_base::iostate e = info.stream.exceptions();
                 info.stream.exceptions(std::ios::badbit);
                 yield({TaskYieldState::RestoreRead, socketId});
+                /*
+                 * Entry at this point means that we have continued an existing calling that was waiting
+                 * for data from the client. If you look at EventHandler::addJob() you will see that
+                 * store.incActive() is called when this job is added, but the decrement was not called
+                 * after the above yield() returned. So we need to compensate by calling decrement here.
+                 */
+                server.store.decActive();
                 info.stream.exceptions(e);
                 return true;
             });
-            streamSocket.setWriteYield([&yield, &info, socketId]()
+            streamSocket.setWriteYield([&yield, &server, &info, socketId]()
             {
                 // If yield() throws we are unwinding the stack.
                 // This lambda is being called from deep inside the iostream but we want the
@@ -61,6 +68,13 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
                 std::ios_base::iostate e = info.stream.exceptions();
                 info.stream.exceptions(std::ios::badbit);
                 yield({TaskYieldState::RestoreWrite, socketId});
+                /*
+                 * Entry at this point means that we have continued an existing calling that was waiting
+                 * to send data to the client. If you look at EventHandler::addJob() you will see that
+                 * store.incActive() is called when this job is added, but the decrement was not called
+                 * after the above yield() returned. So we need to compensate by calling decrement here.
+                 */
+                server.store.decActive();
                 info.stream.exceptions(e);
                 return true;
             });
@@ -70,7 +84,7 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             // We do this as the co-routine is created outside a JobQueue context.
             // once we return a Job will be added to correctly continue the Job.
             // See Store: StateUpdateCreateStream and StateUpdateCreateServer
-            yield({TaskYieldState::RestoreRead, socketId});
+            yield({TaskYieldState::WaitForMore, socketId});
 
             // On normal sockets this does nothing.
             // ON SSL we do the SSL handshake.
@@ -79,7 +93,7 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             PyntResult result = info.pynt->handleRequest(info.stream, context);
             while (result == PyntResult::More)
             {
-                yield({TaskYieldState::RestoreRead, socketId});
+                yield({TaskYieldState::WaitForMore, socketId});
                 result = info.pynt->handleRequest(info.stream, context);
             }
             // We are all done
@@ -99,11 +113,11 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
         {
             int socketId = info.server.socketId();
             // Set the socket to work asynchronously.
-            info.server.setYield([&yield, socketId](){yield({TaskYieldState::RestoreRead, socketId});return true;});
+            info.server.setYield([&yield, socketId](){yield({TaskYieldState::WaitForMore, socketId});return true;});
 
             // Return control to the creator.
             // The next call will happen when there is data available on the file descriptor.
-            yield({TaskYieldState::RestoreRead, socketId});
+            yield({TaskYieldState::WaitForMore, socketId});
 
             while (true)
             {
@@ -115,7 +129,7 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
                     // Note: The "Pynt" functionality is not run yet. The socket must be available to use.
                     eventHandler.add(TASock::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
                 }
-                yield({TaskYieldState::RestoreRead, socketId});
+                yield({TaskYieldState::WaitForMore, socketId});
             }
             // We are all done
             // So indicate that we should tidy up state.

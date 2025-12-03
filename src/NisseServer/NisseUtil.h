@@ -23,7 +23,7 @@ struct StreamData;
  * When the work code is blocked.
  * See EventHandler for details.
  */
-enum class TaskYieldState        {RestoreRead, RestoreWrite, Remove};
+enum class TaskYieldState        {RestoreRead, RestoreWrite, WaitForMore, Remove};
 struct TaskYieldAction
 {
     TaskYieldState      state;

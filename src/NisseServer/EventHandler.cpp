@@ -168,7 +168,6 @@ void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
 {
     ThorsLogTrace("EventHandler", "handleStreamEvent", "Streaming data");
     if (checkFileDescriptorOK(fd, type)) {
-        store.incActive();
         addJob(info.coRoutine, fd);
     }
 }
@@ -236,6 +235,8 @@ void EventHandler::addJob(CoRoutine& work, int fd)
         TaskYieldAction task = {TaskYieldState::Remove, fd};
         try
         {
+            // increment the number of active jobs.
+            store.incActive();
             if (work()) {
                 task = work.get();
             }
@@ -251,12 +252,33 @@ void EventHandler::addJob(CoRoutine& work, int fd)
         switch (task.state)
         {
             case TaskYieldState::Remove:
+                // Job is being removed. We can decrement the active job count.
+                store.decActive();
                 store.requestChange(StateUpdateRemove{task.fd});
                 break;
+            case TaskYieldState::WaitForMore:
+                // Waiting for more means that we have finished the current request.
+                // But the connection is still open for additional requests.
+                // But we are not in the middle of a job is we will decrement the active count.
+                store.decActive();
+                store.requestChange(StateUpdateRestoreRead{task.fd, fd});
+                break;
             case TaskYieldState::RestoreRead:
+                // The job has yielded because it is waiting for data from the client.
+                // As we are in the middle of a job we will not decrement the count.
+                // Note: When the job is restarted (above) it will increment the active count
+                //       another time. So the yield return point will decrement the count
+                //       to compensate so we don't overcount.
+                //       See NisseServer::createStreamJob() (The CoRoutine)
                 store.requestChange(StateUpdateRestoreRead{task.fd, fd});
                 break;
             case TaskYieldState::RestoreWrite:
+                // The job has yielded because it is waiting to write data to the client.
+                // As we are in the middle of a job we will not decrement the count.
+                // Note: When the job is restarted (above) it will increment the active count
+                //       another time. So the yield return point will decrement the count
+                //       to compensate so we don't overcount.
+                //       See NisseServer::createStreamJob() (The CoRoutine)
                 store.requestChange(StateUpdateRestoreWrite{task.fd, fd});
                 break;
         }

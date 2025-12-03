@@ -147,7 +147,7 @@ void Store::operator()(StateUpdateExternallClosed& update)
         Store&  store;
 
         void operator()(ServerData&)            {}
-        void operator()(StreamData& data)       {data.stream.getSocket().externalyClosed();store.decActive();}
+        void operator()(StreamData& data)       {data.stream.getSocket().externalyClosed();}
         void operator()(OwnedFD&)               {}
         void operator()(SharedFD&)              {}
         void operator()(TimerData&)             {}
@@ -163,12 +163,6 @@ void Store::operator()(StateUpdateExternallClosed& update)
 void Store::operator()(StateUpdateRemove& update)
 {
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRemove&)", "Start: ", update.fd);
-    auto find = data.find(update.fd);
-    if (find != std::end(data)) {
-        if (std::holds_alternative<StreamData>(find->second)) {
-            decActive();
-        }
-    }
     data.erase(update.fd);
     ThorsLogDebug("ThorsAnvil::NisseServer::Store", "operator()(StateUpdateRemove&)", "DONE");
 }
@@ -185,7 +179,7 @@ void Store::operator()(StateUpdateRestoreRead& update)
             , update(update)
         {}
         void operator()(ServerData& data)       {data.readEvent.add();}
-        void operator()(StreamData& data)       {data.readEvent.add();store.decActive();}
+        void operator()(StreamData& data)       {data.readEvent.add();}
         void operator()(OwnedFD& data)          {data.readEvent.add();}
         void operator()(SharedFD& data)
         {
