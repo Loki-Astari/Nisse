@@ -4,6 +4,8 @@
 #include "HeaderPassThrough.h"
 #include "ThorsLogging/ThorsLogging.h"
 
+#include <limits>
+
 using namespace ThorsAnvil::Nisse::HTTP;
 
 StandardStatusCodeMap standardCodes;
