@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include <exception>
+#include <latch>
 #include <thread>
 #include "NisseServer.h"
 #include "Pynt.h"
@@ -42,37 +43,36 @@ PyntTest    testerPynt;
 TEST(NisseServerTest, stopSoft)
 {
     NisseServer     server;
+    std::latch      latch(1);
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
-    auto action = [&](){server.run();};
+    auto action = [&](){server.run([&latch](){latch.count_down();});};
     LocalJthread    work(action);
 
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(1s);
-
+    latch.wait();
     server.stopSoft();
 }
 
 TEST(NisseServerTest, stopHard)
 {
     NisseServer     server;
+    std::latch      latch(1);
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
-    auto action = [&](){server.run();};
+    auto action = [&](){server.run([&latch](){latch.count_down();});};
     LocalJthread    work(action);
 
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(1s);
-
+    latch.wait();
     server.stopHard();
 }
 
 TEST(NisseServerTest, stopSoftWithWork)
 {
     NisseServer     server;
+    std::latch      latch(1);
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
-    auto action1 = [&](){server.run();};
+    auto action1 = [&](){server.run([&latch](){latch.count_down();});};
     auto action2 = [&](){
         TASock::SocketStream socketData({"localhost", 8070});
         socketData << "Check" << std::flush;
@@ -81,18 +81,17 @@ TEST(NisseServerTest, stopSoftWithWork)
     LocalJthread    work1(action1);
     LocalJthread    work2(action2);
 
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(1s);
-
+    latch.wait();
     server.stopSoft();
 }
 
 TEST(NisseServerTest, stopHardWithWork)
 {
     NisseServer     server;
+    std::latch      latch(1);
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
-    auto action1 = [&](){server.run();};
+    auto action1 = [&](){server.run([&latch](){latch.count_down();});};
     auto action2 = [&](){
         TASock::SocketStream socketData({"localhost", 8070});
         socketData << "Check" << std::flush;
@@ -100,9 +99,7 @@ TEST(NisseServerTest, stopHardWithWork)
     LocalJthread    work1(action1);
     LocalJthread    work2(action2);
 
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(1s);
-
+    latch.wait();
     server.stopHard();
 }
 

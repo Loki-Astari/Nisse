@@ -39,7 +39,7 @@ class NisseServer
     public:
         NisseServer(std::size_t workerCount = 1);
 
-        void run();
+        void run(std::function<void()>&& notice = [](){});
         void stopSoft();
         void stopHard();
         void listen(TASock::ServerInit&& listenerInit, Pynt& pynt);

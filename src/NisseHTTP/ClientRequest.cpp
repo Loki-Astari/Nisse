@@ -42,20 +42,18 @@ ClientRequest::ClientRequest(std::ostream& baseStream, std::string url, Method m
 ClientRequest::~ClientRequest()
 {
     ThorsLogDebug("ThorsAnvil::Nisse::HTTP::ClientRequest", "~ClientRequest", "Responce object destruction");
-    if (stream.rdbuf() == nullptr)
-    {
-        if (!headerSent)
-        {
-            ThorsLogDebug("ThorsAnvil::Nisse::HTTP::ClientRequest", "~ClientRequest", "Sending header: ", method, " ", url, " ", version);
-            baseStream << method << " " << getRequest(url) << " " << version << "\r\n"
-                       << "Host: " << getHost(url) << "\r\n";
+    flushRequest();
+}
 
-            headerSent = true;
-        }
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::ClientRequest", "~ClientRequest", "Setting content length to zero and flushing");
-        baseStream << "content-length: 0\r\n"
-            << "\r\n"
-            << std::flush;
+void ClientRequest::flushHeaderIfNeeded()
+{
+    if (!headerSent)
+    {
+        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::ClientRequest", "flushHeaderIfNeeded", "Sending header: ", method, " ", url, " ", version);
+        baseStream << method << " " << getRequest(url) << " " << version << "\r\n"
+                   << "Host: " << getHost(url) << "\r\n";
+
+        headerSent = true;
     }
 }
 
@@ -72,14 +70,7 @@ void ClientRequest::addHeaders(Header const& headers)
         ThorsLogAndThrowWarning(std::runtime_error, "ThorsAnvil::Nisse::ClientRequest", "addHeaders", "Headers can not be sent after the body has been started");
     }
 
-    if (!headerSent)
-    {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::ClientRequest", "addHeaders", "Sending header: ", method, " ", url, " ", version);
-        baseStream << method << " " << getRequest(url) << " " << version << "\r\n"
-                   << "Host: " << getHost(url) << "\r\n";
-        headerSent = true;
-    }
-
+    flushHeaderIfNeeded();
     baseStream << headers;
 }
 
@@ -89,18 +80,21 @@ std::ostream& ClientRequest::body(BodyEncoding bodyEncoding)
     if (version > Version::HTTP1_1 && std::holds_alternative<Encoding>(bodyEncoding) && std::get<Encoding>(bodyEncoding) == Encoding::Chunked) {
         ThorsLogFatal("ThorsAnvil::Nisse::HTTP::ClientRequest", "body", "Invalid encoding requested. Chunked encoding not supported in HTTP 2 or 3");
     }
-    if (!headerSent)
-    {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::ClientRequest", "body", "Sending header: ", method, " ", url, " ", version);
-        baseStream << method << " " << getRequest(url) << " " << version << "\r\n"
-                   << "Host: " << getHost(url) << "\r\n";
-        headerSent = true;
-    }
+    flushHeaderIfNeeded();
     ThorsLogDebug("ThorsAnvil::Nisse::HTTP::ClientRequest", "body", "adding body to stream");
     baseStream << bodyEncoding
-               << "\r\n"
-               << std::flush;
+               << "\r\n";
+               // << std::flush; // Do we need to flush?
 
     stream.addBuffer(StreamBufOutput{baseStream, bodyEncoding});
     return stream;
+}
+
+void ClientRequest::flushRequest()
+{
+    if (stream.rdbuf() == nullptr) {
+        body(0);
+    }
+    stream << std::flush;
+
 }

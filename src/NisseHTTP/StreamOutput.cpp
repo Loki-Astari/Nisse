@@ -1,4 +1,5 @@
 #include "StreamOutput.h"
+#include <algorithm>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
@@ -96,6 +97,14 @@ void StreamBufOutput::dumpBuffer()
             remaining = chunkBufferSize;
         }
     }
+    else {
+        while (remaining > 0) {
+            std::streamsize next = std::min(static_cast<std::streamsize>(chunkBuffer.size()), remaining);
+            buffer->sputn(chunkBuffer.data(), next);
+            remaining -= next;
+        }
+    }
+    buffer->pubsync();
 }
 
 void StreamBufOutput::done()

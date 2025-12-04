@@ -50,10 +50,11 @@ EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
     controlTimerAction();
 }
 
-void EventHandler::run()
+void EventHandler::run(std::function<void()>&& notice)
 {
     finished = false;
     stopping = false;
+    notice();
     eventBase.run();
 }
 

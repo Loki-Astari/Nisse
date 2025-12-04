@@ -38,11 +38,12 @@ TEST(NisseServerTimerTest, TestTimer)
     int                 value = 0;
     TestAction          action(value);
     NisseServer         server;
+    std::latch          latch(1);
 
     using namespace std::chrono_literals;
     server.addTimer(2s, action);
 
-    auto work = [&server](){server.run();};
+    auto work = [&server, &latch](){server.run([&latch](){latch.count_down();});};
     LocalJthread    test(work);
 
     EXPECT_EQ(0, value);
@@ -51,6 +52,7 @@ TEST(NisseServerTimerTest, TestTimer)
     std::this_thread::sleep_for(2s);
     EXPECT_EQ(5, value);
 
+    latch.wait();
     server.stopHard();
 #endif
 }

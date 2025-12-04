@@ -12,9 +12,9 @@ NisseServer::NisseServer(std::size_t workerCount)
     , eventHandler{jobQueue, store}
 {}
 
-void NisseServer::run()
+void NisseServer::run(std::function<void()>&& notice)
 {
-    eventHandler.run();
+    eventHandler.run(std::move(notice));
 }
 
 void NisseServer::stopSoft()

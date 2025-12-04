@@ -26,6 +26,7 @@
 #include "EventHandlerLibEvent.h"
 #include "Store.h"
 #include <chrono>
+#include <functional>
 
 /*
  * C-Callback registered with LibEvent
@@ -68,7 +69,7 @@ class EventHandler
     public:
         EventHandler(JobQueue& jobQueue, Store& store);
 
-        void run();
+        void run(std::function<void()>&& notice);
         void stopSoft();
         void stopHard();
         void add(TASock::Server&& stream, ServerCreator&& creator, Pynt& pynt);

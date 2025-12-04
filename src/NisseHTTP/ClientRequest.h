@@ -2,6 +2,7 @@
 #define THORSANVIL_NISSE_NISSEHTTP_CLIENTREQUEST_H
 
 #include "NisseHTTPConfig.h"
+#include "ClientResponse.h"
 #include "Util.h"
 #include "StreamOutput.h"
 #include <ostream>
@@ -23,6 +24,8 @@ class ClientRequest
         std::ostream&       baseStream;
         StreamOutput        stream;
         bool                headerSent;
+    private:
+        void flushHeaderIfNeeded();
 
     public:
         ClientRequest(std::ostream& baseStream, std::string url, Method method = Method::GET, Version version = Version::HTTP1_1);
@@ -30,6 +33,8 @@ class ClientRequest
 
         void addHeaders(Header const& headers);
         std::ostream& body(BodyEncoding bodyEncoding);
+
+        void flushRequest();
 };
 
 }
