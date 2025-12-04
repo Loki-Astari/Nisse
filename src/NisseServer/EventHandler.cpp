@@ -293,6 +293,7 @@ void EventHandler::addJob(CoRoutine& work, int fd)
  */
 void EventHandler::controlTimerAction()
 {
+    ThorsLogDebug("EventHandler", "controlTimerAction", "Checking state of connections");
     if (stopping) {
         ThorsLogDebug("EventHandler", "controlTimerAction", "Checking up on soft stop. Connection Count: ", store.getOpenConnections());
         if (store.getOpenConnections() == 0) {
