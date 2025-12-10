@@ -2,7 +2,21 @@
 
 ![Nisse](img/Nisse.jpg)
 
-A very simple server architecture.
+**Nisse** is a minimal, from-scratch server architecture built to demonstrate how real production servers work—without the complexity of large frameworks or opaque abstractions.
+
+It walks step-by-step from a basic TCP listener to a secure, multi-threaded HTTPS server, using modern C++ and standard system primitives. The goal is to make every layer understandable, debuggable, and hackable.
+
+You can explore the full evolution of Nisse in this series:
+
+1. [Nisse: Origins — Design Goals & Philosophy](https://lokiastari.com/posts/NisseOrigins)  
+2. [Building a Basic Web Server](https://lokiastari.com/posts/NisseV1)  
+3. [Low-Level C++ Socket Programming](https://lokiastari.com/posts/NisseV2)  
+4. [Adding SSL/TLS Certificates](https://lokiastari.com/posts/NisseV3)  
+5. [Introducing Multi-Threading](https://lokiastari.com/posts/NisseV4)
+
+If you'd like to understand how servers work from the metal up—this is a good place to start.
+
+If you don't want to handle the intricacies yourself you can use the [`mug`](https://github.com/Loki-Astari/Mug) an implementation of a simple server (like python flask) that allows you to quickly and simply build plugins that can be dynamically loaded.
 
 ## Nisse:
 ### [NisseServer](src/NisseServer/NisseServer.h):
