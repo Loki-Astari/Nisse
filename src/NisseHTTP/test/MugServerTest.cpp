@@ -140,21 +140,21 @@ class HTTPResponse
 
         void recv(std::istream& stream)
         {
-	    std::cerr << "HTTPResponse 1\n";
+        std::cerr << "HTTPResponse 1\n";
             std::string     version;
             if (!(stream >> version >> code && std::getline(stream, message) && version == "HTTP/1.1")) {
                 std::cerr << "Bad Input\n";
                 return;
             }
-	    std::cerr << "HTTPResponse 2\n";
+        std::cerr << "HTTPResponse 2\n";
             // Remove the '\r'
             message.resize(message.size() - 1);
 
-	    std::cerr << "HTTPResponse 3\n";
+        std::cerr << "HTTPResponse 3\n";
             std::string     line;
             std::string     header;
             std::string     value;
-	    std::cerr << "HTTPResponse 4\n";
+        std::cerr << "HTTPResponse 4\n";
             while (std::getline(stream, line)) {
                 if (line == "\r") {
                     break;
@@ -169,55 +169,55 @@ class HTTPResponse
                     headers[header] = value;
                 }
             }
-	    std::cerr << "HTTPResponse 5\n";
+        std::cerr << "HTTPResponse 5\n";
             std::string    length   = std::string((*this)["content-length"]);
             if (length.size() != 0) {
                 readData(stream, std::stoul(length));
             }
-	    std::cerr << "HTTPResponse 6\n";
+        std::cerr << "HTTPResponse 6\n";
             std::string_view    encoding = (*this)["transfer-encoding"];
             if (encoding == "chunked") {
                 readChunked(stream);
             }
-	    std::cerr << "HTTPResponse DONE\n";
+        std::cerr << "HTTPResponse DONE\n";
         }
     private:
         void readData(std::istream& stream, std::size_t size)
         {
-	    std::cerr << "Read Data: " << size << "\n";
+        std::cerr << "Read Data: " << size << "\n";
             body.resize(size);
-	    std::cerr << "Reading\n";
+        std::cerr << "Reading\n";
             stream.read(&body[0], size);
-	    std::cerr << "DONE\n";
+        std::cerr << "DONE\n";
         }
         void readChunked(std::istream& stream)
         {
-	    std::cerr << "Read Chunked\n";
+        std::cerr << "Read Chunked\n";
             std::string     chunkSizeStr;
             while (std::getline(stream, chunkSizeStr) && chunkSizeStr.back() == '\r') {
-		std::cerr << "\nGot Chunk: >\n" << chunkSizeStr << "<\n\nS: " << chunkSizeStr.size() << "\n";
-		for (int loop = 0; loop < chunkSizeStr.size(); ++loop) {
-			std::cerr << "C: " << loop << " " << ((int)chunkSizeStr[loop]) << "\n";
-		}
+        std::cerr << "\nGot Chunk: >\n" << chunkSizeStr << "<\n\nS: " << chunkSizeStr.size() << "\n";
+        for (int loop = 0; loop < chunkSizeStr.size(); ++loop) {
+            std::cerr << "C: " << loop << " " << ((int)chunkSizeStr[loop]) << "\n";
+        }
                 std::size_t     chunkSize = std::stoul(chunkSizeStr, nullptr, 16);
-		std::cerr << "Chunk Size: " << chunkSize << "\n";
+        std::cerr << "Chunk Size: " << chunkSize << "\n";
                 std::size_t     bodySize = body.size();
                 body.resize(bodySize + chunkSize);
-		std::cerr << "About to read Chunk: " << chunkSize << "\n";
-		if (chunkSize != 0) {
-                	stream.read(&body[bodySize], chunkSize);
-		}
-		std::cerr << "Read Done: >" << std::string(&body[bodySize], &body[bodySize + chunkSize]) << "<\n";
-		std::cerr << "Avail: " << stream.rdbuf()->in_avail() << "\n";
-		char buf[2];
+        std::cerr << "About to read Chunk: " << chunkSize << "\n";
+        if (chunkSize != 0) {
+                    stream.read(&body[bodySize], chunkSize);
+        }
+        std::cerr << "Read Done: >" << std::string(&body[bodySize], &body[bodySize + chunkSize]) << "<\n";
+        std::cerr << "Avail: " << stream.rdbuf()->in_avail() << "\n";
+        char buf[2];
                 stream.read(buf, 2);
-		std::cerr << "Ignored the new line\n";
+        std::cerr << "Ignored the new line\n";
                 if (chunkSize == 0) {
-		    std::cerr << "Breaking\n";
+            std::cerr << "Breaking\n";
                     break;
                 }
             }
-	    std::cerr << "Read Chunk DONE\n";
+        std::cerr << "Read Chunk DONE\n";
         }
 
 
@@ -235,47 +235,47 @@ class MugServer: public NisServer::NisseServer
     // LibraryChecker              libraryChecker;
     Hanlders                    servers;
 
-	void handleRequestPath(NisHttp::Request& request, NisHttp::Response& response)
-	{
-	    std::error_code ec;
-	    FS::path   filePath = FS::canonical(FS::path{"./test/data/pages/page1"}, ec);
+    void handleRequestPath(NisHttp::Request& request, NisHttp::Response& response)
+    {
+        std::error_code ec;
+        FS::path   filePath = FS::canonical(FS::path{"./test/data/pages/page1"}, ec);
 
-	    TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::Yes}};
-	   // TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
-	   // NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
+        TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::Yes}};
+       // TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
+       // NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
 
-	    std::ostream& output = response.body(NisHttp::Encoding::Chunked);
-	    std::string line;
-	    std::cerr << "Reading Lines\n";
-	    while (std::getline(file, line)) {
-	    	std::cerr << "Got Line: >" << line << "<\n";
-	    	output << line << "\n";
-	    }
-	    std::cerr << "FLUSHING\n";
-	    output << std::flush;
-	    std::cerr << "DONE\n";
-	}
+        std::ostream& output = response.body(NisHttp::Encoding::Chunked);
+        std::string line;
+        std::cerr << "Reading Lines\n";
+        while (std::getline(file, line)) {
+            std::cerr << "Got Line: >" << line << "<\n";
+            output << line << "\n";
+        }
+        std::cerr << "FLUSHING\n";
+        output << std::flush;
+        std::cerr << "DONE\n";
+    }
 
     public:
-		MugServer()
-			: NisseServer(4)
-			, control(*this)
-		{
-			ThorsLogDebug("MugServer", "MugServer", " Create Server");
-			ThorsLogDebug("MugServer", "MugServer", " Adding Server: ", 8070);
-			ThorsLogDebug("MugServer", "MugServer", " Adding Control Port: ", 8079);
-			ThorsLogDebug("MugServer", "MugServer", " Adding Action: ", "/files");
-			ThorsLogDebug("MugServer", "MugServer", " File Listener: ", "/files/{FilePath}");
-			servers.emplace_back();
+        MugServer()
+            : NisseServer(4)
+            , control(*this)
+        {
+            ThorsLogDebug("MugServer", "MugServer", " Create Server");
+            ThorsLogDebug("MugServer", "MugServer", " Adding Server: ", 8070);
+            ThorsLogDebug("MugServer", "MugServer", " Adding Control Port: ", 8079);
+            ThorsLogDebug("MugServer", "MugServer", " Adding Action: ", "/files");
+            ThorsLogDebug("MugServer", "MugServer", " File Listener: ", "/files/{FilePath}");
+            servers.emplace_back();
 
-			servers.back().addPath(NisHttp::Method::GET,
-								   FS::path("/files/{FilePath}").lexically_normal(),
-								   [&](NisHttp::Request& request, NisHttp::Response& response)
-								   {handleRequestPath(request, response);}
-								  );
-			listen(TASock::ServerInfo{8070}, servers.back());
-			listen(TASock::ServerInfo{8079}, control);
-		}
+            servers.back().addPath(NisHttp::Method::GET,
+                                   FS::path("/files/{FilePath}").lexically_normal(),
+                                   [&](NisHttp::Request& request, NisHttp::Response& response)
+                                   {handleRequestPath(request, response);}
+                                  );
+            listen(TASock::ServerInfo{8070}, servers.back());
+            listen(TASock::ServerInfo{8079}, control);
+        }
 };
 
 TEST(MugServer, ServiceRunAddServerWithFileValidateWorks)
