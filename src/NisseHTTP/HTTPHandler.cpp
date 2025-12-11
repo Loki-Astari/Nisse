@@ -128,11 +128,14 @@ void HTTPHandler::addFormVariables(RequestVariables& var, std::istream& stream)
     }
 }
 
+void HTTPHandler::remPath(MethodChoice method, std::string const& path)
+{
+    pathMatcher.remPath(method, path);
+}
+
 void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPAction&& action)
 {
-    actions.emplace_back(std::move(action));
-
-    pathMatcher.addPath(method, path, [&, actionId = actions.size() - 1](Match const& matches, Request& request, Response& response)
+    pathMatcher.addPath(method, path, [&, act = std::move(action)](Match const& matches, Request& request, Response& response)
     {
         ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function");
         // Get the variable object
@@ -146,7 +149,7 @@ void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPActi
             addFormVariables(var, request.body());
         }
 
-        actions[actionId](request, response);
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function DONE");
+        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function");
+        return act(request, response);
     });
 }

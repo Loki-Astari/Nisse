@@ -300,4 +300,54 @@ TEST(PathMatcherTest, NotExactPathWillHitFirstAndFallThrough)
     EXPECT_EQ(3, version);
 }
 
+TEST(PathMatcherTest, PathRemoved)
+{
+    PathMatcher         pm;
+    int                 version = 0;
+    pm.addPath(Method::GET, "/path1{suffix}", [&version](Match const& match, Request&, Response&){version += 1;return false;});
+    pm.remPath(Method::GET, "/path1{suffix}");
+
+    std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
+    Request     request("http", ss);
+    Response    response(ss, Version::HTTP1_1);
+    bool        hit = pm.findMatch("/path1/path2/path3", request, response);
+
+    EXPECT_FALSE(hit);
+    EXPECT_EQ(0, version);
+}
+
+TEST(PathMatcherTest, PathRemovedFirst)
+{
+    PathMatcher         pm;
+    int                 version = 0;
+    pm.addPath(Method::GET, "/path1{suffix}", [&version](Match const& match, Request&, Response&){version += 1;return false;});
+    pm.addPath(Method::GET, "/path1/{suffix}", [&version](Match const& match, Request&, Response&){version += 2;return true;});
+    pm.remPath(Method::GET, "/path1{suffix}");
+
+    std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
+    Request     request("http", ss);
+    Response    response(ss, Version::HTTP1_1);
+    bool        hit = pm.findMatch("/path1/path2/path3", request, response);
+
+    EXPECT_TRUE(hit);
+    EXPECT_EQ(2, version);
+}
+
+TEST(PathMatcherTest, PathRemovedSecond)
+{
+    PathMatcher         pm;
+    int                 version = 0;
+    pm.addPath(Method::GET, "/path1{suffix}", [&version](Match const& match, Request&, Response&){version += 1;return false;});
+    pm.addPath(Method::GET, "/path1/{suffix}", [&version](Match const& match, Request&, Response&){version += 2;return true;});
+    pm.remPath(Method::GET, "/path1/{suffix}");
+
+    std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
+    Request     request("http", ss);
+    Response    response(ss, Version::HTTP1_1);
+    bool        hit = pm.findMatch("/path1/path2/path3", request, response);
+
+    EXPECT_FALSE(hit);
+    EXPECT_EQ(1, version);
+}
+
 

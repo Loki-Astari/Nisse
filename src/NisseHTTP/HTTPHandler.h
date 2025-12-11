@@ -17,15 +17,18 @@ class HeaderRequest;
 
 class HTTPHandler: public PyntHTTP
 {
-    using HTTPAction = std::function<void(Request& request, Response& response)>;
+    using HTTPAction = std::function<bool(Request& request, Response& response)>;
 
     PathMatcher             pathMatcher;
-    std::vector<HTTPAction> actions;
+
     public:
         virtual void       processRequest(Request& request, Response& response) override;
 
-        void addPath(std::string const& path, HTTPAction&& action)  {addPath(Method::GET, path, std::move(action));}
+        void addPath(std::string const& path, HTTPAction&& action)  {addPath(All::Method, path, std::move(action));}
+        void remPath(std::string const& path)                       {remPath(All::Method, path);}
+
         void addPath(MethodChoice method, std::string const& path, HTTPAction&& action);
+        void remPath(MethodChoice method, std::string const& path);
     private:
         std::string normalize(std::string_view path);
 
