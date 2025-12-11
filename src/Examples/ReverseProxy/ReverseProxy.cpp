@@ -33,14 +33,15 @@ class ReverseProxy: public NisServer::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
-    void handleRequest(NisHttp::Request& request, NisHttp::Response& response)
+    bool handleRequest(NisHttp::Request& request, NisHttp::Response& response)
     {
         TASock::SocketInfo      init{dest, destPort};
         TASock::SocketStream    stream{TASock::Socket{init, TASock::Blocking::No}};
         NisServer::AsyncStream  async(stream, request.getContext(), NisServer::EventType::Write);
 
         if (!stream) {
-            return response.error(500, "Failed to open socket");
+            response.error(500, "Failed to open socket");
+            return false;
         }
 
         // Step 1:
@@ -57,6 +58,7 @@ class ReverseProxy: public NisServer::NisseServer
         // Step 3: Send the reply back to the originator.
         response.addHeaders(headers);
         response.body(headers.getEncoding()) << body.rdbuf();
+        return true;
     }
 
     public:
@@ -65,7 +67,7 @@ class ReverseProxy: public NisServer::NisseServer
             , dest(dest)
             , destPort(destPort)
         {
-            http.addPath(NisHttp::All::Method, "/{command}", [&](NisHttp::Request& request, NisHttp::Response& response){handleRequest(request, response);});
+            http.addPath(NisHttp::All::Method, "/{command}", [&](NisHttp::Request& request, NisHttp::Response& response){return handleRequest(request, response);});
             listen(getServerInit(certPath, port), http);
 
             listen(TASock::ServerInfo{port+2}, control);

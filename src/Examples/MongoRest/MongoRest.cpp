@@ -57,18 +57,18 @@ class MongoRest: public NisServer::NisseServer
             , contentDir{contentDir}
         {
             // CRUD Person Interface
-            http.addPath(NisHttp::Method::POST,   "/person/",        [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personCreate(request, response);});
-            http.addPath(NisHttp::Method::GET,    "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personGet(request, response);});
-            http.addPath(NisHttp::Method::PUT,    "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personUpdate(request, response);});
-            http.addPath(NisHttp::Method::DELETE, "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personDelete(request, response);});
+            http.addPath(NisHttp::Method::POST,   "/person/",        [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personCreate(request, response);return true;});
+            http.addPath(NisHttp::Method::GET,    "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personGet(request, response);return true;});
+            http.addPath(NisHttp::Method::PUT,    "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personUpdate(request, response);return true;});
+            http.addPath(NisHttp::Method::DELETE, "/person/Id-{id}", [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personDelete(request, response);return true;});
 
             // Search Person Interface
-            http.addPath(NisHttp::Method::GET,    "/person/findByName/{first}/{last}",[&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByName(request, response);});
-            http.addPath(NisHttp::Method::GET,    "/person/findByTel/{tel}",          [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByTel(request, response);});
-            http.addPath(NisHttp::Method::GET,    "/person/findByZip/{zip}",          [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByZip(request, response);});
+            http.addPath(NisHttp::Method::GET,    "/person/findByName/{first}/{last}",[&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByName(request, response);return true;});
+            http.addPath(NisHttp::Method::GET,    "/person/findByTel/{tel}",          [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByTel(request, response);return true;});
+            http.addPath(NisHttp::Method::GET,    "/person/findByZip/{zip}",          [&](NisHttp::Request& request, NisHttp::Response& response) {mongoServer.personFindByZip(request, response);return true;});
 
             // WebInterface
-            http.addPath(NisHttp::Method::GET,    "/{page}",         [&](NisHttp::Request& request, NisHttp::Response& response) {sendPage(request, response);});
+            http.addPath(NisHttp::Method::GET,    "/{page}",         [&](NisHttp::Request& request, NisHttp::Response& response) {sendPage(request, response);return true;});
 
             listen(getServerInit(certPath, port), http);
             listen(TASock::ServerInfo{port+2}, control);

@@ -30,11 +30,12 @@ class WebServer: public NisServer::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
-    void handleRequest(NisHttp::Request& request, NisHttp::Response& response)
+    bool handleRequest(NisHttp::Request& request, NisHttp::Response& response)
     {
         FS::path        requestPath = FS::path{request.variables()["path"]}.lexically_normal();
         if (requestPath.empty() || (*requestPath.begin()) == "..") {
-            return response.error(400, "Invalid Request Path");
+            response.error(400, "Invalid Request Path");
+            return false;
         }
 
         std::error_code ec;
@@ -43,13 +44,15 @@ class WebServer: public NisServer::NisseServer
             filePath = FS::canonical(filePath /= "index.html", ec);
         }
         if (ec || !FS::is_regular_file(filePath)) {
-            return response.error(404, "No File Found At Path");
+            response.error(404, "No File Found At Path");
+            return false;
         }
 
         TASock::SocketStream    file{TASock::Socket{TASock::FileInfo{filePath.string(), TASock::FileMode::Read}, TASock::Blocking::No}};
         NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
 
         response.body(NisHttp::Encoding::Chunked) << file.rdbuf();
+        return true;
     }
 
     public:
@@ -57,7 +60,7 @@ class WebServer: public NisServer::NisseServer
             : control(*this)
             , contentDir(contentDir)
         {
-            http.addPath(NisHttp::Method::GET, "/{path}", [&](NisHttp::Request& request, NisHttp::Response& response){handleRequest(request, response);});
+            http.addPath(NisHttp::Method::GET, "/{path}", [&](NisHttp::Request& request, NisHttp::Response& response){return handleRequest(request, response);});
             listen(getServerInit(certPath, port), http);
             listen(TASock::ServerInfo{port+2}, control);
         }
