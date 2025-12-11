@@ -26,11 +26,9 @@ std::string PathMatcher::decode(std::string_view matched)
     return result;
 }
 
-void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& action)
+PathMatcher::MatchBase PathMatcher::buildMatchInfo(MethodChoice method, std::string pathMatch)
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath", pathMatch);
-    MatchList   matchSections;
-    NameList    names;
+    MatchBase result{std::move(method), {}, {}};
 
     std::size_t prefix   = 0;
     std::size_t nameBeg  = 0;
@@ -46,7 +44,7 @@ void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& a
         if (!first && prefix == nameBeg) {
             ThorsLogAndThrowDebug(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Multiple name sections with no gap");
         }
-        matchSections.emplace_back(pathMatch.substr(prefix, nameBeg - prefix));
+        result.matchSections.emplace_back(pathMatch.substr(prefix, nameBeg - prefix));
         first = false;
         if (nameBeg == size) {
             break;
@@ -59,13 +57,43 @@ void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& a
             ThorsLogAndThrowDebug(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Name section with no name");
         }
 
-        names.emplace_back(pathMatch.substr(nameBeg + 1, nameEnd - nameBeg - 1));
+        result.names.emplace_back(pathMatch.substr(nameBeg + 1, nameEnd - nameBeg - 1));
         prefix = nameEnd + 1;
     }
     if (nameBeg != size) {
-        matchSections.emplace_back("");
+        result.matchSections.emplace_back("");
     }
-    paths.emplace_back(method, std::move(matchSections), std::move(names), std::move(action));
+    return result;
+}
+
+void PathMatcher::remPath(MethodChoice method, std::string pathMatch)
+{
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "remPath", pathMatch);
+    MatchBase   basicMatchInfo = buildMatchInfo(std::move(method), std::move(pathMatch));
+
+    for (std::size_t loop = 0; loop < paths.size(); ++loop) {
+        if (paths[loop] == basicMatchInfo) {
+            paths[loop].action = [](Match const&, Request&, Response&){return false;};
+            return;
+        }
+    }
+}
+
+void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& action)
+{
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath", pathMatch);
+    MatchBase   basicMatchInfo = buildMatchInfo(std::move(method), std::move(pathMatch));
+
+    for (std::size_t loop = 0; loop < paths.size(); ++loop) {
+        if (paths[loop] == basicMatchInfo) {
+            paths[loop].action = std::move(action);
+            return;
+        }
+    }
+    paths.emplace_back(std::move(basicMatchInfo.method),
+                       std::move(basicMatchInfo.matchSections),
+                       std::move(basicMatchInfo.names),
+                       std::move(action));
 }
 
 bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response)
@@ -101,8 +129,7 @@ bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_vie
         return false;
     }
 
-    pathMatchInfo.action(result, request, response);
-    return true;
+    return pathMatchInfo.action(result, request, response);
 }
 
 bool PathMatcher::findMatch(std::string_view path, Request& request, Response& response)

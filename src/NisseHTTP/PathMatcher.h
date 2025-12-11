@@ -18,15 +18,27 @@ using Match     = std::map<std::string, std::string>;
 
 class PathMatcher
 {
-    using Action    = std::function<void(Match const&, Request&, Response&)>;
+    using Action    = std::function<bool(Match const&, Request&, Response&)>;
     using NameList  = std::vector<std::string>;
     using MatchList = std::vector<std::string>;
 
-    struct MatchInfo
+    struct MatchBase
     {
         MethodChoice    method;
         MatchList       matchSections;
         NameList        names;
+
+        bool operator==(MatchBase const& rhs) const
+        {
+            return std::tie(method, matchSections, names) == std::tie(rhs.method, rhs.matchSections, rhs.names);
+        }
+    };
+    struct MatchInfo: public MatchBase
+    {
+        MatchInfo(MethodChoice method, MatchList matchSections, NameList names, Action action)
+            : MatchBase(std::move(method), std::move(matchSections), std::move(names))
+            , action(std::move(action))
+        {}
         Action          action;
     };
 
@@ -34,10 +46,12 @@ class PathMatcher
 
     public:
         void addPath(MethodChoice method, std::string pathMatch, Action&& action);
+        void remPath(MethodChoice method, std::string pathMatch);
 
         bool findMatch(std::string_view path, Request& request, Response& response);
     private:
-        bool checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response);
+        MatchBase   buildMatchInfo(MethodChoice method, std::string pathMatch);
+        bool        checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response);
         std::string decode(std::string_view matched);
 };
 
