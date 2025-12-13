@@ -9,6 +9,7 @@
  */
 
 #include "NisseConfig.h"
+#include "ThorsIOUtil/Utility.h"
 #include <event2/event.h>
 #include <utility>
 
@@ -51,6 +52,12 @@ class EventBase
         {
             event_base_loopbreak(eventBase);
         }
+
+        bool isEPoll() const
+        {
+            using namespace std::string_literals;
+            return "epoll"s == event_base_get_method(eventBase);
+        }
 };
 
 class Event
@@ -83,12 +90,18 @@ class Event
 
         void add()
         {
-            event_add(event, nullptr);
+            int result = event_add(event, nullptr);
+            if (result != 0) {
+                ThorsLogError("Event", "add", "Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
+            }
         }
         void add(int microsecondsPause)
         {
             LibEventTimeOut timeout = {0, microsecondsPause};
-            evtimer_add(event, &timeout);
+            int result = evtimer_add(event, &timeout);
+            if (result != 0) {
+                ThorsLogError("Event", "add", "Timer: ", microsecondsPause, " Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
+            }
         }
 };
 

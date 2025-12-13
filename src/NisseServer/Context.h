@@ -25,6 +25,7 @@ class Context
         void unregisterOwnedSocketStream(TASock::SocketStream& stream);
         void registerOwnedSocket(TASock::Socket& socket, EventType initialWait);
         void unregisterOwnedSocket(TASock::Socket& socket);
+        bool isEPoll() const;
         static void registerSharedSocket(NisseServer& server, TASock::Socket& socket);
         static void unregisterSharedSocket(NisseServer& server, TASock::Socket& socket);
 

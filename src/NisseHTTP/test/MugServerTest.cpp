@@ -231,7 +231,7 @@ class MugServer: public NisServer::NisseServer
         // Issue on linux.
         //    The stream was closed before it is registered for async use.
         //    This causes issues and an exception is thrown.
-        //NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
+        NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
         response.body(NisHttp::Encoding::Chunked) << file.rdbuf();
     }
 

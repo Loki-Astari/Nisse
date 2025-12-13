@@ -83,6 +83,11 @@ void Context::unregisterSharedSocket(NisseServer& server, TASock::Socket& socket
     server.eventHandler.remSharedFD(socket.socketId());
 }
 
+bool Context::isEPoll() const
+{
+    return server.isEPoll();
+}
+
 void Context::registerYield(int fd, EventType initialWait, TASock::Socket& socket, TASock::YieldFunc&& readYield, TASock::YieldFunc&& writeYield)
 {
     server.eventHandler.addOwnedFD(fd, owner, initialWait);
@@ -102,6 +107,10 @@ AsyncStream::AsyncStream(TASock::SocketStream& stream, Context& context, EventTy
     : stream{stream}
     , context{context}
 {
+    if (stream.getSocket().protocol()[0] != 'h' && context.isEPoll()) {
+        ThorsLogDebug("AsyncStream", "AsyncStream", "EPoll does not support events on non socket file descriptors");
+        return;
+    }
     context.registerOwnedSocketStream(stream, initialWait);
     stream.getSocket().deferInit();
 }

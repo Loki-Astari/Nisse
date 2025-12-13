@@ -82,6 +82,8 @@ class EventHandler
         void remSharedFD(int fd);
         void remTimer(int timerId);
 
+        bool isEPoll() const {return eventBase.isEPoll();}
+
     private:
 
     private:
