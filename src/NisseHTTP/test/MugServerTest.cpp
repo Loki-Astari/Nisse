@@ -227,7 +227,11 @@ class MugServer: public NisServer::NisseServer
         }
         // Otherwise mark the file stream as Async (thus if the disk is slow we will be de-shcheduled for other work)
         // and simply stream the file to the output stream.
-        NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
+        // TODO
+        // Issue on linux.
+        //    The stream was closed before it is registered for async use.
+        //    This causes issues and an exception is thrown.
+        //NisServer::AsyncStream  async(file, request.getContext(), NisServer::EventType::Read);
         response.body(NisHttp::Encoding::Chunked) << file.rdbuf();
     }
 
