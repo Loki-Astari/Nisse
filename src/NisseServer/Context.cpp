@@ -119,6 +119,12 @@ AsyncStream::AsyncStream(TASock::SocketStream& stream, Context& context, EventTy
 
 AsyncStream::~AsyncStream()
 {
+    // If this is a file i.e.: stream.getSocket().protocol() == "file" (cheating by checking for 'f')
+    // Then we need to check if we can react to events on 'File' so check if that feature is enabled.
+    if (stream.getSocket().protocol()[0] == 'f' && !context.isFeatureEnabled(Feature::FileReadWriteEvent)) {
+        ThorsLogDebug("AsyncStream", "~AsyncStream", "EPoll does not support events on non socket file descriptors");
+        return;
+    }
     context.unregisterOwnedSocketStream(stream);
 }
 

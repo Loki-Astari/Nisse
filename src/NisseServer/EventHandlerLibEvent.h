@@ -114,6 +114,13 @@ class Event
         {
             int result = event_add(event, nullptr);
             if (result != 0) {
+                /*
+                 * If this is flagged this will probably cause issues in the code.
+                 * See AsyncStream::AsyncStream (in Context.cpp) for a situation where this caused an error.
+                 *      In this case we check for a specific situation and don't try and install listener.
+                 * Please figure out why this is being logged and try and prevent this issue from happening as
+                 * the side effects of this failing is going to be unpredictable.
+                 */
                 ThorsLogError("Event", "add", "Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
             }
         }
