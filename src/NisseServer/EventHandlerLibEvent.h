@@ -24,6 +24,15 @@ class EventHandler;
 struct TimerData;
 enum class EventType : short{Read = EV_READ, Write = EV_WRITE};
 
+/*
+ * This may expand as we find limitations.
+ *
+ * When libEvent uses 'epoll', then we can do not support listening for Read/Write on a `File`.
+ * So Feature flag:
+ *      FileReadWriteEvent:         true on all systems apart from 'epoll' systems.
+ */
+enum Feature { FileReadWriteEvent = 1};
+
 
 class Event;
 class EventBase
@@ -53,10 +62,23 @@ class EventBase
             event_base_loopbreak(eventBase);
         }
 
-        bool isEPoll() const
+        bool isFeatureEnabled(Feature feature) const
         {
             using namespace std::string_literals;
-            return "epoll"s == event_base_get_method(eventBase);
+            static const std::size_t flags = buildFeatureFlags();
+            return flags & static_cast<std::size_t>(feature);
+        }
+    private:
+        std::size_t buildFeatureFlags() const
+        {
+            using namespace std::string_literals;
+            std::size_t result = 0;
+
+            // epoll does not support Read/Write events on file.
+            if ("epoll"s != event_base_get_method(eventBase)) {
+                result |= static_cast<std::size_t>(FileReadWriteEvent);
+            }
+            return result;
         }
 };
 

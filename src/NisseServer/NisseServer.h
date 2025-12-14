@@ -42,7 +42,7 @@ class NisseServer
         void run(std::function<void()>&& notice = [](){});
         void stopSoft();
         void stopHard();
-        bool isEPoll() const {return eventHandler.isEPoll();}
+        bool isFeatureEnabled(Feature feature) const {return eventHandler.isFeatureEnabled(feature);}
         void listen(TASock::ServerInit&& listenerInit, Pynt& pynt);
         template<typename T, typename rep>
         int  addTimer(std::chrono::duration<T, rep> time, TimerAction& action)

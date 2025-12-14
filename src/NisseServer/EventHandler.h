@@ -82,7 +82,7 @@ class EventHandler
         void remSharedFD(int fd);
         void remTimer(int timerId);
 
-        bool isEPoll() const {return eventBase.isEPoll();}
+        bool isFeatureEnabled(Feature feature) const {return eventBase.isFeatureEnabled(feature);}
 
     private:
 
