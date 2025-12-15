@@ -17,8 +17,6 @@ class HeaderRequest;
 
 class HTTPHandler: public PyntHTTP
 {
-    using HTTPAction = std::function<bool(Request& request, Response& response)>;
-
     PathMatcher             pathMatcher;
 
     public:
@@ -36,6 +34,8 @@ class HTTPHandler: public PyntHTTP
         void addQueryParam(RequestVariables& var, std::string_view query);
         void addPathMatch(RequestVariables& var, Match const& matches);
         void addFormVariables(RequestVariables& var, std::istream& stream);
+
+        bool callUserACtion(HTTPAction& action, Match const& matches, Request& request, Response& response);
 };
 
 }

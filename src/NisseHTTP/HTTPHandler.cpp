@@ -135,21 +135,29 @@ void HTTPHandler::remPath(MethodChoice method, std::string const& path)
 
 void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPAction&& action)
 {
-    pathMatcher.addPath(method, path, [&, act = std::move(action)](Match const& matches, Request& request, Response& response)
-    {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function");
-        // Get the variable object
-        RequestVariables&   var     = request.variables();
+    pathMatcher.addPath(method,
+                        path,
+                        [](PathMatcher::Data& data, Match const& matches, Request& request, Response& response)
+                        {
+                            return data.parent->callUserACtion(data.action, matches, request, response);
+                        },
+                        std::make_unique<PathMatcher::Data>(this, std::move(action)));
+}
 
-        addHeaders(var, request.headers());
-        addQueryParam(var,  request.getUrl().query());
-        addPathMatch(var, matches);
+bool HTTPHandler::callUserACtion(HTTPAction& action, Match const& matches, Request& request, Response& response)
+{
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function");
+    // Get the variable object
+    RequestVariables&   var     = request.variables();
 
-        if (var["content-type"] == "application/x-www-form-urlencoded") {
-            addFormVariables(var, request.body());
-        }
+    addHeaders(var, request.headers());
+    addQueryParam(var,  request.getUrl().query());
+    addPathMatch(var, matches);
 
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function");
-        return act(request, response);
-    });
+    if (var["content-type"] == "application/x-www-form-urlencoded") {
+        addFormVariables(var, request.body());
+    }
+
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function");
+    return action(request, response);
 }

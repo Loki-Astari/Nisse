@@ -73,27 +73,30 @@ void PathMatcher::remPath(MethodChoice method, std::string pathMatch)
 
     for (std::size_t loop = 0; loop < paths.size(); ++loop) {
         if (paths[loop] == basicMatchInfo) {
-            paths[loop].action = [](Match const&, Request&, Response&){return false;};
+            paths[loop].action = [](Data&, Match const&, Request&, Response&){return false;};
+            paths[loop].data   = nullptr;
             return;
         }
     }
 }
 
-void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action&& action)
+void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action action, std::unique_ptr<Data> data)
 {
     ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath", pathMatch);
     MatchBase   basicMatchInfo = buildMatchInfo(std::move(method), std::move(pathMatch));
 
     for (std::size_t loop = 0; loop < paths.size(); ++loop) {
         if (paths[loop] == basicMatchInfo) {
-            paths[loop].action = std::move(action);
+            paths[loop].action = action;
+            paths[loop].data   = std::move(data);
             return;
         }
     }
     paths.emplace_back(std::move(basicMatchInfo.method),
                        std::move(basicMatchInfo.matchSections),
                        std::move(basicMatchInfo.names),
-                       std::move(action));
+                       action,
+                       std::move(data));
 }
 
 bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response)
@@ -128,8 +131,10 @@ bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_vie
     if (!path.empty()) {
         return false;
     }
-
-    return pathMatchInfo.action(result, request, response);
+    static Data nullOption(nullptr, [](Request&, Response&){return false;});
+    Data*  dataPtr = pathMatchInfo.data.get();
+    Data&  dataRef = dataPtr == nullptr ? nullOption : *dataPtr;
+    return pathMatchInfo.action(dataRef, result, request, response);
 }
 
 bool PathMatcher::findMatch(std::string_view path, Request& request, Response& response)
