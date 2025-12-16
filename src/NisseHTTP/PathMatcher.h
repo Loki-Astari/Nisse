@@ -8,6 +8,7 @@
 #include <string>
 #include <string_view>
 #include <functional>
+#include <memory>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
