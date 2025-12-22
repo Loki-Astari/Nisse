@@ -40,7 +40,7 @@ std::string_view Request::readFirstLine(std::istream& stream)
     }
     else
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::PyntHTTP::Request", "readFirstLine", ": Header not \r\n terminated");
+        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", ": Header not \r\n terminated");
         failResponse.add("error", "Invalid HTTP Request");
         failResponse.add("rason", "Header Not terminated with <CR><LF>");
         return "";
@@ -96,7 +96,7 @@ bool Request::readHeaders(HeaderRequest& dst, std::istream& stream)
         auto split = line.find(':');
         if (line.size() == 0 || line[line.size() - 1] != '\r' || split == std::string::npos)
         {
-            ThorsLogInfo("ThorsAnvil::Nisse::PyntHTTP::Request", "readHeaders", ": Bad Request Header: ", line);
+            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "readHeaders", ": Bad Request Header: ", line);
             failResponse.add("error", "Invalid HTTP Header");
             failResponse.add("header", line);
             return false;
@@ -112,7 +112,7 @@ bool Request::buildURL(std::string_view proto, std::string_view path)
     std::vector<std::string> const& hostValues = head.getHeader("host"sv);
     if (hostValues.size() == 0)
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::PyntHTTP::Request", "buildURL", ": Bad Request No Host Field: ");
+        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildURL", ": Bad Request No Host Field: ");
         failResponse.add("error", "Invalid HTTP Request- No Host header");
         return false;
     }
@@ -165,7 +165,7 @@ bool Request::buildStream(std::istream& stream)
     auto&   transferEncoding = head.getHeader("transfer-encoding");
     if (contentLength.size() != 0 && transferEncoding.size() != 0)
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::PyntHTTP::Request", "buildStream", ": Bad Request: Includes both 'content-length' and 'transfer-encoding'");
+        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Bad Request: Includes both 'content-length' and 'transfer-encoding'");
         failResponse.add("error", "Invalid HTTP Request- Includes both 'content-length' and 'transfer-encoding'");
         failResponse.add("value-content-length", contentLength[0]);
         for (auto const& v: transferEncoding) {
@@ -195,7 +195,7 @@ bool Request::buildStream(std::istream& stream)
     // TODO Handle other transfer encoding.
     // Currently what will happen is that you can not read from the input stream.
     // Which means POST/PUT etc commands can not transfer data.
-    ThorsLogInfo("ThorsAnvil::Nisse::PyntHTTP::Request", "buildStream", ": Bad Request: Unsupported Transfer Encoding.");
+    ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Bad Request: Unsupported Transfer Encoding.");
     failResponse.add("error", "Invalid HTTP Request- Unsupported Transer Encoding");
     for (auto const& v: transferEncoding) {
         failResponse.add("value-transfer-encoding", v);

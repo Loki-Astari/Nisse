@@ -60,7 +60,7 @@ void EventHandler::run(std::function<void()>&& notice)
 
 void EventHandler::stopSoft()
 {
-    ThorsLogDebug("EventHandler", "stopSoft", "Initiating a soft stop. Connection Count: ", store.getOpenConnections());
+    ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "stopSoft", "Initiating a soft stop. Connection Count: ", store.getOpenConnections());
     if (store.getOpenConnections() == 0) {
         stopHard();
         return;
@@ -70,7 +70,7 @@ void EventHandler::stopSoft()
 
 void EventHandler::stopHard()
 {
-    ThorsLogDebug("EventHandler", "stopHard", "Initiating a hard stop. Connection Count: ", store.getOpenConnections());
+    ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "stopHard", "Initiating a hard stop. Connection Count: ", store.getOpenConnections());
     finished = true;
 }
 
@@ -89,7 +89,7 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
 {
     // If we are stopping then we will not accept any more connections.
     if (stopping) {
-        ThorsLogDebug("EventHandler", "add", "Ignoring new connection as we are stopping");
+        ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "add", "Ignoring new connection as we are stopping");
         return;
     }
     int fd = stream.getSocket().socketId();
@@ -150,7 +150,7 @@ void EventHandler::remTimer(int timerId)
 
 void EventHandler::eventAction(int fd, EventType type)
 {
-    ThorsLogTrace("EventHandler", "eventAction", "Event callback", fd);
+    ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "eventAction", "Event callback", fd);
     StoreData& info = store.getStoreData(fd);
     std::visit(ApplyEvent{*this, fd, type},  info);
     /* The std::visit ApplyEvent object to call the appropriate of
@@ -161,13 +161,13 @@ void EventHandler::eventAction(int fd, EventType type)
 
 void EventHandler::handleServerEvent(ServerData& info, int fd, EventType)
 {
-    ThorsLogTrace("EventHandler", "handleServerEvent", "Connection established");
+    ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handleServerEvent", "Connection established");
     addJob(info.coRoutine, fd);
 }
 
 void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
 {
-    ThorsLogTrace("EventHandler", "handleStreamEvent", "Streaming data");
+    ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handleStreamEvent", "Streaming data");
     if (checkFileDescriptorOK(fd, type)) {
         addJob(info.coRoutine, fd);
     }
@@ -175,13 +175,13 @@ void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
 
 void EventHandler::handleLinkStreamEvent(OwnedFD& info, int fd, EventType)
 {
-    ThorsLogTrace("EventHandler", "handleLinkStreamEvent", "Link stream");
+    ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handleLinkStreamEvent", "Link stream");
     addJob(*(info.linkedStreamCoRoutine), fd);
 }
 
 void EventHandler::handlePipeStreamEvent(SharedFD& info, int fd, EventType type)
 {
-    ThorsLogTrace("EventHandler", "handlePipeStreamEvent", "Pipe Streaming");
+    ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handlePipeStreamEvent", "Pipe Streaming");
     std::deque<CoRoutine*>& nextData = (type == EventType::Read) ? info.readWaiting : info.writeWaiting;
     Event&                  nextEvent= (type == EventType::Read) ? info.readEvent   : info.writeEvent;
     if (nextData.size() != 0)
@@ -198,7 +198,7 @@ void EventHandler::handlePipeStreamEvent(SharedFD& info, int fd, EventType type)
 
 void EventHandler::handleTimerEvent(TimerData& info, int timerId, EventType /*type*/)
 {
-    ThorsLogTrace("EventHandler", "handleTimerEvent", "Timer Activated");
+    ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handleTimerEvent", "Timer Activated");
     info.timerAction->handleRequest(timerId);
 }
 
@@ -217,7 +217,7 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
     if (result == 0 || (result == -1 && errno != EAGAIN && errno != EWOULDBLOCK))
     {
         // Remove a socket if the other end has been closed.
-        ThorsLogInfo("ThorsAnvil::Nissa::EventHandler", "checkFileDescriptorOK", "Client closed connection");
+        ThorsLogInfo("ThorsAnvil::Nisse::Server::ThorsAnvil::Nissa::EventHandler", "checkFileDescriptorOK", "Client closed connection");
         store.requestChange(StateUpdateExternallClosed{fd});
         return false;
     }
@@ -296,13 +296,13 @@ void EventHandler::controlTimerAction()
 {
     ThorsMessage(8, "EventHandler", "controlTimerAction", "Checking state of connections");
     if (stopping) {
-        ThorsLogDebug("EventHandler", "controlTimerAction", "Checking up on soft stop. Connection Count: ", store.getOpenConnections());
+        ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "controlTimerAction", "Checking up on soft stop. Connection Count: ", store.getOpenConnections());
         if (store.getOpenConnections() == 0) {
             finished = true;
         }
     }
     if (finished) {
-        ThorsLogDebug("EventHandler", "controlTimerAction", "Event Loop breaking now");
+        ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "controlTimerAction", "Event Loop breaking now");
         eventBase.loopBreak();
         return;
     }

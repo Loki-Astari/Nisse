@@ -67,7 +67,7 @@ namespace ThorsAnvil::Nisse::HTTP
 void ClientRequest::addHeaders(Header const& headers)
 {
     if (stream.rdbuf() != nullptr) {
-        ThorsLogAndThrowWarning(std::runtime_error, "ThorsAnvil::Nisse::ClientRequest", "addHeaders", "Headers can not be sent after the body has been started");
+        ThorsLogAndThrowWarning(std::runtime_error, "ThorsAnvil::Nisse::HTTP::ClientRequest", "addHeaders", "Headers can not be sent after the body has been started");
     }
 
     flushHeaderIfNeeded();
