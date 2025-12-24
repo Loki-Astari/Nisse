@@ -21,7 +21,7 @@ Request::Request(Server::Context& context, std::string_view proto, std::istream&
 
 void Request::init(std::string_view proto, std::istream& stream)
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Request", "init", "Creating a request");
+    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Request", "init", "Creating a request");
     std::string_view path = readFirstLine(stream);
     if (path.size() != 0)
     {
@@ -40,7 +40,7 @@ std::string_view Request::readFirstLine(std::istream& stream)
     }
     else
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", ": Header not \r\n terminated");
+        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", ": Header not \\r\\n terminated");
         failResponse.add("error", "Invalid HTTP Request");
         failResponse.add("rason", "Header Not terminated with <CR><LF>");
         return "";
@@ -71,10 +71,10 @@ std::string_view Request::readFirstLine(std::istream& stream)
     version = findVersion(pv);
     method = findMethod(meth);
 
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", "Request: Method:", method, " Path:", path, " Protocol:", prot, " Version:", version);
+    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", "Request: Method:", method, " Path:", path, " Protocol:", prot, " Version:", version);
     if (meth.size() == 0 || path.size() == 0 || pv.size() == 0 || version == Version::Unknown || method == Method::Other)
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::PyntHTTP::Request", "readFirstLine", ": Bad Request: ", "Method: >", meth, "< Path: >", path, "< Proto: >", pv, "<");
+        ThorsLogTrack("ThorsAnvil::Nisse::PyntHTTP::Request", "readFirstLine", ": Bad Request: ", "Method: >", meth, "< Path: >", path, "< Proto: >", pv, "<");
         failResponse.add("error", "Invalid HTTP Request");
         failResponse.add("method", meth);
         failResponse.add("path", path);
@@ -96,7 +96,7 @@ bool Request::readHeaders(HeaderRequest& dst, std::istream& stream)
         auto split = line.find(':');
         if (line.size() == 0 || line[line.size() - 1] != '\r' || split == std::string::npos)
         {
-            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "readHeaders", ": Bad Request Header: ", line);
+            ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Request", "readHeaders", ": Bad Request Header: ", line);
             failResponse.add("error", "Invalid HTTP Header");
             failResponse.add("header", line);
             return false;

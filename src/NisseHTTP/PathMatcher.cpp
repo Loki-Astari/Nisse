@@ -42,7 +42,7 @@ PathMatcher::MatchBase PathMatcher::buildMatchInfo(MethodChoice method, std::str
         nameEnd  = std::min(size, pathMatch.find('}', nameBeg));
 
         if (!first && prefix == nameBeg) {
-            ThorsLogAndThrowDebug(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Multiple name sections with no gap");
+            ThorsLogAndThrowError(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Multiple name sections with no gap");
         }
         result.matchSections.emplace_back(pathMatch.substr(prefix, nameBeg - prefix));
         first = false;
@@ -51,10 +51,10 @@ PathMatcher::MatchBase PathMatcher::buildMatchInfo(MethodChoice method, std::str
         }
 
         if (nameEnd == size) {
-            ThorsLogAndThrowDebug(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Badly nested braces.");
+            ThorsLogAndThrowError(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Badly nested braces.");
         }
         if (nameBeg + 1 == nameEnd) {
-            ThorsLogAndThrowDebug(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Name section with no name");
+            ThorsLogAndThrowError(std::runtime_error, "ThorsAnvil::Nisse::HTPP::PathMatcher", "addPath", "Invalid 'pathMatch' string. Name section with no name");
         }
 
         result.names.emplace_back(pathMatch.substr(nameBeg + 1, nameEnd - nameBeg - 1));
@@ -68,7 +68,7 @@ PathMatcher::MatchBase PathMatcher::buildMatchInfo(MethodChoice method, std::str
 
 void PathMatcher::remPath(MethodChoice method, std::string pathMatch)
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "remPath", pathMatch);
+    ThorsLogInfo("ThorsAnvil::Nisse::HTTP::HTTPHandler", "remPath", pathMatch);
     MatchBase   basicMatchInfo = buildMatchInfo(std::move(method), std::move(pathMatch));
 
     for (std::size_t loop = 0; loop < paths.size(); ++loop) {
@@ -82,7 +82,7 @@ void PathMatcher::remPath(MethodChoice method, std::string pathMatch)
 
 void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action action, std::unique_ptr<Data> data)
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath", pathMatch);
+    ThorsLogInfo("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath", pathMatch);
     MatchBase   basicMatchInfo = buildMatchInfo(std::move(method), std::move(pathMatch));
 
     for (std::size_t loop = 0; loop < paths.size(); ++loop) {
@@ -139,16 +139,16 @@ bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_vie
 
 bool PathMatcher::findMatch(std::string_view path, Request& request, Response& response)
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Looking for: ", path);
+    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Looking for: ", path);
     for (auto const& pathMatchInfo: paths)
     {
         // TODO: Match Differences.
         //       POST/GET differences has a specific error code.
         if (checkPathMatch(pathMatchInfo, path, request, response)) {
-            ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Found");
+            ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Found");
             return true;
         }
     }
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "No Match");
+    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "No Match");
     return false;
 }

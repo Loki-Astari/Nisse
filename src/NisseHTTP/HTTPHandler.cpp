@@ -22,7 +22,7 @@ void HTTPHandler::processRequest(Request& request, Response& response)
 void HTTPHandler::addHeaders(RequestVariables& var, HeaderRequest const& headers)
 {
     for (auto const& head: headers) {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addHeaders", head.first, " => ", head.second.back());
+        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addHeaders", head.first, " => ", head.second.back());
         var.insert_or_assign(head.first, head.second.back());
     }
 }
@@ -44,7 +44,7 @@ void HTTPHandler::addQueryParam(RequestVariables& var, std::string_view query)
 
     while (std::regex_search(queryStr, queryParamMatch, queryParamExpr))
     {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addQueryParam", queryParamMatch[1].str(), " => ", queryParamMatch[2].str());
+        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addQueryParam", queryParamMatch[1].str(), " => ", queryParamMatch[2].str());
         var.insert_or_assign(queryParamMatch[1].str(), queryParamMatch[2].str());
         queryStr = queryParamMatch.suffix().str();
     }
@@ -53,7 +53,7 @@ void HTTPHandler::addQueryParam(RequestVariables& var, std::string_view query)
 void HTTPHandler::addPathMatch(RequestVariables& var, Match const& matches)
 {
     for (auto const& match: matches) {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPathMatch", match.first, " => ", match.second);
+        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPathMatch", match.first, " => ", match.second);
         var.insert_or_assign(match.first, match.second);
     }
 }
@@ -123,7 +123,7 @@ void HTTPHandler::addFormVariables(RequestVariables& var, std::istream& stream)
         std::string name = decode(nameView);
         std::string value = decode(valueView);
 
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addFormVariables", name, " => ", value);
+        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addFormVariables", name, " => ", value);
         var.insert_or_assign(std::move(name), std::move(value));
     }
 }
@@ -146,7 +146,7 @@ void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPActi
 
 bool HTTPHandler::callUserACtion(std::string const& path, HTTPAction& action, HTTPValidate& val, Match const& matches, Request& request, Response& response)
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "callUserACtion", "Called: ", path);
+    ThorsLogInfo("ThorsAnvil::Nisse::HTTP::HTTPHandler", "callUserACtion", "Called: ", path);
     // Get the variable object
     RequestVariables&   var     = request.variables();
 

@@ -16,7 +16,7 @@ void PyntHTTPControl::processRequest(Request& request, Response& response)
     std::string_view            query = request.getUrl().query();
     std::string_view::size_type find  = query.find("command=");
     if (!(find != std::string_view::npos && (query[find-1] == '?' || query[find-1] == '&'))) {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PyntHTTPControl", "handleRequest", "No Command Found");
+        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::PyntHTTPControl", "handleRequest", "No Command Found");
         response.setStatus(400);
         return;
     }
@@ -34,7 +34,7 @@ void PyntHTTPControl::processRequest(Request& request, Response& response)
         // No action required Ping done by logging above.
     }
     else {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::PyntHTTPControl", "processRequest", "Unknown action");
+        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::PyntHTTPControl", "processRequest", "Unknown action");
         response.setStatus(400);
     }
     // Default is 200 OK.

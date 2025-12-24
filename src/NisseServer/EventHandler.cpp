@@ -60,7 +60,7 @@ void EventHandler::run(std::function<void()>&& notice)
 
 void EventHandler::stopSoft()
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "stopSoft", "Initiating a soft stop. Connection Count: ", store.getOpenConnections());
+    ThorsLogInfo("ThorsAnvil::Nisse::Server::EventHandler", "stopSoft", "Initiating a soft stop. Connection Count: ", store.getOpenConnections());
     if (store.getOpenConnections() == 0) {
         stopHard();
         return;
@@ -70,7 +70,7 @@ void EventHandler::stopSoft()
 
 void EventHandler::stopHard()
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "stopHard", "Initiating a hard stop. Connection Count: ", store.getOpenConnections());
+    ThorsLogInfo("ThorsAnvil::Nisse::Server::EventHandler", "stopHard", "Initiating a hard stop. Connection Count: ", store.getOpenConnections());
     finished = true;
 }
 
@@ -89,7 +89,7 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
 {
     // If we are stopping then we will not accept any more connections.
     if (stopping) {
-        ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "add", "Ignoring new connection as we are stopping");
+        ThorsLogInfo("ThorsAnvil::Nisse::Server::EventHandler", "add", "Ignoring new connection as we are stopping");
         return;
     }
     int fd = stream.getSocket().socketId();
@@ -296,13 +296,13 @@ void EventHandler::controlTimerAction()
 {
     ThorsMessage(8, "EventHandler", "controlTimerAction", "Checking state of connections");
     if (stopping) {
-        ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "controlTimerAction", "Checking up on soft stop. Connection Count: ", store.getOpenConnections());
+        ThorsLogInfo("ThorsAnvil::Nisse::Server::EventHandler", "controlTimerAction", "Checking up on soft stop. Connection Count: ", store.getOpenConnections());
         if (store.getOpenConnections() == 0) {
             finished = true;
         }
     }
     if (finished) {
-        ThorsLogDebug("ThorsAnvil::Nisse::Server::EventHandler", "controlTimerAction", "Event Loop breaking now");
+        ThorsLogInfo("ThorsAnvil::Nisse::Server::EventHandler", "controlTimerAction", "Event Loop breaking now");
         eventBase.loopBreak();
         return;
     }

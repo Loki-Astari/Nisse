@@ -15,26 +15,29 @@ Response::Response(std::ostream& stream, Version version, int responseCode)
     , statusCode{standardCodes[responseCode]}
     , headerSent{false}
     , baseStream{stream}
+    , checkPoint(std::chrono::high_resolution_clock::now())
 {}
 
 Response::~Response()
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "~Response", "Responce object destruction");
     if (stream.rdbuf() == nullptr)
     {
         sendHeaderIfNotSent();
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "~Response", "Setting content length to zero and flushing");
+        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Response", "~Response", "Setting content length to zero and flushing");
         baseStream << "content-length: 0\r\n"
                    << "\r\n"
                    << std::flush;
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - checkPoint;
+    ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Response", "~Response", "Response Time: ", std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count(), "ms");
 }
 
 void Response::sendHeaderIfNotSent()
 {
     if (!headerSent)
     {
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "sendHeaderIfNotSent", "Sending header: ", statusCode);
+        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Response", "sendHeaderIfNotSent", "Sending header: ", statusCode);
         baseStream << version << " " << statusCode << "\r\n";
         headerSent = true;
     }
@@ -92,9 +95,8 @@ void Response::addHeaders(Header const& headers)
 
 std::ostream& Response::body(BodyEncoding bodyEncoding)
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "body", "adding body");
+    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Response", "body", "adding body");
     sendHeaderIfNotSent();
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::Response", "body", "adding body to stream");
     baseStream << bodyEncoding
                << "\r\n"
                // TODO:  Do I really want to force a flush here.

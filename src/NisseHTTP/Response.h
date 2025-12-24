@@ -6,6 +6,7 @@
 #include "StreamOutput.h"
 #include <iostream>
 #include <string_view>
+#include <chrono>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
@@ -18,6 +19,8 @@ class Response
 
     std::ostream&   baseStream;
     StreamOutput    stream;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock>  checkPoint;
 
     void sendHeaderIfNotSent();
 
