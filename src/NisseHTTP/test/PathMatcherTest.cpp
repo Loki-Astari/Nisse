@@ -19,7 +19,7 @@ struct TestObject
 struct TestData: public PathMatcher::Data
 {
     TestData(TestObject& object)
-        : PathMatcher::Data(nullptr, [](Request&, Response&){return true;})
+        : PathMatcher::Data(nullptr, "", [](Request&, Response&){return true;}, [](Request&){return true;})
         , object(object)
     {}
     TestObject&         object;

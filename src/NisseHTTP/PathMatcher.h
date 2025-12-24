@@ -15,8 +15,9 @@ namespace ThorsAnvil::Nisse::HTTP
 
 class Request;
 class Response;
-using Match      = std::map<std::string, std::string>;
-using HTTPAction = std::function<bool(Request& request, Response& response)>;
+using HTTPValidate  = std::function<bool(Request& request)>;
+using Match         = std::map<std::string, std::string>;
+using HTTPAction    = std::function<bool(Request& request, Response& response)>;
 
 class HTTPHandler;
 class PathMatcher
@@ -24,13 +25,17 @@ class PathMatcher
     public:
         struct Data
         {
-            Data(HTTPHandler* parent, HTTPAction&& action)
+            Data(HTTPHandler* parent, std::string const& path, HTTPAction&& action, HTTPValidate&& val)
                 : parent(parent)
+                , path(path)
                 , action(std::move(action))
+                , val(std::move(val))
             {}
             virtual ~Data() {}
             HTTPHandler*    parent;
+            std::string     path;
             HTTPAction      action;
+            HTTPValidate    val;
         };
     private:
 

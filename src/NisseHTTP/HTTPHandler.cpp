@@ -133,20 +133,20 @@ void HTTPHandler::remPath(MethodChoice method, std::string const& path)
     pathMatcher.remPath(method, path);
 }
 
-void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPAction&& action)
+void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPAction&& action, HTTPValidate&& val)
 {
     pathMatcher.addPath(method,
                         path,
                         [](PathMatcher::Data& data, Match const& matches, Request& request, Response& response)
                         {
-                            return data.parent->callUserACtion(data.action, matches, request, response);
+                            return data.parent->callUserACtion(data.path, data.action, data.val, matches, request, response);
                         },
-                        std::make_unique<PathMatcher::Data>(this, std::move(action)));
+                        std::make_unique<PathMatcher::Data>(this, path, std::move(action), std::move(val)));
 }
 
-bool HTTPHandler::callUserACtion(HTTPAction& action, Match const& matches, Request& request, Response& response)
+bool HTTPHandler::callUserACtion(std::string const& path, HTTPAction& action, HTTPValidate& val, Match const& matches, Request& request, Response& response)
 {
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function");
+    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "callUserACtion", "Called: ", path);
     // Get the variable object
     RequestVariables&   var     = request.variables();
 
@@ -154,10 +154,15 @@ bool HTTPHandler::callUserACtion(HTTPAction& action, Match const& matches, Reque
     addQueryParam(var,  request.getUrl().query());
     addPathMatch(var, matches);
 
+    if (!val(request)) {
+        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::HTTPHandler", "callUserACtion", "Validation fail");
+        response.setStatus(400);
+        return true;
+    }
+
     if (var["content-type"] == "application/x-www-form-urlencoded") {
         addFormVariables(var, request.body());
     }
 
-    ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath>Lambda<", "Calling User Function");
     return action(request, response);
 }

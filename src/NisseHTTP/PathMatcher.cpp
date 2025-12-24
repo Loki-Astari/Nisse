@@ -131,7 +131,7 @@ bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_vie
     if (!path.empty()) {
         return false;
     }
-    static Data nullOption(nullptr, [](Request&, Response&){return false;});
+    static Data nullOption(nullptr, "", [](Request&, Response&){return false;}, [](Request&){return true;});
     Data*  dataPtr = pathMatchInfo.data.get();
     Data&  dataRef = dataPtr == nullptr ? nullOption : *dataPtr;
     return pathMatchInfo.action(dataRef, result, request, response);
