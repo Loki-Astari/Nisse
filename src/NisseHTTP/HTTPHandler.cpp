@@ -123,7 +123,7 @@ void HTTPHandler::addFormVariables(RequestVariables& var, std::istream& stream)
         std::string name = decode(nameView);
         std::string value = decode(valueView);
 
-        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addFormVariables", name, " => ", value);
+        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addFormVariables", name, " => ", value);
         var.insert_or_assign(std::move(name), std::move(value));
     }
 }
