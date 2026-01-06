@@ -70,7 +70,7 @@ class WebServer: public NisServer::NisseServer
 int main(int argc, char* argv[])
 {
 #if 0
-    loguru::g_stderr_verbosity = 9;
+    ThorsLogLevel(9);
 #endif
     if (argc != 3 && argc != 4)
     {
