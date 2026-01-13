@@ -154,7 +154,7 @@ Method Request::findMethod(std::string_view method)
     return Method::Other;
 }
 
-std::string_view Request::preloadStreamIntoBuffer()
+std::string_view Request::preloadStreamIntoBuffer() const
 {
     return input.preloadStreamIntoBuffer();
 }

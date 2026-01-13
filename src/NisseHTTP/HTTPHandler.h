@@ -22,10 +22,10 @@ class HTTPHandler: public PyntHTTP
     public:
         virtual void       processRequest(Request& request, Response& response) override;
 
-        void addPath(std::string const& path, HTTPAction&& action, HTTPValidate&& val = [](Request&){return true;}) {addPath(All::Method, path, std::move(action), std::move(val));}
-        void remPath(std::string const& path)                                                                       {remPath(All::Method, path);}
+        void addPath(std::string const& path, HTTPAction&& action, HTTPValidate&& val = [](Request const&){return true;}) {addPath(All::Method, path, std::move(action), std::move(val));}
+        void remPath(std::string const& path)                                                                             {remPath(All::Method, path);}
 
-        void addPath(MethodChoice method, std::string const& path, HTTPAction&& action, HTTPValidate&& val = [](Request&){return true;});
+        void addPath(MethodChoice method, std::string const& path, HTTPAction&& action, HTTPValidate&& val = [](Request const&){return true;});
         void remPath(MethodChoice method, std::string const& path);
     private:
         std::string normalize(std::string_view path);

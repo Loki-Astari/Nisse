@@ -44,6 +44,7 @@ class Request
         HeaderResponse const&   failHeader()    const   {return failResponse;}
         bool                    isValidRequest()const   {return failResponse.empty();}
 
+        RequestVariables const& variables()     const   {return var;}
         RequestVariables&       variables()             {return var;}
                                                     // Trailers will return an empty HeaderRequest() if body has not been read.
                                                     // if (body().eof()) Then trailers have been read.
@@ -52,7 +53,7 @@ class Request
                                                     // It will auto eof() when no more data is available in the body.
                                                     // Note this stream will auto decode the incoming message body based
                                                     // on the 'content-encoding'
-        std::string_view        preloadStreamIntoBuffer();
+        std::string_view        preloadStreamIntoBuffer() const;
 
         friend std::ostream& operator<<(std::ostream& stream, Request const& request)   {request.print(stream);return stream;}
         void print(std::ostream& stream) const;

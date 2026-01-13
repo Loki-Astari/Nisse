@@ -213,7 +213,7 @@ class MugServer: public NisServer::NisseServer
     // LibraryChecker              libraryChecker;
     Hanlders                    servers;
 
-    void handleRequestPath(NisHttp::Request& request, NisHttp::Response& response)
+    void handleRequestPath(NisHttp::Request const& request, NisHttp::Response& response)
     {
         std::error_code         ec;
         FS::path                filePath = FS::canonical(FS::path{"./test/data/pages/page1"}, ec);
@@ -249,7 +249,7 @@ class MugServer: public NisServer::NisseServer
 
             servers.back().addPath(NisHttp::Method::GET,
                                    FS::path("/files/{FilePath}").lexically_normal(),
-                                   [&](NisHttp::Request& request, NisHttp::Response& response)
+                                   [&](NisHttp::Request const& request, NisHttp::Response& response)
                                    {handleRequestPath(request, response);return true;}
                                   );
             listen(TASock::ServerInfo{8070}, servers.back());

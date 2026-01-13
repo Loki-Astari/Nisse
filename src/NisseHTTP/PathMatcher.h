@@ -15,9 +15,9 @@ namespace ThorsAnvil::Nisse::HTTP
 
 class Request;
 class Response;
-using HTTPValidate  = std::function<bool(Request& request)>;
+using HTTPValidate  = std::function<bool(Request const& request)>;
 using Match         = std::map<std::string, std::string>;
-using HTTPAction    = std::function<bool(Request& request, Response& response)>;
+using HTTPAction    = std::function<bool(Request const& request, Response& response)>;
 
 class HTTPHandler;
 class PathMatcher

@@ -14,7 +14,7 @@ TEST(HTTPHandlerTest, SimplePathExactMatch)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request&, Response&){++count;return true;});
+    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request const&, Response&){++count;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -32,7 +32,7 @@ TEST(HTTPHandlerTest, SimplePathExactMatchWithQuery)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request&, Response&){++count;return true;});
+    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request const&, Response&){++count;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?user=Loki HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -51,7 +51,7 @@ TEST(HTTPHandlerTest, SimplePathExactMatchQueryOverride)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request&, Response&){++count;return true;});
+    httpHandler.addPath(Method::GET, "/path1/path2/path3", [&count](Request const&, Response&){++count;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -70,7 +70,7 @@ TEST(HTTPHandlerTest, PathMatch)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request&, Response&){++count;return true;});
+    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request const&, Response&){++count;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -89,7 +89,7 @@ TEST(HTTPHandlerTest, PathMatchWithQuery)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request&, Response&){++count;return true;});
+    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request const&, Response&){++count;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?user=Loki HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -109,7 +109,7 @@ TEST(HTTPHandlerTest, PathMatchQueryOverride)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request&, Response&){++count;return true;});
+    httpHandler.addPath(Method::GET, "/path1/{name}/path3", [&count](Request const&, Response&){++count;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -128,7 +128,7 @@ TEST(HTTPHandlerTest, PathMatchMAtchOverride)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&count](Request&, Response&){++count;return true;});
+    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&count](Request const&, Response&){++count;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -146,7 +146,7 @@ TEST(HTTPHandlerTest, FormParameterPassed)
 {
     HTTPHandler         httpHandler;
     int                 count = 0;
-    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&count](Request&, Response&){++count;return true;});
+    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&count](Request const&, Response&){++count;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -167,8 +167,8 @@ TEST(HTTPHandlerTest, TwoRegisteredHitsFirstOnly)
 {
     HTTPHandler         httpHandler;
     int                 validate = 0;
-    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request&, Response&){validate += 1;return true;});
-    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&validate](Request&, Response&){validate += 2;return true;});
+    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request const&, Response&){validate += 1;return true;});
+    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&validate](Request const&, Response&){validate += 2;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -190,8 +190,8 @@ TEST(HTTPHandlerTest, TwoRegisteredHitsSecondFirstRetunsFalse)
 {
     HTTPHandler         httpHandler;
     int                 validate = 0;
-    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request&, Response&){validate += 1;return false;});
-    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&validate](Request&, Response&){validate += 2;return true;});
+    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request const&, Response&){validate += 1;return false;});
+    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&validate](Request const&, Response&){validate += 2;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
@@ -213,8 +213,8 @@ TEST(HTTPHandlerTest, TwoRegisteredHitsSecondFirstRemoved)
 {
     HTTPHandler         httpHandler;
     int                 validate = 0;
-    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request&, Response&){validate += 1;return true;});
-    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&validate](Request&, Response&){validate += 2;return true;});
+    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request const&, Response&){validate += 1;return true;});
+    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&validate](Request const&, Response&){validate += 2;return true;});
     httpHandler.remPath(Method::GET, "/path1{host}/path3");
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
@@ -237,10 +237,10 @@ TEST(HTTPHandlerTest, TwoRegisteredHitsFirstAfterReplacement)
 {
     HTTPHandler         httpHandler;
     int                 validate = 0;
-    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request&, Response&){validate += 1;return true;});
-    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&validate](Request&, Response&){validate += 2;return true;});
+    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request const&, Response&){validate += 1;return true;});
+    httpHandler.addPath(Method::GET, "/path1/{host}/path3", [&validate](Request const&, Response&){validate += 2;return true;});
     httpHandler.remPath(Method::GET, "/path1{host}/path3");
-    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request&, Response&){validate += 4;return true;});
+    httpHandler.addPath(Method::GET, "/path1{host}/path3", [&validate](Request const&, Response&){validate += 4;return true;});
 
     std::stringstream   ss{"GET /path1/path2/path3?host=twitter.com HTTP/1.1\r\n"
                            "host: google.com\r\n"
