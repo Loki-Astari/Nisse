@@ -3,6 +3,7 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string ClientRequest::getHost(std::string const& url)
 {
     auto find = url.find("://");
@@ -18,6 +19,7 @@ std::string ClientRequest::getHost(std::string const& url)
     return url.substr(find, (end - find));
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view ClientRequest::getRequest(std::string const& url)
 {
     auto find = url.find("://");
@@ -31,6 +33,7 @@ std::string_view ClientRequest::getRequest(std::string const& url)
     return {std::begin(url) + path, std::end(url)};
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 ClientRequest::ClientRequest(std::ostream& baseStream, std::string url, Method method, Version version)
     : method(method)
     , version(version)
@@ -39,11 +42,13 @@ ClientRequest::ClientRequest(std::ostream& baseStream, std::string url, Method m
     , headerSent(false)
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 ClientRequest::~ClientRequest()
 {
     flushRequest();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void ClientRequest::flushHeaderIfNeeded()
 {
     if (!headerSent)
@@ -60,9 +65,11 @@ namespace ThorsAnvil::Nisse::HTTP
 {
     // Forward declare as it currently is not in header file.
     // TODO FIX
+    NISSE_HEADER_ONLY_INCLUDE
     std::ostream& operator<<(std::ostream& stream, Header const& header);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void ClientRequest::addHeaders(Header const& headers)
 {
     if (stream.rdbuf() != nullptr) {
@@ -73,6 +80,7 @@ void ClientRequest::addHeaders(Header const& headers)
     baseStream << headers;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::ostream& ClientRequest::body(BodyEncoding bodyEncoding)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::HTTP::ClientRequest", "body", "Adding body");
@@ -89,6 +97,7 @@ std::ostream& ClientRequest::body(BodyEncoding bodyEncoding)
     return stream;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void ClientRequest::flushRequest()
 {
     if (stream.rdbuf() == nullptr) {

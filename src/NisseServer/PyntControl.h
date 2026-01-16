@@ -26,4 +26,8 @@ class PyntControl: public Pynt
 
 }
 
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "PyntControl.source"
+#endif
+
 #endif

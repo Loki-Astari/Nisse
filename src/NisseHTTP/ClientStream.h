@@ -31,4 +31,8 @@ class ClientStream
 
 }
 
+#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#include "ClientStream.source"
+#endif
+
 #endif

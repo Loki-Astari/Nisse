@@ -4,6 +4,7 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string PathMatcher::decode(std::string_view matched)
 {
     std::string result;
@@ -26,6 +27,7 @@ std::string PathMatcher::decode(std::string_view matched)
     return result;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 PathMatcher::MatchBase PathMatcher::buildMatchInfo(MethodChoice method, std::string pathMatch)
 {
     MatchBase result{std::move(method), {}, {}};
@@ -66,6 +68,7 @@ PathMatcher::MatchBase PathMatcher::buildMatchInfo(MethodChoice method, std::str
     return result;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void PathMatcher::remPath(MethodChoice method, std::string pathMatch)
 {
     ThorsLogInfo("ThorsAnvil::Nisse::HTTP::HTTPHandler", "remPath", pathMatch);
@@ -80,6 +83,7 @@ void PathMatcher::remPath(MethodChoice method, std::string pathMatch)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action action, std::unique_ptr<Data> data)
 {
     ThorsLogInfo("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addPath", pathMatch);
@@ -99,6 +103,7 @@ void PathMatcher::addPath(MethodChoice method, std::string pathMatch, Action act
                        std::move(data));
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_view path, Request& request, Response& response)
 {
     // If it is not holding a `Method` it is holding All::Method.
@@ -137,6 +142,7 @@ bool PathMatcher::checkPathMatch(MatchInfo const& pathMatchInfo, std::string_vie
     return pathMatchInfo.action(dataRef, result, request, response);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool PathMatcher::findMatch(std::string_view path, Request& request, Response& response)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PathMatcher", "findMatch", "Looking for: ", path);

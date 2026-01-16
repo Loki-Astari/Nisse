@@ -6,12 +6,14 @@ namespace TASock = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::Server;
 
+NISSE_HEADER_ONLY_INCLUDE
 Context::Context(NisseServer& server, Yield& yield, int owner)
     : server{server}
     , yield{yield}
     , owner{owner}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 void Context::registerOwnedSocketStream(TASock::SocketStream& stream, EventType initialWait)
 {
     TASock::Socket& socket      = stream.getSocket();
@@ -41,11 +43,13 @@ void Context::registerOwnedSocketStream(TASock::SocketStream& stream, EventType 
     );
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Context::unregisterOwnedSocketStream(TASock::SocketStream& stream)
 {
     unregisterYield(stream.getSocket().socketId());
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Context::registerOwnedSocket(TASock::Socket& socket, EventType initialWait)
 {
     int     fd          = socket.socketId();
@@ -68,26 +72,31 @@ void Context::registerOwnedSocket(TASock::Socket& socket, EventType initialWait)
     );
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Context::unregisterOwnedSocket(TASock::Socket& socket)
 {
     unregisterYield(socket.socketId());
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Context::registerSharedSocket(NisseServer& server, TASock::Socket& socket)
 {
     server.eventHandler.addSharedFD(socket.socketId());
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Context::unregisterSharedSocket(NisseServer& server, TASock::Socket& socket)
 {
     server.eventHandler.remSharedFD(socket.socketId());
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool Context::isFeatureEnabled(Feature feature) const
 {
     return server.isFeatureEnabled(feature);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Context::registerYield(int fd, EventType initialWait, TASock::Socket& socket, TASock::YieldFunc&& readYield, TASock::YieldFunc&& writeYield)
 {
     server.eventHandler.addOwnedFD(fd, owner, initialWait);
@@ -98,11 +107,13 @@ void Context::registerYield(int fd, EventType initialWait, TASock::Socket& socke
     socket.setWriteYield(std::move(writeYield));
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Context::unregisterYield(int fd)
 {
     server.eventHandler.remOwnedFD(fd);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 AsyncStream::AsyncStream(TASock::SocketStream& stream, Context& context, EventType initialWait)
     : stream{stream}
     , context{context}
@@ -117,6 +128,7 @@ AsyncStream::AsyncStream(TASock::SocketStream& stream, Context& context, EventTy
     stream.getSocket().deferInit();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 AsyncStream::~AsyncStream()
 {
     // If this is a file i.e.: stream.getSocket().protocol() == "file" (cheating by checking for 'f')
@@ -128,6 +140,7 @@ AsyncStream::~AsyncStream()
     context.unregisterOwnedSocketStream(stream);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 AsyncSocket::AsyncSocket(TASock::Socket& socket, Context& context, EventType initialWait)
     : socket{socket}
     , context{context}
@@ -136,11 +149,13 @@ AsyncSocket::AsyncSocket(TASock::Socket& socket, Context& context, EventType ini
     socket.deferInit();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 AsyncSocket::~AsyncSocket()
 {
     context.unregisterOwnedSocket(socket);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 AsyncSharedSocket::AsyncSharedSocket(TASock::Socket& socket, NisseServer& server)
     : socket{socket}
     , server{server}
@@ -149,6 +164,7 @@ AsyncSharedSocket::AsyncSharedSocket(TASock::Socket& socket, NisseServer& server
     socket.deferInit();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 AsyncSharedSocket::~AsyncSharedSocket()
 {
     Context::unregisterSharedSocket(server, socket);

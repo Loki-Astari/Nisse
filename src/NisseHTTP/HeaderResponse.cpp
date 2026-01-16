@@ -4,16 +4,19 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 bool HeaderResponse::empty() const
 {
     return headers.empty();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HeaderResponse::add(std::string_view header, std::string_view value)
 {
     headers.emplace(header, value);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HeaderResponse::print(std::ostream& stream) const
 {
     for (auto const& [headerKey, headerValue] : headers)

@@ -7,10 +7,12 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 PyntHTTPControl::PyntHTTPControl(ThorsAnvil::Nisse::Server::NisseServer& server)
     : server{server}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 void PyntHTTPControl::processRequest(Request& request, Response& response)
 {
     std::string_view            query = request.getUrl().query();

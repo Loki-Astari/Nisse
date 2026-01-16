@@ -2,6 +2,7 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 URL::URL(std::string_view href)
     : hrefValue{href}
     , protocolRef{findProtocol(hrefValue)}
@@ -14,6 +15,7 @@ URL::URL(std::string_view href)
     , hashRef{findHash(hrefValue)}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 URL::URL(std::string_view prot, std::string_view host, std::string_view request)
     : hrefValue{buildHref(prot, host, request)}
     , protocolRef{findProtocol(hrefValue)}
@@ -26,6 +28,7 @@ URL::URL(std::string_view prot, std::string_view host, std::string_view request)
     , hashRef{findHash(hrefValue)}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 URL::URL(URL const& copy)
     : hrefValue{copy.hrefValue}
     , protocolRef{findProtocol(hrefValue)}
@@ -38,18 +41,21 @@ URL::URL(URL const& copy)
     , hashRef{findHash(hrefValue)}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 URL::URL(URL&& move) noexcept
     // All members default initialized to empty.
 {
     swap(move);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 URL& URL::operator=(URL copyORmove) noexcept
 {
     swap(copyORmove);
     return *this;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void URL::swap(URL& other) noexcept
 {
     char* original = other.hrefValue.data();
@@ -79,6 +85,7 @@ void URL::swap(URL& other) noexcept
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string URL::buildHref(std::string_view prot, std::string_view host, std::string_view request)
 {
     std::string href;
@@ -91,12 +98,14 @@ std::string URL::buildHref(std::string_view prot, std::string_view host, std::st
     return href;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::findProtocol(std::string const& src)
 {
     std::size_t size = std::min(src.size(), src.find("://"));
     return {src.begin(), src.begin() + size};
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::findOrigin(std::string const& src)
 {
     std::size_t skipProto = std::min(src.size(), protocolRef.size() + 3);
@@ -104,6 +113,7 @@ std::string_view URL::findOrigin(std::string const& src)
     return {src.begin(), src.begin() + size};
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::findHost(std::string const& src)
 {
     std::size_t beg = std::min(src.size(), protocolRef.size() + 3);
@@ -111,6 +121,7 @@ std::string_view URL::findHost(std::string const& src)
     return {src.begin() + beg, src.begin() + end};
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::findPort(std::string const&)
 {
     std::string_view result = hostRef;
@@ -119,6 +130,7 @@ std::string_view URL::findPort(std::string const&)
     return result;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::findHostname(std::string const&)
 {
     std::string_view result = hostRef;
@@ -126,6 +138,7 @@ std::string_view URL::findHostname(std::string const&)
     return result;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::findPath(std::string const& src)
 {
     std::size_t skipProto = std::min(src.size(), protocolRef.size() + 3);
@@ -134,6 +147,7 @@ std::string_view URL::findPath(std::string const& src)
     return {src.begin() + beg, src.begin() + end};
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::findQuery(std::string const& src)
 {
     std::size_t skipProto = std::min(src.size(), protocolRef.size() + 3);
@@ -142,6 +156,7 @@ std::string_view URL::findQuery(std::string const& src)
     return {src.begin() + beg, src.begin() + end};
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::findHash(std::string const& src)
 {
     std::size_t skipProto = std::min(src.size(), protocolRef.size() + 3);
@@ -150,6 +165,7 @@ std::string_view URL::findHash(std::string const& src)
     return {src.begin() + beg, src.begin() + end};
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view URL::param(std::string_view /*param*/)
 {
     // TODO

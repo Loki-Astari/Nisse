@@ -3,6 +3,7 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 Request::Request(std::string_view proto, std::istream& stream)
     : context(nullptr)
     , version{Version::Unknown}
@@ -11,6 +12,7 @@ Request::Request(std::string_view proto, std::istream& stream)
     init(proto, stream);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 Request::Request(Server::Context& context, std::string_view proto, std::istream& stream)
     : context(&context)
     , version{Version::Unknown}
@@ -19,6 +21,7 @@ Request::Request(Server::Context& context, std::string_view proto, std::istream&
     init(proto, stream);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Request::init(std::string_view proto, std::istream& stream)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Request", "init", "Creating a request");
@@ -31,6 +34,7 @@ void Request::init(std::string_view proto, std::istream& stream)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view Request::readFirstLine(std::istream& stream)
 {
     // Read the first line
@@ -85,6 +89,7 @@ std::string_view Request::readFirstLine(std::istream& stream)
     return path;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool Request::readHeaders(HeaderRequest& dst, std::istream& stream)
 {
     std::string line;
@@ -106,6 +111,7 @@ bool Request::readHeaders(HeaderRequest& dst, std::istream& stream)
     return true;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool Request::buildURL(std::string_view proto, std::string_view path)
 {
     using std::literals::operator""sv;
@@ -121,6 +127,7 @@ bool Request::buildURL(std::string_view proto, std::string_view path)
     return true;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 Version Request::findVersion(std::string_view pv)
 {
     static const std::map<std::string_view, Version>  versionMap {  {"HTTP/1.0", Version::HTTP1_0},
@@ -135,6 +142,7 @@ Version Request::findVersion(std::string_view pv)
     return Version::Unknown;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 Method Request::findMethod(std::string_view method)
 {
     static const std::map<std::string_view, Method>  methodMap  {   {"GET",     Method::GET},
@@ -154,11 +162,13 @@ Method Request::findMethod(std::string_view method)
     return Method::Other;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view Request::preloadStreamIntoBuffer() const
 {
     return input.preloadStreamIntoBuffer();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool Request::buildStream(std::istream& stream)
 {
     auto&   contentLength    = head.getHeader("content-length");
@@ -204,11 +214,13 @@ bool Request::buildStream(std::istream& stream)
     return false;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::istream& Request::body() const
 {
     return input;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Request::print(std::ostream& stream) const
 {
     stream << messageHeader << "\r\n"

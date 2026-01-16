@@ -10,6 +10,7 @@ using namespace ThorsAnvil::Nisse::HTTP;
 
 StandardStatusCodeMap standardCodes;
 
+NISSE_HEADER_ONLY_INCLUDE
 Response::Response(std::ostream& stream, Version version, int responseCode)
     : version{version}
     , statusCode{standardCodes[responseCode]}
@@ -18,6 +19,7 @@ Response::Response(std::ostream& stream, Version version, int responseCode)
     , checkPoint(std::chrono::high_resolution_clock::now())
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 Response::~Response()
 {
     if (stream.rdbuf() == nullptr)
@@ -33,6 +35,7 @@ Response::~Response()
     ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Response", "~Response", "Response Time: ", std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count(), "ms");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Response::sendHeaderIfNotSent()
 {
     if (!headerSent)
@@ -51,6 +54,7 @@ struct IgnoreLine
     }
 };
 
+NISSE_HEADER_ONLY_INCLUDE
 void Response::read(std::istream& stream)
 {
     int code;
@@ -62,6 +66,7 @@ void Response::read(std::istream& stream)
 
 namespace ThorsAnvil::Nisse::HTTP
 {
+    NISSE_HEADER_ONLY_INCLUDE
     std::ostream& operator<<(std::ostream& stream, Header const& header)
     {
         struct HeaderStream
@@ -78,11 +83,13 @@ namespace ThorsAnvil::Nisse::HTTP
 
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Response::setStatus(int newStatusCode)
 {
     statusCode = standardCodes[newStatusCode];
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Response::addHeaders(Header const& headers)
 {
     if (stream.rdbuf() != nullptr) {
@@ -93,6 +100,7 @@ void Response::addHeaders(Header const& headers)
     baseStream << headers;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::ostream& Response::body(BodyEncoding bodyEncoding)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Response", "body", "adding body");
@@ -108,6 +116,7 @@ std::ostream& Response::body(BodyEncoding bodyEncoding)
     return stream;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Response::error(int code, std::string_view errorMessage)
 {
     setStatus(code);

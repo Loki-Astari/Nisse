@@ -5,6 +5,7 @@ using namespace ThorsAnvil::Nisse::HTTP;
 
 namespace ThorsAnvil::Nisse::HTTP
 {
+    NISSE_HEADER_ONLY_INCLUDE
     std::istream& operator>>(std::istream& stream, StatusResponse& data)
     {
         stream >> data.code >> std::ws;
@@ -14,12 +15,14 @@ namespace ThorsAnvil::Nisse::HTTP
         }
         return stream;
     }
+    NISSE_HEADER_ONLY_INCLUDE
     std::ostream& operator<<(std::ostream& stream, StatusResponse const& data)
     {
         return stream << data.code << " " << data.message;
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 ClientResponse::ClientResponse(std::istream& stream)
 {
     std::string     line;
@@ -38,6 +41,7 @@ ClientResponse::ClientResponse(std::istream& stream)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void ClientResponse::print(std::ostream& stream) const
 {
     stream << version << " " << status << "\r\n";
@@ -47,6 +51,7 @@ void ClientResponse::print(std::ostream& stream) const
     stream << "\r\n";
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::size_t ClientResponse::getContentSize() const
 {
     auto find = headers.find("content-length");

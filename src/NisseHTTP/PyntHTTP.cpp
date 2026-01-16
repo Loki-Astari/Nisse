@@ -8,6 +8,7 @@ namespace TASock = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStream& stream, Server::Context& context)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Enter");

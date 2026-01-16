@@ -2,5 +2,6 @@
 
 using namespace ThorsAnvil::Nisse::Server;
 
+NISSE_HEADER_ONLY_INCLUDE
 Pynt::~Pynt()
 {}

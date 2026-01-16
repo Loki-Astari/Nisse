@@ -3,11 +3,13 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::~StreamBufOutput()
 {
     done();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::StreamBufOutput(Complete&& complete)
     : remaining{0}
     , buffer{nullptr}
@@ -17,6 +19,7 @@ StreamBufOutput::StreamBufOutput(Complete&& complete)
     , chunkBuffer{0}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::StreamBufOutput(std::ostream& stream, BodyEncoding bodyEncoding, Complete&& complete)
     : remaining{0}
     , buffer{stream.rdbuf()}
@@ -38,6 +41,7 @@ StreamBufOutput::StreamBufOutput(std::ostream& stream, BodyEncoding bodyEncoding
     std::visit(BodyEncodingInit{this}, bodyEncoding);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::StreamBufOutput(StreamBufOutput&& move) noexcept
     : remaining{std::exchange(move.remaining, 0)}
     , buffer{std::exchange(move.buffer, nullptr)}
@@ -47,6 +51,7 @@ StreamBufOutput::StreamBufOutput(StreamBufOutput&& move) noexcept
     , chunkBuffer{std::move(move.chunkBuffer)}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput& StreamBufOutput::operator=(StreamBufOutput&& move) noexcept
 {
     remaining   = 0;
@@ -61,6 +66,7 @@ StreamBufOutput& StreamBufOutput::operator=(StreamBufOutput&& move) noexcept
     return *this;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::swap(StreamBufOutput& other) noexcept
 {
     std::streambuf::swap(other);
@@ -75,6 +81,7 @@ void StreamBufOutput::swap(StreamBufOutput& other) noexcept
 }
 
 // Control:
+NISSE_HEADER_ONLY_INCLUDE
 int StreamBufOutput::sync()
 {
     //std::cerr << "sync\n";
@@ -83,6 +90,7 @@ int StreamBufOutput::sync()
     return buffer->pubsync();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::dumpBuffer()
 {
     //std::cerr << "dumpBuffer\n";
@@ -107,6 +115,7 @@ void StreamBufOutput::dumpBuffer()
     buffer->pubsync();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::done()
 {
     //std::cerr << "Done\n";
@@ -122,6 +131,7 @@ void StreamBufOutput::done()
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::sendAllData(char const* s, std::streamsize size)
 {
     //std::cerr << "sendAllData\n";
@@ -133,12 +143,14 @@ void StreamBufOutput::sendAllData(char const* s, std::streamsize size)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 char StreamBufOutput::toHex(int digit)
 {
     return digit >= 10 ? 'A' + (digit - 10)
                        : '0' + digit;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::outputChunkSize(std::streamsize size)
 {
     bool started   = false;
@@ -156,6 +168,7 @@ void StreamBufOutput::outputChunkSize(std::streamsize size)
 }
 
 // Write:
+NISSE_HEADER_ONLY_INCLUDE
 std::streamsize StreamBufOutput::xsputnChunked(char_type const* s,std::streamsize count)
 {
     //std::cerr << "xsputnChunked\n";
@@ -176,6 +189,7 @@ std::streamsize StreamBufOutput::xsputnChunked(char_type const* s,std::streamsiz
     return count;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::streamsize StreamBufOutput::xsputnLength(char_type const* s,std::streamsize count)
 {
     //std::cerr << "xsputnLength\n";
@@ -195,6 +209,7 @@ std::streamsize StreamBufOutput::xsputnLength(char_type const* s,std::streamsize
     }
     return result;
 }
+NISSE_HEADER_ONLY_INCLUDE
 std::streamsize StreamBufOutput::xsputn(char_type const* s,std::streamsize count)
 {
     //std::cerr << "xsputn\n";
@@ -206,6 +221,7 @@ std::streamsize StreamBufOutput::xsputn(char_type const* s,std::streamsize count
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::int_type StreamBufOutput::overflowChunked(int_type ch)
 {
     //std::cerr << "overflowChunked\n";
@@ -217,6 +233,7 @@ StreamBufOutput::int_type StreamBufOutput::overflowChunked(int_type ch)
     return 1;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::int_type StreamBufOutput::overflowLength(int_type ch)
 {
     //std::cerr << "overflowLength\n";
@@ -236,6 +253,7 @@ StreamBufOutput::int_type StreamBufOutput::overflowLength(int_type ch)
     return result;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::int_type StreamBufOutput::overflow(int_type ch)
 {
     //std::cerr << "overflow\n";
@@ -247,6 +265,7 @@ StreamBufOutput::int_type StreamBufOutput::overflow(int_type ch)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::checkBuffer()
 {
 }

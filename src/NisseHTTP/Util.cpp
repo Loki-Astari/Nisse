@@ -4,6 +4,7 @@ using namespace ThorsAnvil::Nisse::HTTP;
 
 namespace ThorsAnvil::Nisse::HTTP
 {
+NISSE_HEADER_ONLY_INCLUDE
 std::ostream& operator<<(std::ostream& stream, Version const& v)
 {
     static const std::map<Version, std::string> versionMap = {{Version::HTTP1_0, "HTTP/1.0"}, {Version::HTTP1_1, "HTTP/1.1"}, {Version::HTTP2, "HTTP/2"}, {Version::HTTP3, "HTTP/3"}};
@@ -15,6 +16,7 @@ std::ostream& operator<<(std::ostream& stream, Version const& v)
     return stream;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::istream& operator>>(std::istream& stream, Version& v)
 {
     static const std::map<std::string, Version> versionMap = {{"HTTP/1.0", Version::HTTP1_0}, {"HTTP/1.1", Version::HTTP1_1}, {"HTTP/2", Version::HTTP2}, {"HTTP/3", Version::HTTP3}};
@@ -31,11 +33,13 @@ std::istream& operator>>(std::istream& stream, Version& v)
     return stream;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::ostream& operator<<(std::ostream& stream, Encoding const& /*encoding (Always chunked)*/)
 {
     return stream << "chunked";
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::ostream& operator<<(std::ostream& stream, BodyEncoding const& bodyEncoding)
 {
     struct BodyEncodingStream
@@ -51,6 +55,7 @@ std::ostream& operator<<(std::ostream& stream, BodyEncoding const& bodyEncoding)
     return std::visit(BodyEncodingStream{stream}, bodyEncoding);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::ostream& operator<<(std::ostream& stream, Method const& method)
 {
     static char const* out[] = {"GET", "HEAD", "OPTIONS", "TRACE", "PUT", "DELETE", "POST", "PATCH", "CONNECT", "BAD"};
@@ -62,6 +67,7 @@ std::ostream& operator<<(std::ostream& stream, Method const& method)
 using std::literals::string_literals::operator""s;
 using std::literals::string_view_literals::operator""sv;
 
+NISSE_HEADER_ONLY_INCLUDE
 StandardStatusCodeMap::StatusCodeMap const StandardStatusCodeMap::standardCodes
 {
     {
@@ -93,6 +99,7 @@ StandardStatusCodeMap::StatusCodeMap const StandardStatusCodeMap::standardCodes
     [](StatusCode const& lhs, StatusCode const& rhs){return lhs.code < rhs.code;}
 };
 
+NISSE_HEADER_ONLY_INCLUDE
 StatusCode const& StandardStatusCodeMap::operator[](int code)
 {
     static StatusCode  unknown{500, "Internal Server Error"sv};
@@ -102,6 +109,7 @@ StatusCode const& StandardStatusCodeMap::operator[](int code)
 }
 
 
+NISSE_HEADER_ONLY_INCLUDE
 void StatusCode::print(std::ostream& stream) const
 {
     stream << code << " " << message;

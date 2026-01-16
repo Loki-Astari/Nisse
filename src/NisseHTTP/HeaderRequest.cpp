@@ -5,6 +5,7 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 std::vector<std::string> const& HeaderRequest::getHeader(std::string const& header) const
 {
     static const std::vector<std::string>   empty;
@@ -15,6 +16,7 @@ std::vector<std::string> const& HeaderRequest::getHeader(std::string const& head
     return find->second;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HeaderRequest::add(std::string_view header, std::string_view value)
 {
     header = getValue(header);
@@ -53,6 +55,7 @@ void HeaderRequest::add(std::string_view header, std::string_view value)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view HeaderRequest::getValue(std::string_view input)
 {
     // Remove leading and trailing white space.
@@ -61,6 +64,7 @@ std::string_view HeaderRequest::getValue(std::string_view input)
     return input;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool HeaderRequest::dedupHeader(std::string_view header)
 {
     // See RFC 9110 Section 5.3 for more information.
@@ -68,12 +72,14 @@ bool HeaderRequest::dedupHeader(std::string_view header)
     return singleValueHeaders.find(header) != singleValueHeaders.end();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool HeaderRequest::splitOnComma(std::string_view header)
 {
     static const std::set<std::string_view> nosplit = {"accept-datetime", "access-control-request-method", "access-control-request-header", "content-md5", "cookie", "date", "expect", "if-match", "if-none-match", "if-range"};
     return nosplit.find(header) == nosplit.end();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HeaderRequest::print(std::ostream& stream) const
 {
     for (auto const& header: headers)

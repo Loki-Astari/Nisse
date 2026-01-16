@@ -4,10 +4,12 @@ namespace TASock = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::Server;
 
+NISSE_HEADER_ONLY_INCLUDE
 PyntControl::PyntControl(NisseServer& server)
     : server{server}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 PyntResult PyntControl::handleRequest(TASock::SocketStream& /*stream*/, Context&)
 {
     // This is a very simple control.

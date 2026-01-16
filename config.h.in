@@ -60,6 +60,10 @@
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
+/* Enable to use header only libraries */
+
+/* For header only convert to inline */
+
 /* Name of package */
 #undef PACKAGE
 
@@ -94,6 +98,13 @@
 
     
 #endif
+
+
+/* Enable to use header only libraries */
+#undef NISSE_HEADER_ONLY
+
+/* For header only convert to inline */
+#undef NISSE_HEADER_ONLY_INCLUDE
 
 
 #endif

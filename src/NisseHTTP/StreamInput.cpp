@@ -2,6 +2,7 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::StreamBufInput(Complete&& complete)
     : remaining{0}
     , processed{0}
@@ -12,6 +13,7 @@ StreamBufInput::StreamBufInput(Complete&& complete)
     , chunkBuffer{}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete)
     : remaining{0}
     , processed{0}
@@ -35,6 +37,7 @@ StreamBufInput::StreamBufInput(std::istream& stream, BodyEncoding encoding, Comp
     chunkBuffer.resize(chunkBufferSize);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::StreamBufInput(StreamBufInput&& move) noexcept
     : remaining{std::exchange(move.remaining, 0)}
     , processed{std::exchange(move.processed, 0)}
@@ -45,6 +48,7 @@ StreamBufInput::StreamBufInput(StreamBufInput&& move) noexcept
     , chunkBuffer{std::move(move.chunkBuffer)}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput& StreamBufInput::operator=(StreamBufInput&& move) noexcept
 {
     remaining   = 0;
@@ -60,6 +64,7 @@ StreamBufInput& StreamBufInput::operator=(StreamBufInput&& move) noexcept
     return *this;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufInput::swap(StreamBufInput& other) noexcept
 {
     std::streambuf::swap(other);
@@ -74,6 +79,7 @@ void StreamBufInput::swap(StreamBufInput& other) noexcept
     swap(chunkBuffer,   other.chunkBuffer);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufInput::preloadStreamIntoBufferNow()
 {
     if (chunked) {
@@ -109,12 +115,14 @@ void StreamBufInput::preloadStreamIntoBufferNow()
     setg(&chunkBuffer[0], &chunkBuffer[0] + (cur - beg), end);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view StreamBufInput::preloadStreamIntoBuffer()
 {
     preloadStreamIntoBufferNow();
     return std::string_view{gptr(), egptr()};
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::int_type StreamBufInput::underflow()
 {
     if (remaining == 0)
@@ -136,6 +144,7 @@ StreamBufInput::int_type StreamBufInput::underflow()
     return chunkBuffer[0];
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::streamsize StreamBufInput::xsgetn(char_type* s, std::streamsize count)
 {
     std::streamsize got   = 0;
@@ -179,6 +188,7 @@ std::streamsize StreamBufInput::xsgetn(char_type* s, std::streamsize count)
     return got;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::pos_type StreamBufInput::seekpos(StreamBufInput::pos_type pos, std::ios_base::openmode which)
 {
     pos_type                current = static_cast<pos_type>(currentPosition());
@@ -187,6 +197,7 @@ StreamBufInput::pos_type StreamBufInput::seekpos(StreamBufInput::pos_type pos, s
     return seekoff(off, std::ios_base::cur, which);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::pos_type StreamBufInput::seekoff(StreamBufInput::off_type off, std::ios_base::seekdir way, std::ios_base::openmode which)
 {
     if (which != std::ios_base::in) {
@@ -235,10 +246,12 @@ StreamBufInput::pos_type StreamBufInput::seekoff(StreamBufInput::off_type off, s
     return currentPosition();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufInput::checkBuffer()
 {
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void StreamBufInput::getNextChunk()
 {
     if (!chunked)

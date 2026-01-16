@@ -11,6 +11,7 @@ using namespace ThorsAnvil::Nisse::Server;
  */
 CoRoutine Store::invalid{[](Yield&){}};
 
+NISSE_HEADER_ONLY_INCLUDE
 StoreData& Store::getStoreData(int fd)
 {
     auto find = data.find(fd);
@@ -22,6 +23,7 @@ StoreData& Store::getStoreData(int fd)
 }
 
 template<typename T>
+NISSE_HEADER_ONLY_INCLUDE
 void Store::requestChange(T&& update)
 {
     std::unique_lock        lock(updateMutex);
@@ -38,6 +40,7 @@ template void Store::requestChange<StateUpdateRemove>(StateUpdateRemove&& update
 template void Store::requestChange<StateUpdateRestoreRead>(StateUpdateRestoreRead&& update);
 template void Store::requestChange<StateUpdateRestoreWrite>(StateUpdateRestoreWrite&& update);
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::processUpdateRequest()
 {
     std::unique_lock        lock(updateMutex);
@@ -50,6 +53,7 @@ void Store::processUpdateRequest()
     updates.clear();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateCreateServer& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateServer&)", "Start: ", update.fd);
@@ -66,6 +70,7 @@ void Store::operator()(StateUpdateCreateServer& update)
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateServer&)", "DONE");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateCreateStream& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateStream&)", "Start: ", update.fd);
@@ -83,6 +88,7 @@ void Store::operator()(StateUpdateCreateStream& update)
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateStream&)", "DONE");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateCreateOwnedFD& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateOwnedFD&)", "Start: ", update.fd);
@@ -109,6 +115,7 @@ void Store::operator()(StateUpdateCreateOwnedFD& update)
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateOwnedFD&)", "DONE");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateCreateSharedFD& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateSharedFD&)", "Start: ", update.fd);
@@ -123,6 +130,7 @@ void Store::operator()(StateUpdateCreateSharedFD& update)
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateSharedFD&)", "DONE");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateCreateTimer& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateTimer&)", "Start: ", update.timerId);
@@ -139,6 +147,7 @@ void Store::operator()(StateUpdateCreateTimer& update)
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateCreateTimer&)", "DONE");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateExternallClosed& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateExternallClosed&)", "Start: ", update.fd);
@@ -160,6 +169,7 @@ void Store::operator()(StateUpdateExternallClosed& update)
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateExternallClosed&)", "DONE");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateRemove& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateRemove&)", "Start: ", update.fd);
@@ -167,6 +177,7 @@ void Store::operator()(StateUpdateRemove& update)
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateRemove&)", "DONE");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateRestoreRead& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateRestoreRead&)", "Start: ", update.fd);
@@ -204,6 +215,7 @@ void Store::operator()(StateUpdateRestoreRead& update)
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateRestoreRead&)", "DONE");
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void Store::operator()(StateUpdateRestoreWrite& update)
 {
     ThorsLogTrack("ThorsAnvil::Nisse::Server::Store", "operator()(StateUpdateRestoreWrite&)", "Start: ", update.fd);

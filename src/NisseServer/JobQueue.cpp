@@ -3,6 +3,7 @@
 
 using namespace ThorsAnvil::Nisse::Server;
 
+NISSE_HEADER_ONLY_INCLUDE
 JobQueue::JobQueue(std::size_t workerCount)
     : finished{false}
 {
@@ -19,11 +20,13 @@ JobQueue::JobQueue(std::size_t workerCount)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 JobQueue::~JobQueue()
 {
     stop();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void JobQueue::addJob(Work&& action)
 {
     std::unique_lock    lock(workMutex);
@@ -31,12 +34,14 @@ void JobQueue::addJob(Work&& action)
     workCV.notify_one();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void JobQueue::markFinished()
 {
     std::unique_lock    lock(workMutex);
     finished = true;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void JobQueue::stop()
 {
     markFinished();
@@ -47,6 +52,7 @@ void JobQueue::stop()
     workers.clear();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::optional<Work> JobQueue::getNextJob()
 {
     std::unique_lock    lock(workMutex);
@@ -61,6 +67,7 @@ std::optional<Work> JobQueue::getNextJob()
     return work;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void JobQueue::processWork()
 {
     while (!finished)

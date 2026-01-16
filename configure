@@ -5883,6 +5883,15 @@ fi
 
 
 
+printf "%s\n" "#define NISSE_HEADER_ONLY 0" >>confdefs.h
+
+
+printf "%s\n" "#define NISSE_HEADER_ONLY_INCLUDE /**/" >>confdefs.h
+
+
+
+
+
 case `pwd` in
   *\ * | *\	*)
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Libtool does not cope well with whitespace in \`pwd\`" >&5

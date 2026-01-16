@@ -5,11 +5,13 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string HTTPHandler::normalize(std::string_view path)
 {
     return std::string(path);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HTTPHandler::processRequest(Request& request, Response& response)
 {
     std::string path = normalize(request.getUrl().pathname());
@@ -19,6 +21,7 @@ void HTTPHandler::processRequest(Request& request, Response& response)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HTTPHandler::addHeaders(RequestVariables& var, HeaderRequest const& headers)
 {
     for (auto const& head: headers) {
@@ -27,6 +30,7 @@ void HTTPHandler::addHeaders(RequestVariables& var, HeaderRequest const& headers
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HTTPHandler::addQueryParam(RequestVariables& var, std::string_view query)
 {
     // Add URL parameters to the variables object.
@@ -50,6 +54,7 @@ void HTTPHandler::addQueryParam(RequestVariables& var, std::string_view query)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HTTPHandler::addPathMatch(RequestVariables& var, Match const& matches)
 {
     for (auto const& match: matches) {
@@ -83,6 +88,8 @@ namespace
     bool isHex(unsigned char c)      {return asciiHexToInt[c] >= 0;}
     int  decodeHex(unsigned char c)  {return asciiHexToInt[c];}
 }
+
+NISSE_HEADER_ONLY_INCLUDE
 std::string decode(std::string_view view)
 {
     std::string result;
@@ -108,6 +115,7 @@ std::string decode(std::string_view view)
     return result;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HTTPHandler::addFormVariables(RequestVariables& var, std::istream& stream)
 {
     std::string     line;
@@ -128,11 +136,13 @@ void HTTPHandler::addFormVariables(RequestVariables& var, std::istream& stream)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HTTPHandler::remPath(MethodChoice method, std::string const& path)
 {
     pathMatcher.remPath(method, path);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPAction&& action, HTTPValidate&& val)
 {
     pathMatcher.addPath(method,
@@ -144,6 +154,7 @@ void HTTPHandler::addPath(MethodChoice method, std::string const& path, HTTPActi
                         std::make_unique<PathMatcher::Data>(this, path, std::move(action), std::move(val)));
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool HTTPHandler::callUserACtion(std::string const& path, HTTPAction& action, HTTPValidate& val, Match const& matches, Request& request, Response& response)
 {
     ThorsLogInfo("ThorsAnvil::Nisse::HTTP::HTTPHandler", "callUserACtion", "Called: ", path);

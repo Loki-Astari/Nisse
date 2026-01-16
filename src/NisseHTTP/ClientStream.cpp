@@ -2,6 +2,7 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string ClientStream::getHost(std::string const& url)
 {
     auto find = url.find("://");
@@ -17,6 +18,7 @@ std::string ClientStream::getHost(std::string const& url)
     return url.substr(find, (end - find));
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 int ClientStream::getPort(std::string const& url)
 {
     auto find = url.find("://");
@@ -34,6 +36,7 @@ int ClientStream::getPort(std::string const& url)
     return 443;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 ClientStream::ClientStream(std::string const& url)
     : ctx{ThorsAnvil::ThorsSocket::SSLMethodType::Client}
     , stream{ThorsAnvil::ThorsSocket::SSocketInfo{getHost(url), getPort(url), ctx, ThorsAnvil::ThorsSocket::DeferAccept::No}}

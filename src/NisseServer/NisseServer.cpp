@@ -6,27 +6,32 @@ namespace TASock   = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::Server;
 
+NISSE_HEADER_ONLY_INCLUDE
 NisseServer::NisseServer(std::size_t workerCount)
     : jobQueue{workerCount}
     , store{}
     , eventHandler{jobQueue, store}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 void NisseServer::run(std::function<void()>&& notice)
 {
     eventHandler.run(std::move(notice));
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void NisseServer::stopSoft()
 {
     eventHandler.stopSoft();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void NisseServer::stopHard()
 {
     eventHandler.stopHard();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 CoRoutine NisseServer::createStreamJob(StreamData& info)
 {
     // Exceptions here will be caught
@@ -103,6 +108,7 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
     };
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 CoRoutine NisseServer::createAcceptJob(ServerData& info)
 {
     // Exceptions here will be caught
@@ -138,6 +144,7 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
     };
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void NisseServer::listen(TASock::ServerInit&& listenerInit, Pynt& pynt)
 {
     TASock::Server  server{std::move(listenerInit), TASock::Blocking::No};

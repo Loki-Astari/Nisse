@@ -8,12 +8,14 @@
  * C Callback functions.
  * Simply decide the data into EventHandler and call the C++ functions.
  */
+NISSE_HEADER_ONLY_INCLUDE
 void eventCallback(evutil_socket_t fd, short eventType, void* data)
 {
     ThorsAnvil::Nisse::Server::EventHandler&    eventHandler = *reinterpret_cast<ThorsAnvil::Nisse::Server::EventHandler*>(data);
     eventHandler.eventAction(fd, static_cast<ThorsAnvil::Nisse::Server::EventType>(eventType));
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void controlTimerCallback(evutil_socket_t, short eventType, void* data)
 {
     ThorsAnvil::Nisse::Server::TimerData&    timerData = *reinterpret_cast<ThorsAnvil::Nisse::Server::TimerData*>(data);
@@ -30,14 +32,17 @@ int EventHandler::nextTImerId = 1'000'000;
 /*
  * EventLib wrapper. Set up C-Function callbacks
  */
+NISSE_HEADER_ONLY_INCLUDE
 Event::Event(EventBase& eventBase, int fd, EventType type, EventHandler& eventHandler)
     : event{event_new(eventBase.eventBase, fd, static_cast<short>(type), &eventCallback, &eventHandler)}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 Event::Event(EventBase& eventBase, TimerData& timerData)
     : event{evtimer_new(eventBase.eventBase, controlTimerCallback, &timerData)}
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
     : jobQueue{jobQueue}
     , store{store}
@@ -50,6 +55,7 @@ EventHandler::EventHandler(JobQueue& jobQueue, Store& store)
     controlTimerAction();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::run(std::function<void()>&& notice)
 {
     finished = false;
@@ -58,6 +64,7 @@ void EventHandler::run(std::function<void()>&& notice)
     eventBase.run();
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::stopSoft()
 {
     ThorsLogInfo("ThorsAnvil::Nisse::Server::EventHandler", "stopSoft", "Initiating a soft stop. Connection Count: ", store.getOpenConnections());
@@ -68,12 +75,14 @@ void EventHandler::stopSoft()
     stopping = true;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::stopHard()
 {
     ThorsLogInfo("ThorsAnvil::Nisse::Server::EventHandler", "stopHard", "Initiating a hard stop. Connection Count: ", store.getOpenConnections());
     finished = true;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::add(TASock::Server&& server, ServerCreator&& serverCreator, Pynt& pynt)
 {
     int fd = server.socketId();
@@ -85,6 +94,7 @@ void EventHandler::add(TASock::Server&& server, ServerCreator&& serverCreator, P
                                                });
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCreator, Pynt& pynt)
 {
     // If we are stopping then we will not accept any more connections.
@@ -102,6 +112,7 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
                                                });
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 int EventHandler::addTimer(int microseconds, TimerAction& action)
 {
     int result = nextTImerId++;
@@ -115,6 +126,7 @@ int EventHandler::addTimer(int microseconds, TimerAction& action)
     return result;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::addOwnedFD(int fd, int owner, EventType initialWait)
 {
     store.requestChange(StateUpdateCreateOwnedFD{fd,
@@ -125,11 +137,13 @@ void EventHandler::addOwnedFD(int fd, int owner, EventType initialWait)
                                                 });
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::remOwnedFD(int fd)
 {
     store.requestChange(StateUpdateRemove{fd});
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::addSharedFD(int fd)
 {
     store.requestChange(StateUpdateCreateSharedFD{fd,
@@ -138,16 +152,19 @@ void EventHandler::addSharedFD(int fd)
                                                  });
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::remSharedFD(int fd)
 {
     store.requestChange(StateUpdateRemove{fd});
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::remTimer(int timerId)
 {
     store.requestChange(StateUpdateRemove{timerId});
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::eventAction(int fd, EventType type)
 {
     ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "eventAction", "Event callback", fd);
@@ -159,12 +176,14 @@ void EventHandler::eventAction(int fd, EventType type)
 }
 
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::handleServerEvent(ServerData& info, int fd, EventType)
 {
     ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handleServerEvent", "Connection established");
     addJob(info.coRoutine, fd);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
 {
     ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handleStreamEvent", "Streaming data");
@@ -173,12 +192,14 @@ void EventHandler::handleStreamEvent(StreamData& info, int fd, EventType type)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::handleLinkStreamEvent(OwnedFD& info, int fd, EventType)
 {
     ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handleLinkStreamEvent", "Link stream");
     addJob(*(info.linkedStreamCoRoutine), fd);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::handlePipeStreamEvent(SharedFD& info, int fd, EventType type)
 {
     ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handlePipeStreamEvent", "Pipe Streaming");
@@ -196,12 +217,14 @@ void EventHandler::handlePipeStreamEvent(SharedFD& info, int fd, EventType type)
     }
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::handleTimerEvent(TimerData& info, int timerId, EventType /*type*/)
 {
     ThorsLogTrace("ThorsAnvil::Nisse::Server::EventHandler", "handleTimerEvent", "Timer Activated");
     info.timerAction->handleRequest(timerId);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
 {
     /*
@@ -224,6 +247,7 @@ bool EventHandler::checkFileDescriptorOK(int fd, EventType type)
     return true;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::addJob(CoRoutine& work, int fd)
 {
     /*
@@ -292,6 +316,7 @@ void EventHandler::addJob(CoRoutine& work, int fd)
  *
  * Thus all changes to state are done by the main thread.
  */
+NISSE_HEADER_ONLY_INCLUDE
 void EventHandler::controlTimerAction()
 {
     ThorsMessage(8, "EventHandler", "controlTimerAction", "Checking state of connections");

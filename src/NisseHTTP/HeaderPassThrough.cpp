@@ -4,21 +4,25 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
+NISSE_HEADER_ONLY_INCLUDE
 HeaderPassThrough::HeaderPassThrough(std::istream& stream)
     : src(stream)
     , encoding(static_cast<std::streamsize>(0))
 {}
 
+NISSE_HEADER_ONLY_INCLUDE
 bool HeaderPassThrough::isContentLength(std::string_view line) const
 {
     return std::ranges::equal(getValue(line), std::string_view("content-length"), ichar_equals);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 bool HeaderPassThrough::isTransferEncoding(std::string_view line) const
 {
     return std::ranges::equal(getValue(line), std::string_view("transfer-encoding"), ichar_equals);
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::string_view HeaderPassThrough::getValue(std::string_view input) const
 {
     // Remove leading and trailing white space.
@@ -28,6 +32,7 @@ std::string_view HeaderPassThrough::getValue(std::string_view input) const
     return input;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 std::streamsize HeaderPassThrough::getContentLength(std::string_view line) const
 {
     auto find = std::min(line.size(), line.find(':'));
@@ -39,6 +44,7 @@ std::streamsize HeaderPassThrough::getContentLength(std::string_view line) const
     return result;
 }
 
+NISSE_HEADER_ONLY_INCLUDE
 void HeaderPassThrough::print(std::ostream& stream)
 {
     std::string line;
