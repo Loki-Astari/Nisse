@@ -30,7 +30,7 @@ namespace TASock = ThorsAnvil::ThorsSocket;
 class PyntTest: public Pynt
 {
     public:
-        virtual PyntResult handleRequest(TASock::SocketStream& stream, Context& context) override
+        virtual PyntResult handleRequest(TASock::SocketStream& /*stream*/, Context& /*context*/) override
         {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);
