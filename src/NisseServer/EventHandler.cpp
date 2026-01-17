@@ -1,8 +1,6 @@
 #include "EventHandler.h"
-#include "NisseUtil.h"
 #include "JobQueue.h"
 #include "Store.h"
-#include <ThorsLogging/ThorsLogging.h>
 
 /*
  * C Callback functions.

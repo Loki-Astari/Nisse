@@ -22,9 +22,10 @@
  */
 
 #include "NisseConfig.h"
+#include "TimerAction.h"
 #include "NisseUtil.h"
 #include "EventHandlerLibEvent.h"
-#include "Store.h"
+#include "ThorsSocket/Server.h"
 #include <chrono>
 #include <functional>
 
@@ -44,6 +45,8 @@ class Store;
 struct StreamData;
 struct ServerData;
 struct OwnedFD;
+struct SharedFD;
+class Pynt;
 
 class EventHandler
 {
@@ -125,7 +128,7 @@ class EventHandler
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "EventHandler.source"
 #endif
 

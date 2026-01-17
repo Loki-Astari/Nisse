@@ -1,6 +1,5 @@
 #include "Context.h"
 #include "NisseServer.h"
-#include "EventHandlerLibEvent.h"
 
 namespace TASock = ThorsAnvil::ThorsSocket;
 

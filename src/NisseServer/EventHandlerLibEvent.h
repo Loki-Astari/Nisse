@@ -10,6 +10,7 @@
 
 #include "NisseConfig.h"
 #include "ThorsIOUtil/Utility.h"
+#include "ThorsLogging/ThorsLogging.h"
 #include <event2/event.h>
 #include <utility>
 

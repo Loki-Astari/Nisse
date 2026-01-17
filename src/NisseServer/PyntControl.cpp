@@ -1,4 +1,5 @@
 #include "PyntControl.h"
+#include "NisseServer.h"
 
 namespace TASock = ThorsAnvil::ThorsSocket;
 

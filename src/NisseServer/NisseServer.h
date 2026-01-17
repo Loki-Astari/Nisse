@@ -18,7 +18,6 @@
 #include "JobQueue.h"
 #include "Store.h"
 #include "EventHandler.h"
-#include "Pynt.h"
 #include <ThorsSocket/SocketStream.h>
 
 namespace TASock = ThorsAnvil::ThorsSocket;
@@ -57,7 +56,7 @@ class NisseServer
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "NisseServer.source"
 #endif
 

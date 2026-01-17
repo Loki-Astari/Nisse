@@ -3,8 +3,6 @@
 
 #include "NisseConfig.h"
 #include "NisseUtil.h"
-#include "Pynt.h"
-#include "TimerAction.h"
 #include "EventHandlerLibEvent.h"
 #include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
@@ -39,6 +37,9 @@ namespace TASock   = ThorsAnvil::ThorsSocket;
 
 namespace ThorsAnvil::Nisse::Server
 {
+
+class Pynt;
+class TimerAction;
 
 /*
  * Data that can be stored.
@@ -210,7 +211,7 @@ class Store
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "Store.source"
 #endif
 

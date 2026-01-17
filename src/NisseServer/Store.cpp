@@ -1,5 +1,4 @@
 #include "Store.h"
-#include "EventHandlerLibEvent.h"
 
 using namespace ThorsAnvil::Nisse::Server;
 

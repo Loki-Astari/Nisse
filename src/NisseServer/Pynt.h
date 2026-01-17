@@ -24,7 +24,6 @@
  */
 
 #include "NisseConfig.h"
-#include "Context.h"
 #include <ThorsSocket/SocketStream.h>
 
 namespace TASock = ThorsAnvil::ThorsSocket;
@@ -33,6 +32,7 @@ namespace ThorsAnvil::Nisse::Server
 {
 
 enum class PyntResult {Done, More};
+class Context;
 
 class Pynt
 {
@@ -43,7 +43,7 @@ class Pynt
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "Pynt.source"
 #endif
 
