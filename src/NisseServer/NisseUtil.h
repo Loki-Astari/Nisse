@@ -1,7 +1,7 @@
 #ifndef THORSANVIL_NISSE_NISSE_UTIL_H
 #define THORSANVIL_NISSE_NISSE_UTIL_H
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 #include <ThorsSocket/Server.h>
 #include <ThorsSocket/SocketStream.h>
 #include <boost/coroutine2/all.hpp>

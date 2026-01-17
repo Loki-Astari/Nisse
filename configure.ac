@@ -20,11 +20,13 @@ AX_THOR_CHECK_USE_BOOST([1.70], [], [
     ])
 ])
 
+AX_THOR_CHECK_USE_THORS_SERIALIZE_HEADER_ONLY
 AX_THOR_FEATURE_HEADER_ONLY_VARIANT([NISSE])
+AX_THOR_CHECK_FOR_DOUBLE_SCAN_SUPPORT
 
 
 LT_INIT
 
-AX_THOR_FUNC_TERM_BUILD([NISSE], [src/NisseServer/NisseConfig.h:config.h.in src/NisseHTTP/NisseHTTPConfig.h:config.h.in])
+AX_THOR_FUNC_TERM_BUILD([NISSE], [src/NisseServer/NisseServerConfig.h:config.h.in src/NisseHTTP/NisseHTTPConfig.h:config.h.in])
 
 AC_OUTPUT

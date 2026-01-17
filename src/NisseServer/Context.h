@@ -1,7 +1,7 @@
 #ifndef THORSANVIL_NISSE_CONTEXT_H
 #define THORSANVIL_NISSE_CONTEXT_H
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 #include "NisseUtil.h"
 #include "EventHandlerLibEvent.h"
 #include <ThorsSocket/Socket.h>

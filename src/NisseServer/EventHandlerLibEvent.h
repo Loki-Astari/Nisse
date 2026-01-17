@@ -8,7 +8,7 @@
  * Event     is moveable.                   libEvent    event
  */
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 #include "ThorsIOUtil/Utility.h"
 #include "ThorsLogging/ThorsLogging.h"
 #include <event2/event.h>

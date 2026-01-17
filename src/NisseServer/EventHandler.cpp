@@ -25,8 +25,6 @@ namespace TASock   = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::Server;
 
-int EventHandler::nextTImerId = 1'000'000;
-
 /*
  * EventLib wrapper. Set up C-Function callbacks
  */
@@ -113,7 +111,7 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
 NISSE_HEADER_ONLY_INCLUDE
 int EventHandler::addTimer(int microseconds, TimerAction& action)
 {
-    int result = nextTImerId++;
+    int result = getNextTImerId()++;
     store.requestChange(StateUpdateCreateTimer{result,
                                                microseconds,
                                                &action,

@@ -9,6 +9,6 @@ LDLIBS_EXTERN_BUILD			= ThorSerialize
 FILE_WARNING_FLAGS			+= -Wno-missing-braces
 
 UNITTEST_LDLIBS				+= -L $(THORSANVIL_ROOT)/src/NisseServer/debug -L $(THORSANVIL_ROOT)/src/NisseServer/release -levent -levent_pthreads -lboost_coroutine -lboost_context
-UNITTEST_LDLIBS_HEADERONLY	-= -lcrypto -ssl -z
+UNITTEST_LDLIBS_HEADERONLY	= -lcrypto -lssl
 
 include $(THORSANVIL_ROOT)/build/tools/Makefile

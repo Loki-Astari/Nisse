@@ -54,6 +54,9 @@
 /* We have found package Thors Serializer */
 #undef HAVE_THORSSERIALIZER
 
+/* We have found ThorSerializeHeaderOnly package */
+#undef HAVE_ThorSerializeHeaderOnly
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -63,6 +66,12 @@
 /* Enable to use header only libraries */
 
 /* For header only convert to inline */
+
+/* Check for older build tools and use simpler code with old tools */
+#undef NO_STD_SUPPORT_FROM_CHAR_DOUBLE
+
+/* Check for older build tools and use simpler code with old tools */
+#undef NO_STD_SUPPORT_TO_CHAR_DOUBLE
 
 /* Name of package */
 #undef PACKAGE

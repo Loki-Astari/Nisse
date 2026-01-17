@@ -9,6 +9,7 @@ FILE_WARNING_FLAGS			+= -Wno-missing-braces
 
 UNITTEST_LDLIBS				+= -L ../../NisseServer/debug -L ../../NisseServer/release -levent -levent_pthreads -lboost_coroutine -lboost_context
 UNITTEST_LINK_LIBS			+= NisseServer
+UNITTEST_LDLIBS_HEADERONLY	= -lcrypto -lssl
 
 
 include $(THORSANVIL_ROOT)/build/tools/Makefile

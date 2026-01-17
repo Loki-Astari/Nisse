@@ -62,7 +62,6 @@ TEST(PathMatcherTest, SimplePathExactMatchFailSuffix)
                     return true;
                },
                std::unique_ptr<PathMatcher::Data>(new TestData(object)));
-    int                 count = 0;
     Match               hit;
 
     std::stringstream   ss{"GET /path1/path2/path3 HTTP/1.1\r\nhost: google.com\r\n\r\n"};
@@ -361,7 +360,7 @@ TEST(PathMatcherTest, ExactPathWillOverrideOriginal)
     TestObject          object;
     pm.addPath(Method::GET,
                "/path1{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 1;
@@ -370,7 +369,7 @@ TEST(PathMatcherTest, ExactPathWillOverrideOriginal)
                std::unique_ptr<PathMatcher::Data>(new TestData(object)));
     pm.addPath(Method::GET,
                "/path1{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 2;
@@ -393,7 +392,7 @@ TEST(PathMatcherTest, NotExactPathWillHitFirst)
     TestObject          object;
     pm.addPath(Method::GET,
                "/path1{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 1;
@@ -402,7 +401,7 @@ TEST(PathMatcherTest, NotExactPathWillHitFirst)
                std::unique_ptr<PathMatcher::Data>(new TestData(object)));
     pm.addPath(Method::GET,
                "/path1/{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 2;
@@ -425,7 +424,7 @@ TEST(PathMatcherTest, NotExactPathWillHitFirstAndFallThroughToSecond)
     TestObject          object;
     pm.addPath(Method::GET,
                "/path1{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 1;
@@ -434,7 +433,7 @@ TEST(PathMatcherTest, NotExactPathWillHitFirstAndFallThroughToSecond)
                std::unique_ptr<PathMatcher::Data>(new TestData(object)));
     pm.addPath(Method::GET,
                "/path1/{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 2;
@@ -457,7 +456,7 @@ TEST(PathMatcherTest, NotExactPathWillHitFirstAndFallThrough)
     TestObject          object;
     pm.addPath(Method::GET,
                "/path1{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 1;
@@ -466,7 +465,7 @@ TEST(PathMatcherTest, NotExactPathWillHitFirstAndFallThrough)
                std::unique_ptr<PathMatcher::Data>(new TestData(object)));
     pm.addPath(Method::GET,
                "/path1/{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 2;
@@ -489,7 +488,7 @@ TEST(PathMatcherTest, PathRemoved)
     TestObject          object;
     pm.addPath(Method::GET,
                "/path1{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 1;
@@ -513,7 +512,7 @@ TEST(PathMatcherTest, PathRemovedFirst)
     TestObject          object;
     pm.addPath(Method::GET,
                "/path1{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 1;
@@ -522,7 +521,7 @@ TEST(PathMatcherTest, PathRemovedFirst)
                std::unique_ptr<PathMatcher::Data>(new TestData(object)));
     pm.addPath(Method::GET,
                "/path1/{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 2;
@@ -546,7 +545,7 @@ TEST(PathMatcherTest, PathRemovedSecond)
     TestObject          object;
     pm.addPath(Method::GET,
                "/path1{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 1;
@@ -555,7 +554,7 @@ TEST(PathMatcherTest, PathRemovedSecond)
                std::unique_ptr<PathMatcher::Data>(new TestData(object)));
     pm.addPath(Method::GET,
                "/path1/{suffix}",
-               [](PathMatcher::Data& data, Match const& match, Request&, Response&)
+               [](PathMatcher::Data& data, Match const& /*match*/, Request&, Response&)
                {
                     TestData&  td = dynamic_cast<TestData&>(data);
                     td.object.count += 2;

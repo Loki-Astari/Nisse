@@ -6,7 +6,7 @@
  * Version 1:
  */
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 #include "Pynt.h"
 #include <ThorsSocket/SocketStream.h>
 

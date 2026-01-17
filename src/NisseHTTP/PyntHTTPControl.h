@@ -24,7 +24,6 @@ class PyntHTTPControl: public PyntHTTP
 }
 
 #if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
-#include "PyntHTTPControl.source"
 #endif
 
 #endif

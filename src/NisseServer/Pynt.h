@@ -23,7 +23,7 @@
  *                              Example: HTTP with header 'Connection: keep-alive'
  */
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 #include <ThorsSocket/SocketStream.h>
 
 namespace TASock = ThorsAnvil::ThorsSocket;
@@ -37,6 +37,11 @@ class Context;
 class Pynt
 {
     public:
+        Pynt()                                  = default;
+        Pynt(Pynt const&)                       = default;
+        Pynt(Pynt&&)                            = default;
+        Pynt& operator=(Pynt const&)            = default;
+        Pynt& operator=(Pynt&&)                 = default;
         virtual ~Pynt();
         virtual PyntResult handleRequest(TASock::SocketStream& stream, Context& context) = 0;
 };

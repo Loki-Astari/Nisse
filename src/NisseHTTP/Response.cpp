@@ -8,12 +8,10 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
-StandardStatusCodeMap standardCodes;
-
 NISSE_HEADER_ONLY_INCLUDE
 Response::Response(std::ostream& stream, Version version, int responseCode)
     : version{version}
-    , statusCode{standardCodes[responseCode]}
+    , statusCode{StandardStatusCodeMap::getStandardStatusCodeMap()[responseCode]}
     , headerSent{false}
     , baseStream{stream}
     , checkPoint(std::chrono::high_resolution_clock::now())
@@ -60,7 +58,7 @@ void Response::read(std::istream& stream)
     int code;
     if (stream >> version >> code >> IgnoreLine{})
     {
-        statusCode = standardCodes[code];
+        statusCode = StandardStatusCodeMap::getStandardStatusCodeMap()[code];
     }
 }
 
@@ -86,7 +84,7 @@ namespace ThorsAnvil::Nisse::HTTP
 NISSE_HEADER_ONLY_INCLUDE
 void Response::setStatus(int newStatusCode)
 {
-    statusCode = standardCodes[newStatusCode];
+    statusCode = StandardStatusCodeMap::getStandardStatusCodeMap()[newStatusCode];
 }
 
 NISSE_HEADER_ONLY_INCLUDE

@@ -93,7 +93,6 @@ class PathMatcher
 }
 
 #if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
-#include "PathMatcher.source"
 #endif
 
 #endif

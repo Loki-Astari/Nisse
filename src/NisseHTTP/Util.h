@@ -43,8 +43,9 @@ class StandardStatusCodeMap
 {
     using StatusCodeMap = std::set<StatusCode, std::function<bool(StatusCode const& lhs, StatusCode const& rhs)>>;
 
-    static StatusCodeMap const standardCodes;
+    static StatusCodeMap const& getStandardCodes();
     public:
+        static StandardStatusCodeMap& getStandardStatusCodeMap();
         StatusCode const& operator[](int code);
 };
 

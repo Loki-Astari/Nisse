@@ -74,6 +74,12 @@ class Request
 }
 
 #if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
+#include "PyntHTTPControl.h"
+#include "PyntHTTPControl.source"
+#include "PathMatcher.h"
+#include "PathMatcher.source"
+#include "PyntHTTP.h"
+#include "PyntHTTP.source"
 #include "Request.source"
 #endif
 

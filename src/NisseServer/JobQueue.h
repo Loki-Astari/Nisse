@@ -8,7 +8,7 @@
  * New jobs added via `addJob()` which will then be executed ASAP by one of the threads.
  */
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 #include <queue>
 #include <vector>
 #include <functional>

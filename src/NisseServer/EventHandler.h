@@ -21,7 +21,7 @@
  *       to clean up data (See Store for details).
  */
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 #include "TimerAction.h"
 #include "NisseUtil.h"
 #include "EventHandlerLibEvent.h"
@@ -59,7 +59,12 @@ class EventHandler
             {}
             virtual void handleRequest(int) override {parent.controlTimerAction();}
     };
-    static           int                        nextTImerId;
+
+    static int& getNextTImerId()
+    {
+        static int nextTImerId = 1'000'000;
+        return nextTImerId;
+    }
 
     JobQueue&       jobQueue;
     Store&          store;

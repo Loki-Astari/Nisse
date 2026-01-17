@@ -6,7 +6,7 @@
  *
  */
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 
 namespace ThorsAnvil::Nisse::Server
 {

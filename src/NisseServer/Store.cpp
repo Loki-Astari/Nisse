@@ -8,6 +8,7 @@ using namespace ThorsAnvil::Nisse::Server;
  * So we have a single invalid co-routine that can be used
  * to initialize non-coroutine objects until we are ready to initialize them.
  */
+NISSE_HEADER_ONLY_INCLUDE
 CoRoutine Store::invalid{[](Yield&){}};
 
 NISSE_HEADER_ONLY_INCLUDE

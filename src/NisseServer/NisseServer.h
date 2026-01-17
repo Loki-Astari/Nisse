@@ -14,7 +14,7 @@
  *  The server puts appropriate "lambdas" into the Event Handler to processes a socket.
  */
 
-#include "NisseConfig.h"
+#include "NisseServerConfig.h"
 #include "JobQueue.h"
 #include "Store.h"
 #include "EventHandler.h"
@@ -57,7 +57,9 @@ class NisseServer
 }
 
 #if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
+#include "Context.h"
 #include "Context.source"
+#include "PyntControl.h"
 #include "PyntControl.source"
 #include "NisseServer.source"
 #endif
