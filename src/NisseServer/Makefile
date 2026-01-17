@@ -1,5 +1,5 @@
 CONFIG_NAME					= Nisse
-THORSANVIL_ROOT             = $(realpath ../../)
+THORSANVIL_ROOT				?= $(realpath ../../)
 COVERAGE_REQUIRED			= 10
 
 TARGET						= NisseServer.defer

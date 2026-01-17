@@ -1,5 +1,5 @@
 CONFIG_NAME					= Nisse
-THORSANVIL_ROOT             = $(realpath ../../)
+THORSANVIL_ROOT				?= $(realpath ../../)
 
 TARGET						= NisseHTTP.defer
 NAMESPACE					= ThorsAnvil::Nisse::NisseHTTP

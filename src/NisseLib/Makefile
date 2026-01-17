@@ -1,5 +1,5 @@
 CONFIG_NAME					= Nisse
-THORSANVIL_ROOT             = $(realpath ../../)
+THORSANVIL_ROOT				?= $(realpath ../../)
 
 LDLIBS_EXTERN_BUILD			= ThorSerialize
 TARGET						= Nisse.lib

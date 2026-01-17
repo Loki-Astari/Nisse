@@ -1,6 +1,6 @@
-THORSANVIL_ROOT             = $(realpath ../../../)
+THORSANVIL_ROOT				?= $(realpath ../../../)
 
-TARGET                      = HelloWorld.prog
+TARGET						= HelloWorld.prog
 LINK_LIBS					+= Nisse
 LDLIBS_EXTERN_BUILD			= ThorSerialize
 LDLIBS						+= -levent -levent_pthreads -lboost_coroutine -lboost_context
