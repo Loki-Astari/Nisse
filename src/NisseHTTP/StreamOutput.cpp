@@ -1,4 +1,6 @@
 #include "StreamOutput.h"
+#include <utility>
+#include <variant>
 #include <algorithm>
 
 using namespace ThorsAnvil::Nisse::HTTP;

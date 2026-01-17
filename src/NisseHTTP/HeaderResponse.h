@@ -2,11 +2,10 @@
 #define THORSANVIL_NISSE_NISSEHTTP_HEADER_RESPONSE_H
 
 #include "NisseHTTPConfig.h"
-#include <string_view>
 #include <string>
 #include <string_view>
 #include <map>
-#include <iostream>
+#include <ostream>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
@@ -25,7 +24,7 @@ class HeaderResponse
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "HeaderResponse.source"
 #endif
 

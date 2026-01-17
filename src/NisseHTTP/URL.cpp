@@ -1,4 +1,6 @@
 #include "URL.h"
+#include <utility>
+#include <algorithm>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

@@ -9,6 +9,8 @@
 #include <string_view>
 #include <functional>
 #include <memory>
+#include <utility>
+#include <tuple>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
@@ -90,7 +92,7 @@ class PathMatcher
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "PathMatcher.source"
 #endif
 

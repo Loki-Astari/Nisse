@@ -1,4 +1,5 @@
 #include "ClientStream.h"
+#include <algorithm>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

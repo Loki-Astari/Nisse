@@ -1,5 +1,8 @@
 #include "ClientRequest.h"
 #include "ThorsLogging/ThorsLogging.h"
+#include <tuple>
+#include <algorithm>
+#include <stdexcept>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

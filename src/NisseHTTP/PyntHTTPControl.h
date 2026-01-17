@@ -8,6 +8,7 @@
 
 #include "NisseHTTPConfig.h"
 #include "PyntHTTP.h"
+#include "NisseServer/NisseServer.h"
 
 namespace ThorsAnvil::Nisse::HTTP
 {
@@ -22,7 +23,7 @@ class PyntHTTPControl: public PyntHTTP
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "PyntHTTPControl.source"
 #endif
 

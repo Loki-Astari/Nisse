@@ -1,8 +1,6 @@
 #include "PyntHTTPControl.h"
 #include "Request.h"
 #include "Response.h"
-#include "NisseServer/NisseServer.h"
-#include "ThorsLogging/ThorsLogging.h"
 #include <string_view>
 
 using namespace ThorsAnvil::Nisse::HTTP;

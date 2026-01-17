@@ -1,4 +1,6 @@
 #include "Util.h"
+#include <map>
+#include <variant>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

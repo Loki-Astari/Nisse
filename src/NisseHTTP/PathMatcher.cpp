@@ -1,6 +1,10 @@
 #include "PathMatcher.h"
 #include "Request.h"
 #include <ThorsLogging/ThorsLogging.h>
+#include <utility>
+#include <algorithm>
+#include <stdexcept>
+#include <memory>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

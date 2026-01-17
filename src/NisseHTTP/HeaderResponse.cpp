@@ -1,5 +1,6 @@
 #include "HeaderResponse.h"
 #include "Util.h"
+#include <ranges>
 #include <algorithm>
 
 using namespace ThorsAnvil::Nisse::HTTP;

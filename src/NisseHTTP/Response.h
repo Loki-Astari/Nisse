@@ -2,7 +2,6 @@
 #define THORSANVIL_NISSE_NISSEHTTP_RESPONSE_H
 
 #include "NisseHTTPConfig.h"
-#include "Util.h"
 #include "StreamOutput.h"
 #include <iostream>
 #include <string_view>
@@ -46,7 +45,7 @@ class Response
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "Response.source"
 #endif
 

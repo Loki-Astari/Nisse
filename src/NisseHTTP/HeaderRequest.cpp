@@ -1,7 +1,9 @@
 #include "HeaderRequest.h"
-#include <set>
 #include <sstream>
 #include <algorithm>
+#include <cctype>
+#include <sstream>
+#include <set>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

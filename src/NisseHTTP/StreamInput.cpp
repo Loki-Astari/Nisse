@@ -1,4 +1,7 @@
 #include "StreamInput.h"
+#include <utility>
+#include <variant>
+#include <algorithm>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

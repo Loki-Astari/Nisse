@@ -2,7 +2,6 @@
 #define THORSANVIL_NISSE_NISSEHTTP_CLIENTREQUEST_H
 
 #include "NisseHTTPConfig.h"
-#include "ClientResponse.h"
 #include "Util.h"
 #include "StreamOutput.h"
 #include <ostream>
@@ -39,7 +38,7 @@ class ClientRequest
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "ClientRequest.source"
 #endif
 

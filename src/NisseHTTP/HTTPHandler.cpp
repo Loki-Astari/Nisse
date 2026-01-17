@@ -2,6 +2,9 @@
 #include "Request.h"
 #include "Response.h"
 #include <regex>
+#include <algorithm>
+#include <utility>
+#include <memory>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

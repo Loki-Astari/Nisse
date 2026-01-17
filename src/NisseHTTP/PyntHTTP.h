@@ -27,7 +27,7 @@ class PyntHTTP: public Server::Pynt
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "PyntHTTP.source"
 #endif
 

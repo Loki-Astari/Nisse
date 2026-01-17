@@ -1,6 +1,8 @@
 #include "HeaderPassThrough.h"
 #include <charconv>
+#include <ranges>
 #include <algorithm>
+#include <charconv>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

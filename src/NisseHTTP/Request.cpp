@@ -1,5 +1,7 @@
 #include "Request.h"
-#include <ThorsLogging/ThorsLogging.h>
+#include <algorithm>
+#include <vector>
+#include <map>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 

@@ -6,9 +6,8 @@
 #include "PathMatcher.h"
 #include <string>
 #include <string_view>
-#include <functional>
-#include <vector>
 #include <istream>
+#include <utility>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
@@ -40,7 +39,7 @@ class HTTPHandler: public PyntHTTP
 
 }
 
-#if defined(THORS_SERIALIZER_HEADER_ONLY) && THORS_SERIALIZER_HEADER_ONLY == 1
+#if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
 #include "HTTPHandler.source"
 #endif
 
