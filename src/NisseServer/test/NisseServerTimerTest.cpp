@@ -26,7 +26,7 @@ class TestAction: public ThorsAnvil::Nisse::Server::TimerAction
         TestAction(int& value)
             : value(value)
         {}
-        virtual void handleRequest(int timerId) override
+        virtual void handleRequest(int /*timerId*/) override
         {
             value += 5;
         }
