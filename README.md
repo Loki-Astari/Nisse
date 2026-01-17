@@ -86,7 +86,7 @@ To install boost libraries `brew install boost` or (check google for you platfor
 
 To install libEvent `brew install libEvent` or (check the libEvent website).  
 
-To install ThorsMongo the easiest way to install is `brew install thors-mongo` but checkout the above project to see alternative ways to install or build.  
+To install ThorsMongo the easiest way to install is `brew install thors-anvil` but checkout the above project to see alternative ways to install or build.  
 
 ### Compile and Run:
 ```bash
