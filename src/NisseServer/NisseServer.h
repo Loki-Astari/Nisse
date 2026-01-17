@@ -57,6 +57,8 @@ class NisseServer
 }
 
 #if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
+#include "Context.source"
+#include "PyntControl.source"
 #include "NisseServer.source"
 #endif
 

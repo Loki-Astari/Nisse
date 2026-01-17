@@ -66,7 +66,6 @@ class AsyncSharedSocket
 }
 
 #if defined(NISSE_HEADER_ONLY) && NISSE_HEADER_ONLY == 1
-#include "Context.source"
 #endif
 
 #endif
