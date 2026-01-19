@@ -277,7 +277,7 @@ class MugServer: public NisServer::NisseServer
         }
 };
 
-TEST(MugServer, ServiceRunAddServerWithFileValidateWorks)
+TEST(MugServerTest, ServiceRunAddServerWithFileValidateWorks)
 {
 #ifdef  __WINNT__
     GTEST_SKIP();

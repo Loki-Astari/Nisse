@@ -14,7 +14,7 @@ EVENT_THREADS_LIB			= $(EVENT_THREADS_LIB_$(PLATFORM))
 EVENT_THREADS_LIB_Darwin	= -levent_pthreads
 EVENT_THREADS_LIB_Linux		= -levent_pthreads
 EVENT_THREADS_LIB_MSYS_NT	= -lws2_32
-EVENT_THREADS_LIB_MING64_NT	= -lws2_32
+EVENT_THREADS_LIB_MINGW64_NT= -lws2_32
 LDLIBS						+= -levent $(EVENT_THREADS_LIB) -lboost_coroutine$(BOOSTLIB_EXT) -lboost_context$(BOOSTLIB_EXT)
 
 include $(THORSANVIL_ROOT)/build/tools/Makefile
