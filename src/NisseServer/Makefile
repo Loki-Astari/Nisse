@@ -26,4 +26,7 @@ EVENT_THREADS_LIB_MING64_NT	= -lws2_32
 UNITTEST_LDLIBS				+= -L $(THORSANVIL_ROOT)/src/NisseServer/debug -L $(THORSANVIL_ROOT)/src/NisseServer/release -levent $(EVENT_THREADS_LIB) -lboost_coroutine$(BOOSTLIB_EXT) -lboost_context$(BOOSTLIB_EXT)
 UNITTEST_LDLIBS_HEADERONLY	= -lcrypto -lssl
 
+%/NisseServerTest.o:		FILE_WARNING_FLAGS += -Wno-unused-variable
+
+
 include $(THORSANVIL_ROOT)/build/tools/Makefile
