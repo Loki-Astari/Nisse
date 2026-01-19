@@ -145,7 +145,7 @@ TEST(RequestTest, PUT)
     EXPECT_EQ(Method::PUT, request.getMethod());
 }
 
-TEST(RequestTest, DELETE)
+TEST(RequestTest, DELETER)
 {
     std::stringstream   stream{"DELETE /Plop/path/twist.gue?p=1&q=12#34 HTTP/1.1\r\n"
                                "host: thorsanvil.dev:8080\r\n"
@@ -154,7 +154,7 @@ TEST(RequestTest, DELETE)
                               };
     Request request("http", stream);
 
-    EXPECT_EQ(Method::DELETE, request.getMethod());
+    EXPECT_EQ(Method::DELETER, request.getMethod());
 }
 
 TEST(RequestTest, POST)

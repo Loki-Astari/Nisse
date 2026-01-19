@@ -43,6 +43,26 @@ namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 
 enum class ActionType {File, Lib};
 
+class SocketSetUp
+{
+#ifdef  __WINNT__
+    public:
+        SocketSetUp()
+        {
+            WSADATA wsaData;
+            WORD wVersionRequested = MAKEWORD(2, 2);
+            int err = WSAStartup(wVersionRequested, &wsaData);
+            if (err != 0) {
+                printf("WSAStartup failed with error: %d\n", err);
+                throw std::runtime_error("Failed to set up Sockets");
+            }
+        }
+        ~SocketSetUp()
+        {
+            WSACleanup();
+        }
+#endif
+};
 /*
  * Some locations were we build do not currently support std::jthread.
  * This is a simplified version just for testing purposes.
@@ -248,7 +268,7 @@ class MugServer: public NisServer::NisseServer
             servers.emplace_back();
 
             servers.back().addPath(NisHttp::Method::GET,
-                                   FS::path("/files/{FilePath}").lexically_normal(),
+                                   "/files/{FilePath}",
                                    [&](NisHttp::Request const& request, NisHttp::Response& response)
                                    {handleRequestPath(request, response);return true;}
                                   );
@@ -259,6 +279,11 @@ class MugServer: public NisServer::NisseServer
 
 TEST(MugServer, ServiceRunAddServerWithFileValidateWorks)
 {
+#ifdef  __WINNT__
+    GTEST_SKIP();
+#endif
+
+    SocketSetUp   socketSetUp;
     MugServer     server;
     std::latch    latch(1);
     std::latch    waitForExit(1);

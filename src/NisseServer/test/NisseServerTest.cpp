@@ -10,6 +10,28 @@ using ThorsAnvil::Nisse::Server::Pynt;
 using ThorsAnvil::Nisse::Server::PyntResult;
 using ThorsAnvil::Nisse::Server::Context;
 
+class SocketSetUp
+{
+#ifdef  __WINNT__
+    public:
+        SocketSetUp()
+        {
+            WSADATA wsaData;
+            WORD wVersionRequested = MAKEWORD(2, 2);
+            int err = WSAStartup(wVersionRequested, &wsaData);
+            if (err != 0) {
+                printf("WSAStartup failed with error: %d\n", err);
+                throw std::runtime_error("Failed to set up Sockets");
+            }
+        }
+        ~SocketSetUp()
+        {
+            WSACleanup();
+        }
+#endif
+};
+
+
 /*
  * Some locations were we build do not currently support std::jthread.
  * This is a simplified version just for testing purposes.
@@ -42,6 +64,8 @@ PyntTest    testerPynt;
 
 TEST(NisseServerTest, stopSoft)
 {
+    SocketSetUp     socketSetup;
+
     NisseServer     server;
     std::latch      latch(1);
     server.listen(TASock::ServerInfo{8070}, testerPynt);
@@ -55,6 +79,8 @@ TEST(NisseServerTest, stopSoft)
 
 TEST(NisseServerTest, stopHard)
 {
+    SocketSetUp     socketSetup;
+
     NisseServer     server;
     std::latch      latch(1);
     server.listen(TASock::ServerInfo{8070}, testerPynt);
@@ -68,6 +94,8 @@ TEST(NisseServerTest, stopHard)
 
 TEST(NisseServerTest, stopSoftWithWork)
 {
+    SocketSetUp     socketSetup;
+
     NisseServer     server;
     std::latch      latch(1);
     server.listen(TASock::ServerInfo{8070}, testerPynt);
@@ -87,6 +115,8 @@ TEST(NisseServerTest, stopSoftWithWork)
 
 TEST(NisseServerTest, stopHardWithWork)
 {
+    SocketSetUp     socketSetup;
+
     NisseServer     server;
     std::latch      latch(1);
     server.listen(TASock::ServerInfo{8070}, testerPynt);
