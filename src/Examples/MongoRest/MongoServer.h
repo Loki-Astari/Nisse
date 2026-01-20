@@ -89,17 +89,17 @@ class MongoServer
     public:
         MongoServer(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db);
         // CRUD
-        void personCreate(NisHttp::Request& request, NisHttp::Response& response);
-        void personGet(NisHttp::Request& request, NisHttp::Response& response);
-        void personUpdate(NisHttp::Request& request, NisHttp::Response& response);
-        void personDelete(NisHttp::Request& request, NisHttp::Response& response);
+        void personCreate(NisHttp::Request const& request, NisHttp::Response& response);
+        void personGet(NisHttp::Request const& request, NisHttp::Response& response);
+        void personUpdate(NisHttp::Request const& request, NisHttp::Response& response);
+        void personDelete(NisHttp::Request const& request, NisHttp::Response& response);
 
         // FIND
-        void personFindByName(NisHttp::Request& request, NisHttp::Response& response);
-        void personFindByTel(NisHttp::Request& request, NisHttp::Response& response);
-        void personFindByZip(NisHttp::Request& request, NisHttp::Response& response);
+        void personFindByName(NisHttp::Request const& request, NisHttp::Response& response);
+        void personFindByTel(NisHttp::Request const& request, NisHttp::Response& response);
+        void personFindByZip(NisHttp::Request const& request, NisHttp::Response& response);
     private:
-        TAMongo::ObjectID   getIdFromRequest(NisHttp::Request& request);
+        TAMongo::ObjectID   getIdFromRequest(NisHttp::Request const& request);
         void                requestFailed(NisHttp::Response& response, std::initializer_list<std::string> messages);
 };
 

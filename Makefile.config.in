@@ -5,4 +5,6 @@ event_ROOT_DIR=@event_ROOT_DIR@
 event_ROOT_LIB=@event_ROOT_LIB@
 ThorSerialize_ROOT_DIR=@ThorSerialize_ROOT_DIR@
 ThorSerialize_ROOT_LIB=@ThorSerialize_ROOT_LIB@
+BoostCoRoutine_ROOT_DIR=@BoostCoRoutine_ROOT_DIR@
+BoostCoRoutine_ROOT_LIB=@BoostCoRoutine_ROOT_LIB@
 ThorSerializeHeaderOnly_ROOT_DIR=@ThorSerializeHeaderOnly_ROOT_DIR@

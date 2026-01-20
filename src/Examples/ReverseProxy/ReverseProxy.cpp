@@ -33,7 +33,7 @@ class ReverseProxy: public NisServer::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
-    bool handleRequest(NisHttp::Request& request, NisHttp::Response& response)
+    bool handleRequest(NisHttp::Request const& request, NisHttp::Response& response)
     {
         TASock::SocketInfo      init{dest, destPort};
         TASock::SocketStream    stream{TASock::Socket{init, TASock::Blocking::No}};
@@ -67,7 +67,7 @@ class ReverseProxy: public NisServer::NisseServer
             , dest(dest)
             , destPort(destPort)
         {
-            http.addPath(NisHttp::All::Method, "/{command}", [&](NisHttp::Request& request, NisHttp::Response& response){return handleRequest(request, response);});
+            http.addPath(NisHttp::All::Method, "/{command}", [&](NisHttp::Request const& request, NisHttp::Response& response){return handleRequest(request, response);});
             listen(getServerInit(certPath, port), http);
 
             listen(TASock::ServerInfo{port+2}, control);

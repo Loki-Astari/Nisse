@@ -702,6 +702,8 @@ CFLAGS
 CC
 LIBTOOL
 ThorSerializeHeaderOnly_ROOT_DIR
+BoostCoRoutine_ROOT_LIB
+BoostCoRoutine_ROOT_DIR
 BOOST_ROOT_LIB
 BOOST_ROOT_DIR
 BOOST_LDFLAGS
@@ -810,6 +812,7 @@ with_magicenum_header_only_root
 with_event_root
 with_boost
 with_boost_libdir
+with_boost_coroutine_root
 with_thorserialize_header_only_root
 enable_shared
 enable_static
@@ -1517,6 +1520,10 @@ Optional Packages:
                           this parameter only if default library detection
                           fails and you know exactly where your boost
                           libraries are located.
+  --with-boost-coroutine-root=<location>
+                          Define the root directory of package Boost
+                          CoRoutines
+
   --with-thorserialize-header-only-root=<location>
                           Directory of ThorSerializeHeaderOnly include folder:
                           the folder that has the include file
@@ -5893,6 +5900,216 @@ fi
 
     BOOST_ROOT_DIR=${_AX_BOOST_BASE_boost_path}
 
+
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: UNAME: ${UNAME}" >&5
+printf "%s\n" "$as_me: UNAME: ${UNAME}" >&6;}
+    if test "x${UNAME}" = "xMSYS_NT" || test "x${UNAME}" = "xMINGW64_NT"
+then :
+  boostExt=-mt
+else case e in #(
+  e) boostExt=
+     ;;
+esac
+fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: boostExt: ${boostExt}" >&5
+printf "%s\n" "$as_me: boostExt: ${boostExt}" >&6;}
+
+
+
+# Check whether --with-boost-coroutine-root was given.
+if test ${with_boost_coroutine_root+y}
+then :
+  withval=$with_boost_coroutine_root;
+fi
+
+
+    if test "xBoostCoRoutine" != "x"
+then :
+
+
+    if [ "x" == "x12" ] || [ "x" == "x10" ]; then
+
+        grep -q 'BoostCoRoutine_ROOT_DIR=@BoostCoRoutine_ROOT_DIR@' Makefile.config.in
+        result=$?
+        if test "x${result}" != "x0"
+then :
+
+                as_fn_error $? "
+                    Expecting BoostCoRoutine_ROOT_DIR to be defined in Makefile.config.in
+                    You should probably add this line to Makefile.config.in
+
+                        BoostCoRoutine_ROOT_DIR=@BoostCoRoutine_ROOT_DIR@
+                " "$LINENO" 5
+
+
+fi
+    fi
+
+    if [ "x" == "x12" ] || [ "x" == "x11" ]; then
+
+        grep -q 'BoostCoRoutine_ROOT_LIB=@BoostCoRoutine_ROOT_LIB@' Makefile.config.in
+        result=$?
+        if test "x${result}" != "x0"
+then :
+
+                as_fn_error $? "
+                    Expecting BoostCoRoutine_ROOT_LIB to be defined in Makefile.config.in
+                    You should probably add this line to Makefile.config.in
+
+                        BoostCoRoutine_ROOT_LIB=@BoostCoRoutine_ROOT_LIB@
+                " "$LINENO" 5
+
+
+fi
+    fi
+
+    if [ "x" == "x13" ]; then
+        grep -q 'BoostCoRoutineHeaderOnly_ROOT_DIR=@BoostCoRoutineHeaderOnly_ROOT_DIR@' Makefile.config.in
+        result=$?
+        if test "x${result}" != "x0"
+then :
+
+                as_fn_error $? "
+                    Expecting BoostCoRoutineHeaderOnly_ROOT_DIR to be defined in Makefile.config.in
+                    You should probably add this line to Makefile.config.in
+
+                        BoostCoRoutineHeaderOnly_ROOT_DIR=@BoostCoRoutineHeaderOnly_ROOT_DIR@
+                " "$LINENO" 5
+
+
+fi
+    fi
+
+
+fi
+
+    LIBRARY_DIR="-L ${with_boost_coroutine_root}/lib"
+    if test "x${with_boost_coroutine_root}" == "x"
+then :
+  LIBRARY_DIR="-L ${DefaultLinkDir}/lib"
+
+fi
+
+    if test "x${boost_coroutine_header_only_defined}" == "x"
+then :
+
+            ORIG_LDFLAGS="${LDFLAGS}"
+            LDFLAGS="$LDFLAGS ${LIBRARY_DIR}"
+
+            echo "Building: NotThor"
+            echo "Mark:     $BUILDING_NotThor"
+            echo "Checking"
+            if test "x$BUILDING_NotThor" == "x1"
+then :
+
+
+    if test "x${with_boost_coroutine_root}" != "x"
+then :
+
+
+printf "%s\n" "#define HAVE_BoostCoRoutine 1" >>confdefs.h
+
+            BoostCoRoutine_ROOT_DIR=${with_boost_coroutine_root}
+
+            subconfigure="${subconfigure} --with-boost-coroutine-root=${with_boost_coroutine_root}"
+
+
+fi
+    echo "Setting: BoostCoRoutine_ROOT_LIB TO boost_coroutine${boostExt} boost_context${boostExt}"
+    BoostCoRoutine_ROOT_LIB="boost_coroutine${boostExt} boost_context${boostExt}"
+
+
+
+else case e in #(
+  e)
+                    as_ac_Lib=`printf "%s\n" "ac_cv_lib_boost_coroutine${boostExt}""__ZN5boost10coroutines18coroutine_categoryEv" | sed "$as_sed_sh"`
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for _ZN5boost10coroutines18coroutine_categoryEv in -lboost_coroutine${boostExt}" >&5
+printf %s "checking for _ZN5boost10coroutines18coroutine_categoryEv in -lboost_coroutine${boostExt}... " >&6; }
+if eval test \${$as_ac_Lib+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lboost_coroutine${boostExt}  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+namespace conftest {
+  extern "C" int _ZN5boost10coroutines18coroutine_categoryEv ();
+}
+int
+main (void)
+{
+return conftest::_ZN5boost10coroutines18coroutine_categoryEv ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+  eval "$as_ac_Lib=yes"
+else case e in #(
+  e) eval "$as_ac_Lib=no" ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+eval ac_res=\$$as_ac_Lib
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"
+then :
+
+
+    if test "x${with_boost_coroutine_root}" != "x"
+then :
+
+
+printf "%s\n" "#define HAVE_BoostCoRoutine 1" >>confdefs.h
+
+            BoostCoRoutine_ROOT_DIR=${with_boost_coroutine_root}
+
+            subconfigure="${subconfigure} --with-boost-coroutine-root=${with_boost_coroutine_root}"
+
+
+fi
+    echo "Setting: BoostCoRoutine_ROOT_LIB TO boost_coroutine${boostExt} boost_context${boostExt}"
+    BoostCoRoutine_ROOT_LIB="boost_coroutine${boostExt} boost_context${boostExt}"
+
+
+
+else case e in #(
+  e)
+                            echo "FAIL: Using: >${with_boost_coroutine_root}<"
+                            as_fn_error $? "
+Error: Could not find boost_coroutine
+
+You can solve this by installing the boost libraries
+
+
+
+    " "$LINENO" 5
+                            echo "FAIL DONE"
+
+                     ;;
+esac
+fi
+
+
+             ;;
+esac
+fi
+            echo "Checking DONE"
+
+            LDFLAGS="${ORIG_LDFLAGS}"
+
+
+fi
 
 
 

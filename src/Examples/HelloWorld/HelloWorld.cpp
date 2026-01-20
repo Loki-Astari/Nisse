@@ -29,7 +29,7 @@ class HelloWorld: public NisServer::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
-    bool handleRequestLenght(NisHttp::Request& request, NisHttp::Response& response)
+    bool handleRequestLenght(NisHttp::Request const& request, NisHttp::Response& response)
     {
         std::string who  = request.variables()["Who"];
         std::string data = R"(
@@ -42,7 +42,7 @@ class HelloWorld: public NisServer::NisseServer
         response.body(data.size()) << data;
         return true;
     }
-    bool handleRequestChunked(NisHttp::Request& request, NisHttp::Response& response)
+    bool handleRequestChunked(NisHttp::Request const& request, NisHttp::Response& response)
     {
         response.body(NisHttp::Encoding::Chunked) << R"(
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -58,8 +58,8 @@ class HelloWorld: public NisServer::NisseServer
         HelloWorld(int port, std::optional<FS::path> certPath)
             : control(*this)
         {
-            http.addPath(NisHttp::Method::GET, "/HW{Who}.html", [&](NisHttp::Request& request, NisHttp::Response& response){return handleRequestLenght(request, response);});
-            http.addPath(NisHttp::Method::GET, "/CK{Who}.html", [&](NisHttp::Request& request, NisHttp::Response& response){return handleRequestChunked(request, response);});
+            http.addPath(NisHttp::Method::GET, "/HW{Who}.html", [&](NisHttp::Request const& request, NisHttp::Response& response){return handleRequestLenght(request, response);});
+            http.addPath(NisHttp::Method::GET, "/CK{Who}.html", [&](NisHttp::Request const& request, NisHttp::Response& response){return handleRequestChunked(request, response);});
             listen(getServerInit(certPath, port), http);
             listen(TASock::ServerInfo{port+2}, control);
         }

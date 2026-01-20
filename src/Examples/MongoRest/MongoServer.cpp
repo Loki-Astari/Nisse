@@ -107,7 +107,7 @@ MongoServer::MongoServer(NisServer::NisseServer& server, std::size_t poolSize, s
     : mongoPool(server, poolSize, host, port, user, password, db)
 {}
 
-TAMongo::ObjectID MongoServer::getIdFromRequest(NisHttp::Request& request)
+TAMongo::ObjectID MongoServer::getIdFromRequest(NisHttp::Request const& request)
 {
     TAMongo::ObjectID   result;
 
@@ -117,7 +117,7 @@ TAMongo::ObjectID MongoServer::getIdFromRequest(NisHttp::Request& request)
     return result;
 }
 
-void MongoServer::personCreate(NisHttp::Request& request, NisHttp::Response& response)
+void MongoServer::personCreate(NisHttp::Request const& request, NisHttp::Response& response)
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
@@ -133,7 +133,7 @@ void MongoServer::personCreate(NisHttp::Request& request, NisHttp::Response& res
     response.body(NisHttp::Encoding::Chunked) << TAJson::jsonExporter(result.inserted);
 }
 
-void MongoServer::personGet(NisHttp::Request& request, NisHttp::Response& response)
+void MongoServer::personGet(NisHttp::Request const& request, NisHttp::Response& response)
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
@@ -155,7 +155,7 @@ void MongoServer::personGet(NisHttp::Request& request, NisHttp::Response& respon
     requestFailed(response, {"No Value Found"});
 }
 
-void MongoServer::personUpdate(NisHttp::Request& request, NisHttp::Response& response)
+void MongoServer::personUpdate(NisHttp::Request const& request, NisHttp::Response& response)
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
@@ -182,7 +182,7 @@ void MongoServer::personUpdate(NisHttp::Request& request, NisHttp::Response& res
     }
 }
 
-void MongoServer::personDelete(NisHttp::Request& request, NisHttp::Response& response)
+void MongoServer::personDelete(NisHttp::Request const& request, NisHttp::Response& response)
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
@@ -206,7 +206,7 @@ void MongoServer::personDelete(NisHttp::Request& request, NisHttp::Response& res
     }
 }
 
-void MongoServer::personFindByName(NisHttp::Request& request, NisHttp::Response& response)
+void MongoServer::personFindByName(NisHttp::Request const& request, NisHttp::Response& response)
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
@@ -240,7 +240,7 @@ void MongoServer::personFindByName(NisHttp::Request& request, NisHttp::Response&
     requestStreamRange(response, result);
 }
 
-void MongoServer::personFindByTel(NisHttp::Request& request, NisHttp::Response& response)
+void MongoServer::personFindByTel(NisHttp::Request const& request, NisHttp::Response& response)
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
@@ -255,7 +255,7 @@ void MongoServer::personFindByTel(NisHttp::Request& request, NisHttp::Response& 
     requestStreamRange(response, result);
 }
 
-void MongoServer::personFindByZip(NisHttp::Request& request, NisHttp::Response& response)
+void MongoServer::personFindByZip(NisHttp::Request const& request, NisHttp::Response& response)
 {
     LeaseConnection         lease(mongoPool, request.getContext());
     TAMongo::ThorsMongo&    mongo =lease.connection();
