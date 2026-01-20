@@ -5240,6 +5240,15 @@ fi
 
 
 
+    if test "x${UNAME}" = "xMSYS_NT" || test "x${UNAME}" = "xMINGW64_NT"
+then :
+  threadEvent=ws2_32
+else case e in #(
+  e) threadEvent=event_pthreads
+     ;;
+esac
+fi
+
 
 
 # Check whether --with-event-root was given.
@@ -5341,8 +5350,8 @@ printf "%s\n" "#define HAVE_EVENT 1" >>confdefs.h
 
 
 fi
-    echo "Setting: event_ROOT_LIB TO event"
-    event_ROOT_LIB="event"
+    echo "Setting: event_ROOT_LIB TO event ${threadEvent}"
+    event_ROOT_LIB="event ${threadEvent}"
 
 
 
@@ -5400,8 +5409,8 @@ printf "%s\n" "#define HAVE_EVENT 1" >>confdefs.h
 
 
 fi
-    echo "Setting: event_ROOT_LIB TO event"
-    event_ROOT_LIB="event"
+    echo "Setting: event_ROOT_LIB TO event ${threadEvent}"
+    event_ROOT_LIB="event ${threadEvent}"
 
 
 
