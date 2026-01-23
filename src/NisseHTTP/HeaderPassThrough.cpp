@@ -1,4 +1,5 @@
 #include "HeaderPassThrough.h"
+#include "HeaderStreamOperator.tpp"
 #include <charconv>
 #include <ranges>
 #include <algorithm>

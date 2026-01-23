@@ -1,5 +1,6 @@
 #include "HeaderResponse.h"
 #include "Util.h"
+#include "HeaderStreamOperator.tpp"
 #include <ranges>
 #include <algorithm>
 
