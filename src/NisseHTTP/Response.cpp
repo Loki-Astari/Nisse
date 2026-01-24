@@ -1,6 +1,7 @@
 #include "Response.h"
 #include "HeaderResponse.h"
 #include "HeaderPassThrough.h"
+#include "HeaderStreamOperator.tpp"
 #include "ThorsLogging/ThorsLogging.h"
 #include <limits>
 #include <variant>

@@ -3,6 +3,7 @@
 
 #include "HeaderResponse.h"
 #include "HeaderPassThrough.h"
+#include <ostream>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
