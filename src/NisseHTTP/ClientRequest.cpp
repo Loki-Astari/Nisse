@@ -1,4 +1,6 @@
 #include "ClientRequest.h"
+#include "HeaderResponse.h"
+#include "HeaderPassThrough.h"
 #include "ThorsLogging/ThorsLogging.h"
 #include <tuple>
 #include <algorithm>
