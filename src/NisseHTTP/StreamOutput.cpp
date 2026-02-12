@@ -155,6 +155,9 @@ char StreamBufOutput::toHex(int digit)
 NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::outputChunkSize(std::streamsize size)
 {
+    // Note: Technically count can be larger than FFFF
+    //       But we know that this will never happen because
+    //       the maximum value is limited by chunkBufferSize (see header).
     bool started   = false;
     for (auto x: { 4096, 256, 16, 1})
     {
