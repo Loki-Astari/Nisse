@@ -1,4 +1,5 @@
 #include "StreamOutput.h"
+#include "ThorsLogging/ThorsLogging.h"
 #include <utility>
 #include <variant>
 #include <algorithm>
@@ -86,7 +87,7 @@ void StreamBufOutput::swap(StreamBufOutput& other) noexcept
 NISSE_HEADER_ONLY_INCLUDE
 int StreamBufOutput::sync()
 {
-    //std::cerr << "sync\n";
+    ThorsLogTrace("StreamBufOutput", "sync", "Entered");
     checkBuffer();
     dumpBuffer();
     return buffer->pubsync();
@@ -95,7 +96,7 @@ int StreamBufOutput::sync()
 NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::dumpBuffer()
 {
-    //std::cerr << "dumpBuffer\n";
+    ThorsLogTrace("StreamBufOutput", "dumpBuffer", "Entered");
     if (chunked)
     {
         std::streamsize     chunkSize = chunkBufferSize - remaining;
@@ -120,15 +121,15 @@ void StreamBufOutput::dumpBuffer()
 NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::done()
 {
-    //std::cerr << "Done\n";
+    ThorsLogTrace("StreamBufOutput", "done", "Entered");
     if (chunked)
     {
         dumpBuffer();
-        //std::cerr << "Sending Tail\n";
+        ThorsLogTrace("StreamBufOutput", "done", "Sending tail");
         sendAllData("0\r\n\r\n", 5);
         remaining = 0;
         chunked = false;
-        //std::cerr << "Sync Buffer\n";
+        ThorsLogTrace("StreamBufOutput", "done", "Sending buffer");
         buffer->pubsync();
     }
 }
@@ -136,7 +137,7 @@ void StreamBufOutput::done()
 NISSE_HEADER_ONLY_INCLUDE
 void StreamBufOutput::sendAllData(char const* s, std::streamsize size)
 {
-    //std::cerr << "sendAllData\n";
+    ThorsLogTrace("StreamBufOutput", "sendAllData", "Entered");
     while (size != 0)
     {
         std::streamsize sent = buffer->sputn(s, size);
@@ -176,7 +177,7 @@ void StreamBufOutput::outputChunkSize(std::streamsize size)
 NISSE_HEADER_ONLY_INCLUDE
 std::streamsize StreamBufOutput::xsputnChunked(char_type const* s,std::streamsize count)
 {
-    //std::cerr << "xsputnChunked\n";
+    ThorsLogTrace("StreamBufOutput", "xsputnChunked", "Entered");
     if (count > remaining)
     {
         std::streamsize     chunkSize = chunkBufferSize - remaining + count;
@@ -197,7 +198,7 @@ std::streamsize StreamBufOutput::xsputnChunked(char_type const* s,std::streamsiz
 NISSE_HEADER_ONLY_INCLUDE
 std::streamsize StreamBufOutput::xsputnLength(char_type const* s,std::streamsize count)
 {
-    //std::cerr << "xsputnLength\n";
+    ThorsLogTrace("StreamBufOutput", "xsputnLength", "Entered");
     std::streamsize result = 0;
     while (remaining != 0 && count != 0)
     {
@@ -217,7 +218,7 @@ std::streamsize StreamBufOutput::xsputnLength(char_type const* s,std::streamsize
 NISSE_HEADER_ONLY_INCLUDE
 std::streamsize StreamBufOutput::xsputn(char_type const* s,std::streamsize count)
 {
-    //std::cerr << "xsputn\n";
+    ThorsLogTrace("StreamBufOutput", "xsputn", "Entered");
     if (chunked) {
         return xsputnChunked(s, count);
     }
@@ -229,7 +230,7 @@ std::streamsize StreamBufOutput::xsputn(char_type const* s,std::streamsize count
 NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::int_type StreamBufOutput::overflowChunked(int_type ch)
 {
-    //std::cerr << "overflowChunked\n";
+    ThorsLogTrace("StreamBufOutput", "overflowChunked", "Entered");
     if (ch != traits::eof())
     {
         char_type v = ch;
@@ -241,7 +242,7 @@ StreamBufOutput::int_type StreamBufOutput::overflowChunked(int_type ch)
 NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::int_type StreamBufOutput::overflowLength(int_type ch)
 {
-    //std::cerr << "overflowLength\n";
+    ThorsLogTrace("StreamBufOutput", "overflowLength", "Entered");
     if (ch == traits::eof()) {
         return remaining == 0 ? traits::eof() : 1;
     }
@@ -261,7 +262,7 @@ StreamBufOutput::int_type StreamBufOutput::overflowLength(int_type ch)
 NISSE_HEADER_ONLY_INCLUDE
 StreamBufOutput::int_type StreamBufOutput::overflow(int_type ch)
 {
-    //std::cerr << "overflow\n";
+    ThorsLogTrace("StreamBufOutput", "overflow", "Entered");
     if (chunked) {
         return overflowChunked(ch);
     }
