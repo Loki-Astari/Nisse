@@ -124,8 +124,7 @@ bool Request::buildURL(std::string_view proto, std::string_view path)
         failResponse.add("error", "Invalid HTTP Request- No Host header");
         return false;
     }
-    std::string_view                hostValue  = hostValues.size() == 0 ? ""sv : hostValues[0];
-    url = URL{proto, hostValue, path};
+    url = URL{proto, hostValues[0], path};
     return true;
 }
 
