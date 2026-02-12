@@ -48,7 +48,7 @@ std::string_view Request::readFirstLine(std::istream& stream)
     {
         ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", ": Header not \\r\\n terminated");
         failResponse.add("error", "Invalid HTTP Request");
-        failResponse.add("rason", "Header Not terminated with <CR><LF>");
+        failResponse.add("reason", "Header Not terminated with <CR><LF>");
         return "";
     }
 
