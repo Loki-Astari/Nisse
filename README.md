@@ -4,6 +4,10 @@
 
 **Nisse** is a minimal, from-scratch server architecture built to demonstrate how real production servers work—without the complexity of large frameworks or opaque abstractions.
 
+**Online documentation:**
+- https://loki-astari.github.io/ThorsAnvil/NisseServer.html
+- https://loki-astari.github.io/ThorsAnvil/NisseHTTP.html
+
 It walks step-by-step from a basic TCP listener to a secure, multi-threaded HTTPS server, using modern C++ and standard system primitives. The goal is to make every layer understandable, debuggable, and hackable.
 
 You can explore the full evolution of Nisse in this series:
