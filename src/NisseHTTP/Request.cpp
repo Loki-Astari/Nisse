@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+#include <charconv>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
@@ -174,45 +175,67 @@ bool Request::buildStream(std::istream& stream)
 {
     auto&   contentLength    = head.getHeader("content-length");
     auto&   transferEncoding = head.getHeader("transfer-encoding");
-    if (contentLength.size() != 0 && transferEncoding.size() != 0)
+
+    /* If no content set an input stream with zero size */
+    if (contentLength.size() + transferEncoding.size() == 0) {
+        input.addBuffer(StreamBufInput(stream, 0));
+        return true;
+    }
+
+    /* Check there we have a valid content definition */
+    if (contentLength.size() + transferEncoding.size() != 1)
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Bad Request: Includes both 'content-length' and 'transfer-encoding'");
-        failResponse.add("error", "Invalid HTTP Request- Includes both 'content-length' and 'transfer-encoding'");
-        failResponse.add("value-content-length", contentLength[0]);
+        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Bad Request: Includes more than one 'content-length' and 'transfer-encoding'");
+        failResponse.add("error", "Invalid HTTP Request- Includes multiple 'content-length' or 'transfer-encoding'");
+        for (auto const& v: contentLength) {
+            failResponse.add("value-content-length", v);
+        }
         for (auto const& v: transferEncoding) {
             failResponse.add("value-transfer-encoding", v);
         }
         return false;
     }
 
-
     if (transferEncoding.size() == 0)
     {
-        std::streamsize bodySize = 0;
-        if (contentLength.size() != 0)
-        {
-            bodySize = std::stoi(contentLength[0]);
+        // The header specifies a content Length.
+        if (contentLength[0].size() == 0) {
+            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid content-length: Empty");
+            failResponse.add("error", "Invalid HTTP Request- Malformed content-length: <empty>");
+            return false;
         }
+        std::streamsize bodySize = 0;
+        char const*     first = &contentLength[0][0];
+        char const*     last  = first + contentLength[0].size();
+        auto result = std::from_chars(first, last, bodySize);
+        if (result.ec != std::errc() || result.ptr != last || bodySize < 0) {
+            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid content-length: ", contentLength[0]);
+            failResponse.add("error", "Invalid HTTP Request- Malformed content-length: " + contentLength[0]);
+            return false;
+        }
+
+        // Valid content length. Set fixed size input stream.
         input.addBuffer(StreamBufInput(stream, bodySize));
-        return true;
     }
-    if (transferEncoding.size() != 0 && transferEncoding.size() == 1 && transferEncoding[0] == "chunked")
+    else
     {
+        // The header specifies a body encoding/
+        if (transferEncoding[0] != "chunked") {
+            /* TODO: Understand other transfer-encoding and add support for these */
+            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid transfer-encoding: ", transferEncoding[0]);
+            failResponse.add("error", "Invalid HTTP Request- Unsupported Transer Encoding: " + transferEncoding[0]);
+            return false;
+        }
+
+        // Valid transfer encoding. Chunked.
+        // Set an input stream that decodes a Chunked input stream.
         input.addBuffer(StreamBufInput(stream,
                                        Encoding::Chunked,
                                        [&](){readHeaders(tail, stream);}));
-        return true;
     }
-    // TODO Handle other transfer encoding.
-    // Currently what will happen is that you can not read from the input stream.
-    // Which means POST/PUT etc commands can not transfer data.
-    ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Bad Request: Unsupported Transfer Encoding.");
-    failResponse.add("error", "Invalid HTTP Request- Unsupported Transer Encoding");
-    for (auto const& v: transferEncoding) {
-        failResponse.add("value-transfer-encoding", v);
-    }
-    failResponse.add("supported-transfer-encoding", "chunked");
-    return false;
+
+    // Good input.
+    return true;
 }
 
 NISSE_HEADER_ONLY_INCLUDE
