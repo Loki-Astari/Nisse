@@ -167,7 +167,7 @@ class Store
     std::map<int, StoreData>    data;
     std::vector<StateUpdate>    updates;
     std::mutex                  updateMutex;
-    int                         openStreamCount = 0;
+    std::atomic<int>            openStreamCount = 0;
 
     public:
         StoreData&      getStoreData(int fd);
