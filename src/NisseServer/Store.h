@@ -171,8 +171,6 @@ class Store
 
     public:
         StoreData&      getStoreData(int fd);
-        template<typename T>
-        T&              getData(int fd)    {return std::get<T>(getStoreData(fd));}
         int             getOpenConnections() const {return openStreamCount;}
         void            processUpdateRequest();
 
