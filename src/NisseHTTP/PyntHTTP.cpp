@@ -13,6 +13,10 @@ ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStre
 {
     ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Enter");
     Request     request(context, stream.getSocket().protocol(), stream);
+
+    // Check if we have a valid request.
+    // If there is something wrong in the HTTP request or any of the header parameters or the construction of the body stream
+    // then the request is invalid and we will immediately return and close the connection.
     if (!request.isValidRequest())
     {
         Response    clientError(stream, request.getVersion(), 400);
@@ -23,8 +27,16 @@ ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStre
 
     Response    response(stream, request.getVersion());
     this->processRequest(request, response);
-    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Good Request: ", response.getCode().code, " => ", response.getCode().message);
 
+    // If decoding the input stream resulted in an error.
+    // We have to assume the client sent a bad stream of data
+    if (request.body().fail()) {
+        ThorsLogError("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Processing the body has resulted in an error");
+        Response    clientError(stream, request.getVersion(), 422);
+        return Server::PyntResult::Done;
+    }
+
+    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Good Request: ", response.getCode().code, " => ", response.getCode().message);
     // By default we want to Keep-Alive
     // So we will only close if all the "connection" values are "close"
     std::vector<std::string> const& connection = request.headers().getHeader("connection");
