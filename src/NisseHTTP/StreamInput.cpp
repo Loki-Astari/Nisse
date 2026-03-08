@@ -268,28 +268,55 @@ void StreamBufInput::getNextChunk()
     else
     {
         // Each chunk terminated by '\r\n'
-        buffer->sbumpc();
-        buffer->sbumpc();
+        int c1 = buffer->sbumpc();
+        int c2 = buffer->sbumpc();
+        if (c1 != '\r' || c2 != '\n') {
+            // There is an issue.
+            // So close down the stream.
+            chunked = false;
+            complete();
+            return;
+        }
     }
 
     int next;
+    std::int32_t chunkSize = 0;
     while ((next = buffer->sbumpc()) != traits::eof())
     {
         if (next == '\r')
         {
-            next = buffer->sbumpc();    // Check it is '\n'
+            int c2 = buffer->sbumpc();
+            if (c2 != '\n') {
+                // There is an issue.
+                // So close down the stream.
+                chunked = false;
+                complete();
+                return;
+            }
             break;
         }
         next = (next >= 'a' && next <= 'f') ? next - 'a' + 10
              : (next >= 'A' && next <= 'F') ? next - 'A' + 10
              : (next >= '0' && next <= '9') ? next - '0'
-             : 0;
+             : -1;
 
-        remaining = (remaining * 16) + next;
+        if (next == -1) {
+            // Not a valid hex digit.
+            // There is an issue.
+            // So close down the stream.
+            chunked = false;
+            complete();
+            return;
+        }
+        // Complete
+        chunkSize = (chunkSize * 16) + next;
     }
-    if (remaining == 0)
+    if (chunkSize == 0)
     {
         chunked = false;
         complete();
+    }
+    else {
+        remaining = chunkSize;
     }
 }

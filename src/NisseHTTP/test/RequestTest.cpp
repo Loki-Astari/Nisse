@@ -335,9 +335,9 @@ TEST(RequestTest, ContentChunked)
     }
     EXPECT_EQ(2, count);
 
-    EXPECT_EQ(1, request.trailers().getHeader("tail1").size());
+    ASSERT_EQ(1, request.trailers().getHeader("tail1").size());
     EXPECT_EQ("data", request.trailers().getHeader("tail1")[0]);
-    EXPECT_EQ(2, request.trailers().getHeader("tail2").size());
+    ASSERT_EQ(2, request.trailers().getHeader("tail2").size());
     EXPECT_EQ("stop", request.trailers().getHeader("tail2")[0]);
     EXPECT_EQ("loop", request.trailers().getHeader("tail2")[1]);
 }
