@@ -7,31 +7,27 @@
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
-TEST(StreamInputTest, ConstructBuf)
-{
-    StreamBufInput     streamInput;
-}
 TEST(StreamInputTest, ConstrucBuftLength)
 {
     std::stringstream   ss;
-    StreamBufInput      streamInput(ss, 12);
+    StreamBufInput      streamInput(ss, 12, [](std::ios_base::iostate){});
 }
 TEST(StreamInputTest, ConstructBufChunked)
 {
     std::stringstream   ss;
-    StreamBufInput      streamInput(ss, Encoding::Chunked);
+    StreamBufInput      streamInput(ss, Encoding::Chunked, [](std::ios_base::iostate){});
 }
 TEST(StreamInputTest, ConstructBufMove)
 {
     std::stringstream   ss;
-    StreamBufInput      streamInput(ss, Encoding::Chunked);
+    StreamBufInput      streamInput(ss, Encoding::Chunked, [](std::ios_base::iostate){});
     StreamBufInput      move(std::move(streamInput));
 }
 TEST(StreamInputTest, ConstructBufMoveAssign)
 {
     std::stringstream   ss;
-    StreamBufInput      streamInput(ss, Encoding::Chunked);
-    StreamBufInput      move;
+    StreamBufInput      streamInput(ss, Encoding::Chunked, [](std::ios_base::iostate){});
+    StreamBufInput      move(ss, 0, [](std::ios_base::iostate){});
 
     move = std::move(streamInput);
 }
@@ -59,7 +55,7 @@ TEST(StreamInputTest, ConstructAssignedLength)
     EXPECT_FALSE(static_cast<bool>(streamInput));
 
     std::stringstream   ss;
-    streamInput.addBuffer(StreamBufInput(ss, 12));
+    streamInput.addBuffer(StreamBufInput(ss, 12, [](std::ios_base::iostate){}));
     EXPECT_TRUE(static_cast<bool>(streamInput));
 }
 TEST(StreamInputTest, ConstructAssignedChunked)
@@ -68,7 +64,7 @@ TEST(StreamInputTest, ConstructAssignedChunked)
     EXPECT_FALSE(static_cast<bool>(streamInput));
 
     std::stringstream   ss;
-    streamInput.addBuffer(StreamBufInput(ss, Encoding::Chunked));
+    streamInput.addBuffer(StreamBufInput(ss, Encoding::Chunked, [](std::ios_base::iostate){}));
     EXPECT_TRUE(static_cast<bool>(streamInput));
 }
 TEST(StreamInputTest, ReadLengthStream)

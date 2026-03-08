@@ -6,17 +6,6 @@
 using namespace ThorsAnvil::Nisse::HTTP;
 
 NISSE_HEADER_ONLY_INCLUDE
-StreamBufInput::StreamBufInput(Complete&& complete)
-    : remaining{0}
-    , processed{0}
-    , buffer{nullptr}
-    , chunked{false}
-    , firstChunk{false}
-    , complete{std::move(complete)}
-    , chunkBuffer{}
-{}
-
-NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete)
     : remaining{0}
     , processed{0}
@@ -47,7 +36,7 @@ StreamBufInput::StreamBufInput(StreamBufInput&& move) noexcept
     , buffer{std::exchange(move.buffer, nullptr)}
     , chunked{std::exchange(move.chunked, false)}
     , firstChunk{std::exchange(move.firstChunk, false)}
-    , complete{std::exchange(move.complete, [](){})}
+    , complete{std::exchange(move.complete, [](std::ios_base::iostate){})}
     , chunkBuffer{std::move(move.chunkBuffer)}
 {}
 
@@ -59,7 +48,7 @@ StreamBufInput& StreamBufInput::operator=(StreamBufInput&& move) noexcept
     buffer      = nullptr;
     chunked     = false;
     firstChunk  = false;
-    complete    = [](){};
+    complete    = [](std::ios_base::iostate){};
     chunkBuffer.resize(0);
 
     swap(move);
@@ -259,7 +248,7 @@ void StreamBufInput::getNextChunk()
 {
     if (!chunked)
     {
-        complete();
+        complete(std::ios::goodbit);
         return;
     }
     if (firstChunk) {
@@ -274,7 +263,7 @@ void StreamBufInput::getNextChunk()
             // There is an issue.
             // So close down the stream.
             chunked = false;
-            complete();
+            complete(std::ios::badbit);
             return;
         }
     }
@@ -290,7 +279,7 @@ void StreamBufInput::getNextChunk()
                 // There is an issue.
                 // So close down the stream.
                 chunked = false;
-                complete();
+                complete(std::ios::badbit);
                 return;
             }
             break;
@@ -305,7 +294,7 @@ void StreamBufInput::getNextChunk()
             // There is an issue.
             // So close down the stream.
             chunked = false;
-            complete();
+            complete(std::ios::badbit);
             return;
         }
         // Complete
@@ -314,7 +303,7 @@ void StreamBufInput::getNextChunk()
     if (chunkSize == 0)
     {
         chunked = false;
-        complete();
+        complete(std::ios::goodbit);
     }
     else {
         remaining = chunkSize;

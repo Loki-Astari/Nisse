@@ -178,7 +178,7 @@ bool Request::buildStream(std::istream& stream)
 
     /* If no content set an input stream with zero size */
     if (contentLength.size() + transferEncoding.size() == 0) {
-        input.addBuffer(StreamBufInput(stream, 0));
+        input.addBuffer(StreamBufInput(stream, 0, [&stream](std::ios_base::iostate state){stream.setstate(state);}));
         return true;
     }
 
@@ -215,7 +215,7 @@ bool Request::buildStream(std::istream& stream)
         }
 
         // Valid content length. Set fixed size input stream.
-        input.addBuffer(StreamBufInput(stream, bodySize));
+        input.addBuffer(StreamBufInput(stream, bodySize, [&stream](std::ios_base::iostate state){stream.setstate(state);}));
     }
     else
     {
@@ -231,7 +231,7 @@ bool Request::buildStream(std::istream& stream)
         // Set an input stream that decodes a Chunked input stream.
         input.addBuffer(StreamBufInput(stream,
                                        Encoding::Chunked,
-                                       [&](){readHeaders(tail, stream);}));
+                                       [&](std::ios_base::iostate state){stream.setstate(state);if (stream){readHeaders(tail, stream);}}));
     }
 
     // Good input.
