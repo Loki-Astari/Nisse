@@ -24,5 +24,27 @@ ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStre
     Response    response(stream, request.getVersion());
     this->processRequest(request, response);
     ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Good Request: ", response.getCode().code, " => ", response.getCode().message);
-    return Server::PyntResult::More;
+
+    // By default we want to Keep-Alive
+    // So we will only close if all the "connection" values are "close"
+    std::vector<std::string> const& connection = request.headers().getHeader("connection");
+    std::size_t isClose = 0;
+    for (auto const& c: connection) {
+        if (c == "close") {
+            isClose++;
+        }
+    }
+
+    Server::PyntResult result;
+    if (connection.size() == 0) {
+        // If there are no "connection" headers then use the default.
+        // This depends on the HTTP version.
+        result = request.getVersion() == Version::HTTP1_0 ? Server::PyntResult::Done : Server::PyntResult::More;
+    }
+    else {
+        // If there are multiple "connection" headers then use "close"
+        // if all the connections headers are "close"
+        result = isClose == connection.size() ? Server::PyntResult::Done : Server::PyntResult::More;
+    }
+    return result;
 }
