@@ -2,6 +2,7 @@
 #include <utility>
 #include <variant>
 #include <algorithm>
+#include <cstdint>
 
 using namespace ThorsAnvil::Nisse::HTTP;
 
