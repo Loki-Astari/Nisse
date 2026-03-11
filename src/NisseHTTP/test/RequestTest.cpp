@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "Request.h"
+#include "../Request.h"
 #include <sstream>
 
 using namespace ThorsAnvil::Nisse::HTTP;

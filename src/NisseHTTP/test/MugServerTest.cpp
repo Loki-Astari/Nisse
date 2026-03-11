@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "NisseHTTPConfig.h"
+#include "../NisseHTTPConfig.h"
 
 #include "ClientStream.h"
 #include "ClientRequest.h"
