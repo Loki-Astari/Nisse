@@ -1,7 +1,5 @@
 #include "HeaderResponse.h"
 #include "Util.h"
-#include "HeaderStreamOperator.tpp"
-#include <ranges>
 #include <algorithm>
 
 using namespace ThorsAnvil::Nisse::HTTP;

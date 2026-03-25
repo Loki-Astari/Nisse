@@ -1,5 +1,4 @@
 #include "ClientResponse.h"
-#include <iomanip>
 #include <algorithm>
 
 using namespace ThorsAnvil::Nisse::HTTP;
