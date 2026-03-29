@@ -2,7 +2,6 @@
 #include "Response.h"
 #include "Util.h"
 #include "HeaderResponse.h"
-#include "HeaderPassThrough.h"
 #include <sstream>
 #include <ThorsLogging/ThorsLogging.h>
 

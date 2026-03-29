@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <ranges>
 #include <sstream>
 #include <string_view>
 #include "StreamInput.h"

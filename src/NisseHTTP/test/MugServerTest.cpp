@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
-#include "../NisseHTTPConfig.h"
 
-#include "ClientStream.h"
+#include "NisseServer/NisseServer.h"
 #include "ClientRequest.h"
 #include "PyntHTTPControl.h"
 #include "HTTPHandler.h"
@@ -10,13 +9,10 @@
 #include "Request.h"
 #include "Response.h"
 #include "NisseServer/NisseServer.h"
-#include "ThorSerialize/JsonThor.h"
-#include "ThorsSocket/Socket.h"
 #include "ThorsSocket/SocketStream.h"
 
 #include <sstream>
 #include <iostream>
-#include <iomanip>
 
 #include <latch>
 #include <thread>
@@ -25,13 +21,10 @@
 #include <vector>
 #include <string>
 #include <string_view>
-#include <optional>
 
 #include <utility>
 #include <filesystem>
 #include <algorithm>
-#include <ratio>
-#include <chrono>
 
 #include <cctype>
 #include <cstddef>

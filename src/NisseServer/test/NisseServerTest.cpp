@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include <exception>
 #include <latch>
 #include <thread>
 #include "NisseServer.h"
@@ -113,6 +112,7 @@ TEST(NisseServerTest, stopSoftWithWork)
     server.stopSoft();
 }
 
+
 TEST(NisseServerTest, stopHardWithWork)
 {
     SocketSetUp     socketSetup;
@@ -124,6 +124,9 @@ TEST(NisseServerTest, stopHardWithWork)
     auto action1 = [&](){server.run([&latch](){latch.count_down();});};
     auto action2 = [&](){
         TASock::SocketStream socketData({"localhost", 8070});
+        // I am getting an issue with the LSP telling me the line below is an error.
+        // But it compiles fine. If you can explain to me why so I can resolve that would be great.
+        // TODO: Understand the LSP error.
         socketData << "Check" << std::flush;
     };
     LocalJthread    work1(action1);

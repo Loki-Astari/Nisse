@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 #include <sstream>
 #include "ClientRequest.h"
-#include "Request.h"
 #include "HeaderResponse.h"
 
 using ThorsAnvil::Nisse::HTTP::ClientRequest;
