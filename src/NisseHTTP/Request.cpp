@@ -1,6 +1,8 @@
 #include "Request.h"
 #include <algorithm>
+#include <cstddef>
 #include <vector>
+#include <array>
 #include <map>
 #include <charconv>
 
@@ -95,9 +97,16 @@ std::string_view Request::readFirstLine(std::istream& stream)
 NISSE_HEADER_ONLY_INCLUDE
 bool Request::readHeaders(HeaderRequest& dst, std::istream& stream)
 {
-    std::string line;
-    while (std::getline(stream, line))
+    std::size_t                     headerSize  = 0;
+    std::array<char, maxHeaderSize> lineBuffer;
+    while (stream.getline(lineBuffer.data(), maxHeaderSize))
     {
+        headerSize += stream.gcount();
+        if (headerSize > maxTotalHeaderSize) {
+            ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Request", "readHeaders", ": exceeds header limit size");
+            return false;
+        }
+        std::string_view line{lineBuffer.data(), lineBuffer.data() + stream.gcount() - 1};
         if (line == "\r") {
             break;
         }
@@ -111,7 +120,7 @@ bool Request::readHeaders(HeaderRequest& dst, std::istream& stream)
         }
         dst.add({&line[0], &line[0] + split}, {&line[0] + split + 1, &line[0] + line.size() - 1});
     }
-    return true;
+    return stream.good();
 }
 
 NISSE_HEADER_ONLY_INCLUDE
