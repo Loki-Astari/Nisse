@@ -809,6 +809,7 @@ with_standard_version
 enable_submodule
 with_thorserialize_root
 with_magicenum_header_only_root
+with_custom_event
 with_event_root
 with_boost
 with_boost_libdir
@@ -1509,6 +1510,10 @@ Optional Packages:
   --with-magicenum-header-only-root=<location>
                           Directory of MagicEnumHeaderOnly include folder: the
                           folder that has the include file
+
+  --with-custom-event=<lib>
+                          Override the libevent library name (default: event).
+                          Use event_core for Conan component-split builds.
 
   --with-event-root=<location>
                           Define the root directory of package Event
@@ -3940,7 +3945,7 @@ then :
   enableval=$enable_dark_mode;
 fi
 
-    if test "x$enable_dark-mode" != "xyes"
+    if test "x$enable_dark-mode" == "xyes"
 then :
 
             DARK_MODE="ON"
@@ -5244,7 +5249,8 @@ You can install this with
 Alternately if you have manually installed magic_enum you can specify its location with
     --with-magicenum-header-only-root=<location of magic_enum installation>/include
 
-            " "$LINENO" 5
+
+    " "$LINENO" 5
 
 fi
 
@@ -5254,7 +5260,6 @@ fi
 
 
     CXXFLAGS="${ORIG_CXXFLAGS}"
-
 
 
             if test "x${magicenum_header_only_found}" != "x"
@@ -5335,6 +5340,23 @@ then :
   threadEvent=ws2_32
 else case e in #(
   e) threadEvent=event_pthreads
+     ;;
+esac
+fi
+
+
+# Check whether --with-custom-event was given.
+if test ${with_custom_event+y}
+then :
+  withval=$with_custom_event;
+fi
+
+
+    if test "x${with_custom_event}" != "x"
+then :
+  thor_event_lib=${with_custom_event}
+else case e in #(
+  e) thor_event_lib=event
      ;;
 esac
 fi
@@ -5422,7 +5444,7 @@ then :
             LDFLAGS="$LDFLAGS ${LIBRARY_DIR}"
 
             echo "Building: NotThor"
-            echo "Checking for libevent"
+            echo "Checking for lib${thor_event_lib}"
             if test "x$BUILDING_NotThor" == "x1"
 then :
 
@@ -5439,21 +5461,22 @@ printf "%s\n" "#define HAVE_EVENT 1" >>confdefs.h
 
 
 fi
-    echo "Setting: event_ROOT_LIB TO event ${threadEvent}"
-    event_ROOT_LIB="event ${threadEvent}"
+    echo "Setting: event_ROOT_LIB TO ${thor_event_lib} ${threadEvent}"
+    event_ROOT_LIB="${thor_event_lib} ${threadEvent}"
 
 
 
 else case e in #(
   e)
-                    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for event_dispatch in -levent" >&5
-printf %s "checking for event_dispatch in -levent... " >&6; }
-if test ${ac_cv_lib_event_event_dispatch+y}
+                    as_ac_Lib=`printf "%s\n" "ac_cv_lib_${thor_event_lib}""_event_dispatch" | sed "$as_sed_sh"`
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for event_dispatch in -l${thor_event_lib}" >&5
+printf %s "checking for event_dispatch in -l${thor_event_lib}... " >&6; }
+if eval test \${$as_ac_Lib+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-levent  $LIBS"
+LIBS="-l${thor_event_lib}  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -5470,9 +5493,9 @@ return conftest::event_dispatch ();
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"
 then :
-  ac_cv_lib_event_event_dispatch=yes
+  eval "$as_ac_Lib=yes"
 else case e in #(
-  e) ac_cv_lib_event_event_dispatch=no ;;
+  e) eval "$as_ac_Lib=no" ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -5480,9 +5503,10 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 LIBS=$ac_check_lib_save_LIBS ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_event_event_dispatch" >&5
-printf "%s\n" "$ac_cv_lib_event_event_dispatch" >&6; }
-if test "x$ac_cv_lib_event_event_dispatch" = xyes
+eval ac_res=\$$as_ac_Lib
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"
 then :
 
 
@@ -5498,8 +5522,8 @@ printf "%s\n" "#define HAVE_EVENT 1" >>confdefs.h
 
 
 fi
-    echo "Setting: event_ROOT_LIB TO event ${threadEvent}"
-    event_ROOT_LIB="event ${threadEvent}"
+    echo "Setting: event_ROOT_LIB TO ${thor_event_lib} ${threadEvent}"
+    event_ROOT_LIB="${thor_event_lib} ${threadEvent}"
 
 
 
@@ -5515,6 +5539,9 @@ Error: Could not find libevent
 
     If libevent is not installed in the default location (/usr/local or /opt/homebrew) then you will need to specify its location.
     --with-event-root=<location of event installation>
+
+    If libevent is installed with split components (e.g. Conan), use:
+    --with-custom-event=event_core
 
 
 
