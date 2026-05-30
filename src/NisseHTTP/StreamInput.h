@@ -54,6 +54,7 @@ class StreamBufInput: public std::streambuf
         void checkBuffer();
         void getNextChunk();
         void preloadStreamIntoBufferNow();
+        void preloadStreamIntoBufferNowNextChunk();
         std::streamsize         currentPosition() const {return processed + (gptr() - eback());}
 
 };

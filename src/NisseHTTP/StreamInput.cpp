@@ -75,13 +75,23 @@ void StreamBufInput::swap(StreamBufInput& other) noexcept
 NISSE_HEADER_ONLY_INCLUDE
 void StreamBufInput::preloadStreamIntoBufferNow()
 {
-    if (chunked) {
-        return;
-    }
-    if (remaining == 0) {
+    // If all the data has been retrieved then just return.
+    if (!chunked && remaining == 0) {
         return;
     }
 
+    // If this chunk has been all retrieved.
+    // Then try and extract the size of the next chunk.
+    if (chunked && remaining == 0) {
+        getNextChunk();
+    }
+    // Force the download of the next chunk into the local buffer.
+    preloadStreamIntoBufferNowNextChunk();
+}
+
+NISSE_HEADER_ONLY_INCLUDE
+void StreamBufInput::preloadStreamIntoBufferNowNextChunk()
+{
     auto beg = eback();
     auto end = egptr();
     auto cur = gptr();
@@ -93,9 +103,7 @@ void StreamBufInput::preloadStreamIntoBufferNow()
         std::streamsize needed = remaining - avail;
         chunkBuffer.resize(chunkBuffer.size() + needed);
     }
-    if (end == nullptr) {
-        end = &chunkBuffer[0] + (end - beg);
-    }
+    end = &chunkBuffer[0] + (end - beg);
     while (remaining != 0)
     {
         std::streamsize extra = buffer->sgetn(end, remaining);
@@ -126,7 +134,7 @@ StreamBufInput::int_type StreamBufInput::underflow()
         }
     }
 
-    std::streamsize get = std::min(remaining, chunkBufferSize);
+    std::streamsize get = std::min(remaining, static_cast<std::streamsize>(chunkBuffer.size()));
     std::streamsize got = buffer->sgetn(&chunkBuffer[0], get);
     if (got == 0) {
         return traits::eof();
@@ -199,10 +207,15 @@ StreamBufInput::pos_type StreamBufInput::seekoff(StreamBufInput::off_type off, s
     if (way != std::ios_base::cur) {
         return currentPosition();
     }
-    if (off < 0) {
+    if (off == 0) {
         return currentPosition();
     }
-    if (off == 0) {
+    if (off < 0) {
+        char* beg = eback();
+        char* cur = gptr();
+        char* newInput = std::max(beg, cur + off);
+
+        setg(eback(), newInput, egptr());
         return currentPosition();
     }
     std::streamsize count = off;
