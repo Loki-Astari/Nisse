@@ -73,11 +73,17 @@ void StreamBufInput::swap(StreamBufInput& other) noexcept
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void StreamBufInput::preloadStreamIntoBufferNow()
+std::string_view StreamBufInput::preloadStreamIntoBuffer(bool forceNextChunk)
 {
+    // If we are not forcing then retrieve a view of the current buffer.
+    // From the current input point.
+    if (!forceNextChunk) {
+        return std::string_view{gptr(), egptr()};
+    }
+
     // If all the data has been retrieved then just return.
     if (!chunked && remaining == 0) {
-        return;
+        return std::string_view{gptr(), egptr()};
     }
 
     // If this chunk has been all retrieved.
@@ -85,25 +91,23 @@ void StreamBufInput::preloadStreamIntoBufferNow()
     if (chunked && remaining == 0) {
         getNextChunk();
     }
-    // Force the download of the next chunk into the local buffer.
-    preloadStreamIntoBufferNowNextChunk();
-}
 
-NISSE_HEADER_ONLY_INCLUDE
-void StreamBufInput::preloadStreamIntoBufferNowNextChunk()
-{
+    // Now we need to try and read data from the input stream.
     auto beg = eback();
-    auto end = egptr();
     auto cur = gptr();
+    auto end = egptr();
 
-    std::streamsize used = end - beg;
-    std::streamsize current = chunkBuffer.size();
-    std::streamsize avail = current - used;
+    std::streamsize used = end - beg;                   // How much of the current buffer has data
+    std::streamsize avail = chunkBuffer.size() - used;  // How much unused buffer is available.
+
+    // Will the next chunk fit into the remaining space in the buffer.
     if (remaining > avail) {
         std::streamsize needed = remaining - avail;
         chunkBuffer.resize(chunkBuffer.size() + needed);
     }
-    end = &chunkBuffer[0] + (end - beg);
+    // Buffer now large enough to hold the next chunk.
+
+    end = &chunkBuffer[0] + used;
     while (remaining != 0)
     {
         std::streamsize extra = buffer->sgetn(end, remaining);
@@ -114,12 +118,6 @@ void StreamBufInput::preloadStreamIntoBufferNowNextChunk()
         end += extra;
     }
     setg(&chunkBuffer[0], &chunkBuffer[0] + (cur - beg), end);
-}
-
-NISSE_HEADER_ONLY_INCLUDE
-std::string_view StreamBufInput::preloadStreamIntoBuffer()
-{
-    preloadStreamIntoBufferNow();
     return std::string_view{gptr(), egptr()};
 }
 
@@ -192,10 +190,7 @@ std::streamsize StreamBufInput::xsgetn(char_type* s, std::streamsize count)
 NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::pos_type StreamBufInput::seekpos(StreamBufInput::pos_type pos, std::ios_base::openmode which)
 {
-    pos_type                current = static_cast<pos_type>(currentPosition());
-    off_type                off     = pos - current;
-
-    return seekoff(off, std::ios_base::cur, which);
+    return seekoff(pos, std::ios_base::beg, which);
 }
 
 NISSE_HEADER_ONLY_INCLUDE
@@ -204,27 +199,46 @@ StreamBufInput::pos_type StreamBufInput::seekoff(StreamBufInput::off_type off, s
     if (which != std::ios_base::in) {
         return 0;
     }
-    if (way != std::ios_base::cur) {
+    // Can't measure from the end.
+    if (way == std::ios_base::end) {
         return currentPosition();
     }
+    // If this is an absolute move convert it to a relative change.
+    if (way == std::ios_base::beg) {
+        off = off - static_cast<pos_type>(currentPosition());
+    }
+
+    // No move: Simply return.
     if (off == 0) {
         return currentPosition();
     }
+
+    // Move backwards:
     if (off < 0) {
         char* beg = eback();
         char* cur = gptr();
+
+        // We can only move back within the current buffer.
+        // Not feasible to go backwards beyond that.
         char* newInput = std::max(beg, cur + off);
 
-        setg(eback(), newInput, egptr());
+        setg(beg, newInput, egptr());
         return currentPosition();
     }
+
+    // Move forward
     std::streamsize count = off;
     std::streamsize avail = egptr() - gptr();
+
+    // Is the end point in the current buffer.
+    // Jump bump the position.
     if (count < avail)
     {
         gbump(count);
         return currentPosition();
     }
+
+    // Position beyond what is in the current buffer.
     gbump(avail);
     processed += (egptr() - eback());
     setg(&chunkBuffer[0], &chunkBuffer[0], &chunkBuffer[0]);
@@ -249,6 +263,9 @@ StreamBufInput::pos_type StreamBufInput::seekoff(StreamBufInput::off_type off, s
         remaining -= get;
         count -= get;
     }
+    // At this point there is nothing in the local buffer.
+    // But the underlying stream has been moved forward to the required position.
+    // The next read will underflow() and fill up the buffer with data.
     return currentPosition();
 }
 
