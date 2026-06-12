@@ -10,7 +10,7 @@ LDLIBS_EXTERN_BUILD				+= ThorSerialize event BoostCoRoutine
 
 
 FILE_WARNING_FLAGS_Darwin		=
-FILE_WARNING_FLAGS_Linux		=
+FILE_WARNING_FLAGS_Linux		= -Wno-uninitialized
 FILE_WARNING_FLAGS_MSYS_NT		= -Wno-uninitialized
 FILE_WARNING_FLAGS_MINGW64_NT	= -Wno-uninitialized
 FILE_WARNING_FLAGS				+= -Wno-missing-braces  $(FILE_WARNING_FLAGS_$(PLATFORM))
