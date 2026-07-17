@@ -47,10 +47,10 @@ ThorsAnvil::Serialize::PrinterConfig    outputConfig{ThorsAnvil::Serialize::Outp
 TEST(ClientHTTPTest, X)
 {
     ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 80});
+    HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
 
     std::cerr << "Get\n";
-    HTTP::ClientHTTPResponse    input = client.get("/pageGood", HTTP::Version::HTTP1_0);
+    HTTP::ClientHTTPResponse    input = client.get("/pageGood");
     std::cerr << "Get DONE\n";
 
     std::string     line;

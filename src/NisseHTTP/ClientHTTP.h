@@ -72,29 +72,31 @@ namespace ThorsAnvil::Nisse::HTTP
     class ClientHTTP
     {
         ThorsAnvil::ThorsSocket::SocketInfo     init;
-
         ThorsAnvil::ThorsSocket::SocketStream   stream;
+        Version                                 version;
+
         public:
-            ClientHTTP(ThorsAnvil::ThorsSocket::SocketInfo&& info)
+            ClientHTTP(ThorsAnvil::ThorsSocket::SocketInfo&& info, Version version = Version::HTTP2)
                 : init{std::move(info)}
                 , stream{init}
+                , version{version}
             {}
 
-            ClientHTTPResponse get(std::string_view path, Version version, HeaderRequest const& headers = {})               {return send(Method::GET, path, version, headers, 0);}
+            ClientHTTPResponse get(std::string_view path, HeaderRequest const& headers = {})               {return send(Method::GET, path, headers, 0);}
             template<typename T>
-            ClientHTTPResponse put(std::string_view path, Version version, HeaderRequest const& headers, T const& data)     {return send(Method::PUT, path, version, headers, data);}
+            ClientHTTPResponse put(std::string_view path, HeaderRequest const& headers, T const& data)     {return send(Method::PUT, path, headers, data);}
             template<typename T>
-            ClientHTTPResponse post(std::string_view path, Version version, HeaderRequest const& headers, T const& data)    {return send(Method::POST, path, version, headers, data);}
+            ClientHTTPResponse post(std::string_view path, HeaderRequest const& headers, T const& data)    {return send(Method::POST, path, headers, data);}
 
 
-            ClientHTTPResponse send(Method method, std::string_view path, Version version, HeaderRequest const& headers = {}, std::size_t size = 0);
-            ClientHTTPResponse send(Method method, std::string_view path, Version version, HeaderRequest const& headers = {}, Encoding encoding = Encoding::Chunked);
+            ClientHTTPResponse send(Method method, std::string_view path, HeaderRequest const& headers = {}, std::size_t size = 0);
+            ClientHTTPResponse send(Method method, std::string_view path, HeaderRequest const& headers = {}, Encoding encoding = Encoding::Chunked);
 
             template<typename T>
             requires (!std::is_integral_v<std::remove_cvref_t<T>>)
-            ClientHTTPResponse send(Method method, std::string_view path, Version version, HeaderRequest const& headers, T const& data)
+            ClientHTTPResponse send(Method method, std::string_view path, HeaderRequest const& headers, T const& data)
             {
-                sendHeader(method, path, version, headers);
+                sendHeader(method, path, headers);
                 stream << "content-length: "
                        << ThorsAnvil::Serialize::jsonStreanSize(data) << "\r\n\r\n"
                        << ThorsAnvil::Serialize::jsonExporter(data);
@@ -103,7 +105,7 @@ namespace ThorsAnvil::Nisse::HTTP
             }
 
         private:
-            void sendHeader(Method method, std::string_view path, Version version, HeaderRequest const& headers);
+            void sendHeader(Method method, std::string_view path, HeaderRequest const& headers);
     };
 }
 

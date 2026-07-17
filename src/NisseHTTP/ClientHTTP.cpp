@@ -127,9 +127,9 @@ bool ClientHTTPResponse::buildStream()
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-ClientHTTPResponse ClientHTTP::send(Method method, std::string_view path, Version version, HeaderRequest const& headers, std::size_t size)
+ClientHTTPResponse ClientHTTP::send(Method method, std::string_view path, HeaderRequest const& headers, std::size_t size)
 {
-    sendHeader(method, path, version, headers);
+    sendHeader(method, path, headers);
     if (size != 0) {
         stream << "content-length: " << size << "\r\n\r\n";
     }
@@ -141,16 +141,16 @@ ClientHTTPResponse ClientHTTP::send(Method method, std::string_view path, Versio
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-ClientHTTPResponse ClientHTTP::send(Method method, std::string_view path, Version version, HeaderRequest const& headers, Encoding encoding)
+ClientHTTPResponse ClientHTTP::send(Method method, std::string_view path, HeaderRequest const& headers, Encoding encoding)
 {
-    sendHeader(method, path, version, headers);
+    sendHeader(method, path, headers);
     stream << "transfer-encoding: " << encoding << "\r\n\r\n";
 
     return ClientHTTPResponse{stream};
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void ClientHTTP::sendHeader(Method method, std::string_view path, Version version, HeaderRequest const& headers)
+void ClientHTTP::sendHeader(Method method, std::string_view path, HeaderRequest const& headers)
 {
     stream << method << " " << path << " " << version << "\r\n"
            << "host: " << init.host << "\r\n";
