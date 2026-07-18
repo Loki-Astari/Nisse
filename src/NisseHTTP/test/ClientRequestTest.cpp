@@ -13,7 +13,7 @@ TEST(ClientRequestTest, Construct)
 {
     std::stringstream   stream;
     ClientHTTPBase      request(stream, "localhost", Version::HTTP1_1);
-    request.put({path: "/bang/bot"}, "Hi there"s);
+    request.put({.path = "/bang/bot"}, "Hi there"s);
 
     EXPECT_EQ("PUT /bang/bot HTTP/1.1\r\n"
               "host: localhost\r\n"
@@ -30,7 +30,7 @@ TEST(ClientRequestTest, ConstructWithAddedHeaders)
 
     ThorsAnvil::Nisse::HTTP::HeaderRequest   headers;
     headers.add("X-Bob", "Meet Here");
-    request.put(ClientRequest{path: "/bang/bot", headers: headers}, "Hi there"s);
+    request.put(ClientRequest{.path = "/bang/bot", .headers = headers}, "Hi there"s);
 
     EXPECT_EQ("PUT /bang/bot HTTP/1.1\r\n"
               "host: localhost\r\n"

@@ -5,21 +5,16 @@
 #include "HeaderRequest.h"
 #include "StreamInput.h"
 #include "StreamOutput.h"
+
 #include "ThorsLogging/ThorsLogging.h"
-
-#include "Util.h"
-
 #include "ThorsSocket/SocketStream.h"
-#include "ThorsSocket/SocketUtil.h"
-
 #include "ThorSerialize/JsonThor.h"
-#include "ThorSerialize/Traits.h"
-#include "ThorSerialize/SerUtil.h"
 
-#include <cstddef>
 #include <string>
+#include <iostream>
 #include <string_view>
-#include <type_traits>
+#include <functional>
+#include <utility>
 
 namespace ThorsAnvil::Nisse::HTTP
 {
@@ -78,61 +73,14 @@ namespace ThorsAnvil::Nisse::HTTP
                 , close{std::move(close)}
             {}
 
-            void get(ClientRequest const& request)                      {send(Method::GET, request, 0, [](std::ostream&){});}
+            void get(ClientRequest const& request)                      {send(Method::GET, request, 0, [](StreamOutput&){});}
             template<typename T>
             void put(ClientRequest const& request, T const& data)       {send(Method::PUT, request, ThorsAnvil::Serialize::jsonStreanSize(data), [&data](std::ostream& output){output << ThorsAnvil::Serialize::jsonExporter(data);});}
             template<typename T>
             void post(ClientRequest const& request, T const& data)      {send(Method::POST, request, ThorsAnvil::Serialize::jsonStreanSize(data), [&data](std::ostream& output){output << ThorsAnvil::Serialize::jsonExporter(data);});}
 
-            template<typename A>
-            void send(Method method, ClientRequest const& request, BodyEncoding encoding, A&& action)
-            {
-                // Send to the server a correctly encoded HTTP request.
-                // With the minumum headers.
-                stream << method << " " << request.path << " " << version << "\r\n"
-                       << "host: " << host << "\r\n"
-                       << encoding;
-
-                // Add the user requested header.
-                for (auto const& header: request.headers) {
-                    for (auto const& value: header.second) {
-                        stream << header.first << ": " << value << "\r\n";
-                    }
-                }
-
-                // Empty line marking end of headers.
-                stream << "\r\n";
-
-                /*
-                 * Create a stream that knows how to enforce the encoding specified.
-                 *
-                 * If you specified an exact size (via integer) then the stream will set the bad bit if you send
-                 * more data than the allowed value. But if you don't send enough will fill the output stream in
-                 * the destructor.
-                 *
-                 * If the encoding is chunked it will buffer internally until you hit the buffer size or manually flush;
-                 * at which point it will send the hex encoded size followed by the data in the buffer.
-                 * The destructor will then make sure then stream is correctly terminated with an empty block.
-                 *
-                 * The same pattern for other encodings. The stream will automatically apply the encoding.
-                 * And the destructor of `output` will make sure the stream is correctly terminated and flushed.
-                 */
-                StreamOutput    output(stream, encoding);
-                std::forward<A>(action)(output);
-            }
-
-            template<typename A>
-            void processResp(A&& action)
-            {
-                // Reads the status line and header information from the stream.
-                // Internally it will create a stream object that decodes the input based on the headers).
-                // So your code can read directly from the input.
-                ClientHTTPResponse  response{stream};
-                if (!response.isValid()) {
-                    close();
-                }
-                std::forward<A>(action)(response);
-            }
+            void send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action);
+            void processResp(std::function<void(ClientHTTPResponse const&)>&& action);
     };
     class ClientHTTP: public ClientHTTPBase
     {

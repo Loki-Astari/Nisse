@@ -63,10 +63,10 @@ TEST(ClientHTTPTest, GetChunked)
     ServerRunner                runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
 
-    client.get({path:"/pageChunked"});
+    client.get({.path = "/pageChunked"});
 
     std::string data;
-    client.processResp([&data](HTTP::ClientHTTPResponse& response)
+    client.processResp([&data](HTTP::ClientHTTPResponse const& response)
     {
         std::istream&  input = response.body();
 
@@ -85,10 +85,10 @@ TEST(ClientHTTPTest, GetChunkedWithFlush)
     ServerRunner                runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
 
-    client.get({path:"/pageChunkedWithFlush"});
+    client.get({.path = "/pageChunkedWithFlush"});
 
     std::string data;
-    client.processResp([&data](HTTP::ClientHTTPResponse& response)
+    client.processResp([&data](HTTP::ClientHTTPResponse const& response)
     {
         std::istream&  input = response.body();
 
@@ -106,10 +106,10 @@ TEST(ClientHTTPTest, GetSized)
     ServerRunner                runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
 
-    client.get({path:"/pageSized"});
+    client.get({.path = "/pageSized"});
 
     std::string data;
-    client.processResp([&data](HTTP::ClientHTTPResponse& response)
+    client.processResp([&data](HTTP::ClientHTTPResponse const& response)
     {
         std::istream&  input = response.body();
 
@@ -128,10 +128,10 @@ TEST(ClientHTTPTest, GetSizedWithFlush)
     ServerRunner                runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
 
-    client.get({path:"/pageSizedWithFlush"});
+    client.get({.path = "/pageSizedWithFlush"});
 
     std::string data;
-    client.processResp([&data](HTTP::ClientHTTPResponse& response)
+    client.processResp([&data](HTTP::ClientHTTPResponse const& response)
     {
         std::istream&  input = response.body();
 
