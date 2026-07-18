@@ -16,12 +16,9 @@ using namespace ThorsAnvil::Nisse;
 
 class ServerRunner: public HTTP::NisseHTTPServer
 {
-    std::thread                 thread;
-
     public:
         ServerRunner()
             : NisseHTTPServer{1, ThorsAnvil::ThorsSocket::ServerInfo{8079}, ThorsAnvil::ThorsSocket::ServerInfo{8070}}
-            , thread{[&](){run();}}
         {
 
             addPath(HTTP::Method::GET, "/pageChunked", [](HTTP::Request const& request, HTTP::Response& response)
@@ -47,11 +44,6 @@ class ServerRunner: public HTTP::NisseHTTPServer
                 return true;    // Indicates we handeled the request. Don't search for more matches.
             });
         }
-        ~ServerRunner()
-        {
-            thread.join();
-        }
-
 };
 
 ThorsAnvil::Serialize::PrinterConfig    outputConfig{ThorsAnvil::Serialize::OutputType::Stream};

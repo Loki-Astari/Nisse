@@ -1,6 +1,10 @@
 #ifndef THORSANVIL_NISSE_HTTP_NISSEHTTP_SERVER_H
 #define THORSANVIL_NISSE_HTTP_NISSEHTTP_SERVER_H
 
+<<<<<<< HEAD
+=======
+#include <thread>
+>>>>>>> 89d419c (Add NisseHTTPServer)
 #include "PyntHTTPControl.h"
 #include "HTTPHandler.h"
 #include "NisseServer/NisseServer.h"
@@ -13,11 +17,13 @@ class NisseHTTPServer
     Server::NisseServer     server;
     HTTPHandler             handler;
     PyntHTTPControl         control;
+    std::thread             thread;
 
     public:
         NisseHTTPServer(std::size_t workerCount, TASock::ServerInit&& handlerInit, TASock::ServerInit&& controlInit)
             : server(workerCount)
             , control(server)
+            , thread{[&](){run();}}
         {
             server.listen(std::move(handlerInit), handler);
             server.listen(std::move(controlInit), control);
@@ -25,6 +31,7 @@ class NisseHTTPServer
         ~NisseHTTPServer()
         {
             server.stopHard();
+            thread.join();
         }
 
         void run()                          {server.run();}
