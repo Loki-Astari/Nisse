@@ -4,7 +4,7 @@
 using namespace ThorsAnvil::Nisse::HTTP;
 
 NISSE_HEADER_ONLY_INCLUDE
-void ClientHTTPResponse::readFirstLine(ThorsAnvil::ThorsSocket::SocketStream& stream)
+bool ClientHTTPResponse::readFirstLine(std::iostream& stream)
 {
     std::string messageHeader;
     std::getline(stream, messageHeader);
@@ -15,10 +15,9 @@ void ClientHTTPResponse::readFirstLine(ThorsAnvil::ThorsSocket::SocketStream& st
     else
     {
         ThorsLogInfo("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "readFirstLine", ": Header not \\r\\n terminated");
-        stream.close();
         status = 500;
         message = "Invalid HTTP Response received from Server. First Line no '\\r'. This message generated client side";
-        return;
+        return false;
     }
 
     // Extract the TTP-Method
@@ -45,10 +44,9 @@ void ClientHTTPResponse::readFirstLine(ThorsAnvil::ThorsSocket::SocketStream& st
     if (vers.size() == 0 || code.size() == 0 || reas.size() == 0 || version == Version::Unknown)
     {
         ThorsLogTrack("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "readFirstLine", ": Bad Request: ", "Version: >", version, "< Code: >", code, "< Reason: >", reas, "<");
-        stream.close();
         status = 500;
         message = "Invalid HTTP Response received from Server. First Line no invalid format. This message generated client side";
-        return;
+        return false;
     }
     std::string header;
     while (std::getline(stream, header)) {
@@ -66,10 +64,11 @@ void ClientHTTPResponse::readFirstLine(ThorsAnvil::ThorsSocket::SocketStream& st
         ThorsLogTrack("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "readFirstLine", "Header:", keys, " : ", valu);
         headers.add(keys, valu);
     }
+    return true;
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-bool ClientHTTPResponse::buildStream(ThorsAnvil::ThorsSocket::SocketStream& stream)
+bool ClientHTTPResponse::buildStream(std::iostream& stream)
 {
     auto&   contentLength    = headers.getHeader("content-length");
     auto&   transferEncoding = headers.getHeader("transfer-encoding");

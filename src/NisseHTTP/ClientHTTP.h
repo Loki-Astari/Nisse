@@ -13,6 +13,8 @@
 #include "ThorsSocket/SocketUtil.h"
 
 #include "ThorSerialize/JsonThor.h"
+#include "ThorSerialize/Traits.h"
+#include "ThorSerialize/SerUtil.h"
 
 #include <cstddef>
 #include <string>
@@ -34,13 +36,13 @@ namespace ThorsAnvil::Nisse::HTTP
             std::string                 message;
             HeaderRequest               headers;
             mutable StreamInput         input;
+            bool                        valid;
         public:
             ~ClientHTTPResponse()
             {}
-            ClientHTTPResponse(ThorsAnvil::ThorsSocket::SocketStream& stream)
+            ClientHTTPResponse(std::iostream& stream)
             {
-                readFirstLine(stream);
-                buildStream(stream);
+                valid = readFirstLine(stream) && buildStream(stream);
             }
             ClientHTTPResponse(ClientHTTPResponse const&)                       = delete;
             ClientHTTPResponse& operator=(ClientHTTPResponse const&)            = delete;
@@ -54,20 +56,23 @@ namespace ThorsAnvil::Nisse::HTTP
             std::istream&           body()          const   {return input;}
 
         private:
-            void readFirstLine(ThorsAnvil::ThorsSocket::SocketStream& stream);
-            bool buildStream(ThorsAnvil::ThorsSocket::SocketStream& stream);
+            bool readFirstLine(std::iostream& stream);
+            bool buildStream(std::iostream& stream);
+
+            friend class ClientHTTP;
+            bool isValid() const {return valid;}
     };
 
-    class ClientHTTP
+    class ClientHTTPBase
     {
-        ThorsAnvil::ThorsSocket::SocketInfo     init;
-        ThorsAnvil::ThorsSocket::SocketStream   stream;
-        Version                                 version;
+        std::iostream&      stream;
+        std::string_view    host;
+        Version             version;
 
         public:
-            ClientHTTP(ThorsAnvil::ThorsSocket::SocketInfo&& info, Version version = Version::HTTP2)
-                : init{std::move(info)}
-                , stream{init}
+            ClientHTTPBase(std::iostream& stream, std::string_view host, Version version = Version::HTTP2)
+                : stream{stream}
+                , host{host}
                 , version{version}
             {}
 
@@ -83,7 +88,7 @@ namespace ThorsAnvil::Nisse::HTTP
                 // Send to the server a correctly encoded HTTP request.
                 // With the minumum headers.
                 stream << method << " " << request.path << " " << version << "\r\n"
-                       << "host: " << init.host << "\r\n"
+                       << "host: " << host << "\r\n"
                        << encoding;
 
                 // Add the user requested header.
@@ -114,6 +119,19 @@ namespace ThorsAnvil::Nisse::HTTP
                 std::forward<A>(action)(output);
             }
 
+    };
+    class ClientHTTP: public ClientHTTPBase
+    {
+        ThorsAnvil::ThorsSocket::SocketInfo     init;
+        ThorsAnvil::ThorsSocket::SocketStream   stream;
+
+        public:
+            ClientHTTP(ThorsAnvil::ThorsSocket::SocketInfo&& info, Version version = Version::HTTP2)
+                : ClientHTTPBase{stream, info.host, version}
+                , init{std::move(info)}
+                , stream{init}
+            {}
+
             template<typename A>
             void processResp(A&& action)
             {
@@ -121,6 +139,9 @@ namespace ThorsAnvil::Nisse::HTTP
                 // Internally it will create a stream object that decodes the input based on the headers).
                 // So your code can read directly from the input.
                 ClientHTTPResponse  response{stream};
+                if (!response.isValid()) {
+                    stream.close();
+                }
                 std::forward<A>(action)(response);
             }
     };

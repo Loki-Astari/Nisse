@@ -1,44 +1,41 @@
 #include "gtest/gtest.h"
 #include <sstream>
-#include "ClientRequest.h"
+#include "ClientHTTP.h"
 #include "HeaderResponse.h"
 
 using ThorsAnvil::Nisse::HTTP::ClientRequest;
+using ThorsAnvil::Nisse::HTTP::ClientHTTPBase;
+using ThorsAnvil::Nisse::HTTP::Version;
+using ThorsAnvil::Nisse::HTTP::ClientRequest;
+using namespace std::string_literals;
 
 TEST(ClientRequestTest, Construct)
 {
     std::stringstream   stream;
-    ClientRequest       request(stream, "http://localhost/bang/bot");
-    std::ostream&       output = request.body(8);
+    ClientHTTPBase      request(stream, "localhost", Version::HTTP1_1);
+    request.put({path: "/bang/bot"}, "Hi there"s);
 
-    output << "Hi there";
-
-    EXPECT_EQ("GET /bang/bot HTTP/1.1\r\n"
-              "Host: localhost\r\n"
-              "content-length: 8\r\n"
+    EXPECT_EQ("PUT /bang/bot HTTP/1.1\r\n"
+              "host: localhost\r\n"
+              "content-length: 10\r\n"
               "\r\n"
-              "Hi there", stream.str());
+              "\"Hi there\"", stream.str());
 
 }
 
 TEST(ClientRequestTest, ConstructWithAddedHeaders)
 {
     std::stringstream   stream;
-    ClientRequest       request(stream, "http://localhost/bang/bot");
+    ClientHTTPBase      request(stream, "localhost", Version::HTTP1_1);
 
-    ThorsAnvil::Nisse::HTTP::HeaderResponse   headers;
+    ThorsAnvil::Nisse::HTTP::HeaderRequest   headers;
     headers.add("X-Bob", "Meet Here");
+    request.put(ClientRequest{path: "/bang/bot", headers: headers}, "Hi there"s);
 
-    request.addHeaders(headers);
-
-    std::ostream&       output = request.body(8);
-    output << "Hi there";
-
-    EXPECT_EQ("GET /bang/bot HTTP/1.1\r\n"
-              "Host: localhost\r\n"
-              "X-Bob: Meet Here\r\n"
-              "content-length: 8\r\n"
+    EXPECT_EQ("PUT /bang/bot HTTP/1.1\r\n"
+              "host: localhost\r\n"
+              "content-length: 10\r\n"
+              "x-bob: Meet Here\r\n"
               "\r\n"
-              "Hi there", stream.str());
-
+              "\"Hi there\"", stream.str());
 }
