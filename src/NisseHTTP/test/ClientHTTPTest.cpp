@@ -5,6 +5,7 @@
 #include "Response.h"
 #include "HTTPHandler.h"
 #include "ClientHTTP.h"
+#include "NisseHTTPServer.h"
 
 #include "NisseServer/NisseServer.h"
 
@@ -13,35 +14,33 @@
 
 using namespace ThorsAnvil::Nisse;
 
-class ServerRunner
+class ServerRunner: public HTTP::NisseHTTPServer
 {
-    Server::NisseServer         server;
-    HTTP::HTTPHandler           control;
     std::thread                 thread;
 
     public:
         ServerRunner()
+            : NisseHTTPServer{1, ThorsAnvil::ThorsSocket::ServerInfo{8079}, ThorsAnvil::ThorsSocket::ServerInfo{8070}}
+            , thread{[&](){run();}}
         {
-            server.listen(ThorsAnvil::ThorsSocket::ServerInfo{80}, control);
-            thread  = std::thread([&](){server.run();});
 
-            control.addPath(HTTP::Method::GET, "/pageChunked", [](HTTP::Request const& request, HTTP::Response& response)
+            addPath(HTTP::Method::GET, "/pageChunked", [](HTTP::Request const& request, HTTP::Response& response)
             {
                 response.body(HTTP::Encoding::Chunked) << "A page with chunked data\nOver 2 lines\n";
                 return true;    // Indicates we handeled the request. Don't search for more matches.
             });
-            control.addPath(HTTP::Method::GET, "/pageChunkedWithFlush", [](HTTP::Request const& request, HTTP::Response& response)
+            addPath(HTTP::Method::GET, "/pageChunkedWithFlush", [](HTTP::Request const& request, HTTP::Response& response)
             {
                 response.body(HTTP::Encoding::Chunked) << "A page with chunked data\nOver 2 lines\n" << std::flush
                                                        << "Another piece";
                 return true;    // Indicates we handeled the request. Don't search for more matches.
             });
-            control.addPath(HTTP::Method::GET, "/pageSized", [](HTTP::Request const& request, HTTP::Response& response)
+            addPath(HTTP::Method::GET, "/pageSized", [](HTTP::Request const& request, HTTP::Response& response)
             {
                 response.body(36) << "A page with sized data\nOver 2 lines\n";
                 return true;    // Indicates we handeled the request. Don't search for more matches.
             });
-            control.addPath(HTTP::Method::GET, "/pageSizedWithFlush", [](HTTP::Request const& request, HTTP::Response& response)
+            addPath(HTTP::Method::GET, "/pageSizedWithFlush", [](HTTP::Request const& request, HTTP::Response& response)
             {
                 response.body(49) << "A page with sized data\nOver 2 lines\n" << std::flush
                                   << "Another piece";
@@ -50,7 +49,6 @@ class ServerRunner
         }
         ~ServerRunner()
         {
-            server.stopHard();
             thread.join();
         }
 
@@ -61,7 +59,7 @@ ThorsAnvil::Serialize::PrinterConfig    outputConfig{ThorsAnvil::Serialize::Outp
 TEST(ClientHTTPTest, GetChunked)
 {
     ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
+    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
 
     client.get({.path = "/pageChunked"});
 
@@ -83,7 +81,7 @@ TEST(ClientHTTPTest, GetChunked)
 TEST(ClientHTTPTest, GetChunkedWithFlush)
 {
     ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
+    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
 
     client.get({.path = "/pageChunkedWithFlush"});
 
@@ -104,7 +102,7 @@ TEST(ClientHTTPTest, GetChunkedWithFlush)
 TEST(ClientHTTPTest, GetSized)
 {
     ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
+    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
 
     client.get({.path = "/pageSized"});
 
@@ -126,7 +124,7 @@ TEST(ClientHTTPTest, GetSized)
 TEST(ClientHTTPTest, GetSizedWithFlush)
 {
     ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
+    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
 
     client.get({.path = "/pageSizedWithFlush"});
 
