@@ -23,16 +23,30 @@ class ServerRunner
         ServerRunner()
         {
             server.listen(ThorsAnvil::ThorsSocket::ServerInfo{80}, control);
-            control.addPath(HTTP::Method::GET, "/pageGood", [](HTTP::Request const& request, HTTP::Response& response)
+            thread  = std::thread([&](){server.run();});
+
+            control.addPath(HTTP::Method::GET, "/pageChunked", [](HTTP::Request const& request, HTTP::Response& response)
             {
-                std::cerr << "Page START\n";
-                response.body(HTTP::Encoding::Chunked) << "A Good page";
-                std::cerr << "Page DONE\n";
+                response.body(HTTP::Encoding::Chunked) << "A page with chunked data\nOver 2 lines\n";
                 return true;    // Indicates we handeled the request. Don't search for more matches.
             });
-
-            thread  = std::thread([&](){std::cerr << "Server Start\n";server.run();std::cerr << "Server Stop\n";});
-            sleep(1);
+            control.addPath(HTTP::Method::GET, "/pageChunkedWithFlush", [](HTTP::Request const& request, HTTP::Response& response)
+            {
+                response.body(HTTP::Encoding::Chunked) << "A page with chunked data\nOver 2 lines\n" << std::flush
+                                                       << "Another piece";
+                return true;    // Indicates we handeled the request. Don't search for more matches.
+            });
+            control.addPath(HTTP::Method::GET, "/pageSized", [](HTTP::Request const& request, HTTP::Response& response)
+            {
+                response.body(36) << "A page with sized data\nOver 2 lines\n";
+                return true;    // Indicates we handeled the request. Don't search for more matches.
+            });
+            control.addPath(HTTP::Method::GET, "/pageSizedWithFlush", [](HTTP::Request const& request, HTTP::Response& response)
+            {
+                response.body(49) << "A page with sized data\nOver 2 lines\n" << std::flush
+                                  << "Another piece";
+                return true;    // Indicates we handeled the request. Don't search for more matches.
+            });
         }
         ~ServerRunner()
         {
@@ -44,21 +58,89 @@ class ServerRunner
 
 ThorsAnvil::Serialize::PrinterConfig    outputConfig{ThorsAnvil::Serialize::OutputType::Stream};
 
-TEST(ClientHTTPTest, X)
+TEST(ClientHTTPTest, GetChunked)
 {
     ServerRunner                runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
 
-    std::cerr << "Get\n";
-    HTTP::ClientHTTPResponse    input = client.get("/pageGood");
-    std::cerr << "Get DONE\n";
+    client.get({path:"/pageChunked"});
 
-    std::string     line;
+    std::string data;
+    client.processResp([&data](HTTP::ClientHTTPResponse& response)
+    {
+        std::istream&  input = response.body();
 
-    std::cerr << "START\n";
-    while (std::getline(input.body(), line)) {
-        std::cerr << "\tL >" << line << "<\n";
-    }
-    std::cerr << "DONE\n";
+        std::string line;
+        while (std::getline(input, line)) {
+            data.append(line);
+            data.append("\n");
+        }
+    });
 
+    EXPECT_EQ("A page with chunked data\nOver 2 lines\n", data);
+}
+
+TEST(ClientHTTPTest, GetChunkedWithFlush)
+{
+    ServerRunner                runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
+
+    client.get({path:"/pageChunkedWithFlush"});
+
+    std::string data;
+    client.processResp([&data](HTTP::ClientHTTPResponse& response)
+    {
+        std::istream&  input = response.body();
+
+        std::string line;
+        while (std::getline(input, line)) {
+            data.append(line);
+            data.append("\n");
+        }
+    });
+
+    EXPECT_EQ("A page with chunked data\nOver 2 lines\nAnother piece\n", data);
+}
+TEST(ClientHTTPTest, GetSized)
+{
+    ServerRunner                runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
+
+    client.get({path:"/pageSized"});
+
+    std::string data;
+    client.processResp([&data](HTTP::ClientHTTPResponse& response)
+    {
+        std::istream&  input = response.body();
+
+        std::string line;
+        while (std::getline(input, line)) {
+            data.append(line);
+            data.append("\n");
+        }
+    });
+
+    EXPECT_EQ("A page with sized data\nOver 2 lines\n", data);
+}
+
+TEST(ClientHTTPTest, GetSizedWithFlush)
+{
+    ServerRunner                runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 80}, HTTP::Version::HTTP1_0);
+
+    client.get({path:"/pageSizedWithFlush"});
+
+    std::string data;
+    client.processResp([&data](HTTP::ClientHTTPResponse& response)
+    {
+        std::istream&  input = response.body();
+
+        std::string line;
+        while (std::getline(input, line)) {
+            data.append(line);
+            data.append("\n");
+        }
+    });
+
+    EXPECT_EQ("A page with sized data\nOver 2 lines\nAnother piece\n", data);
 }

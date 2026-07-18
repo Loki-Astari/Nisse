@@ -4,10 +4,10 @@
 using namespace ThorsAnvil::Nisse::HTTP;
 
 NISSE_HEADER_ONLY_INCLUDE
-void ClientHTTPResponse::readFirstLine()
+void ClientHTTPResponse::readFirstLine(ThorsAnvil::ThorsSocket::SocketStream& stream)
 {
     std::string messageHeader;
-    std::getline(*stream, messageHeader);
+    std::getline(stream, messageHeader);
 
     if (messageHeader.size() > 0 && messageHeader[messageHeader.size() - 1] == '\r') {
         messageHeader.resize(messageHeader.size() - 1);
@@ -15,7 +15,7 @@ void ClientHTTPResponse::readFirstLine()
     else
     {
         ThorsLogInfo("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "readFirstLine", ": Header not \\r\\n terminated");
-        stream->close();
+        stream.close();
         status = 500;
         message = "Invalid HTTP Response received from Server. First Line no '\\r'. This message generated client side";
         return;
@@ -45,13 +45,13 @@ void ClientHTTPResponse::readFirstLine()
     if (vers.size() == 0 || code.size() == 0 || reas.size() == 0 || version == Version::Unknown)
     {
         ThorsLogTrack("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "readFirstLine", ": Bad Request: ", "Version: >", version, "< Code: >", code, "< Reason: >", reas, "<");
-        stream->close();
+        stream.close();
         status = 500;
         message = "Invalid HTTP Response received from Server. First Line no invalid format. This message generated client side";
         return;
     }
     std::string header;
-    while (std::getline(*stream, header)) {
+    while (std::getline(stream, header)) {
         if (header == "\r") {
             break;
         }
@@ -69,16 +69,15 @@ void ClientHTTPResponse::readFirstLine()
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-bool ClientHTTPResponse::buildStream()
+bool ClientHTTPResponse::buildStream(ThorsAnvil::ThorsSocket::SocketStream& stream)
 {
-    std::istream&   socketStream = *stream;
     auto&   contentLength    = headers.getHeader("content-length");
     auto&   transferEncoding = headers.getHeader("transfer-encoding");
 
     /* If no content set an input stream with zero size */
     if (contentLength.size() + transferEncoding.size() == 0)
     {
-        input.addBuffer(StreamBufInput(socketStream, 0, [&socketStream](std::ios_base::iostate state){socketStream.setstate(state);}));
+        input.addBuffer(StreamBufInput(stream, 0, [&stream](std::ios_base::iostate state){stream.setstate(state);}));
         return true;
     }
 
@@ -106,7 +105,7 @@ bool ClientHTTPResponse::buildStream()
         }
 
         // Valid content length. Set fixed size input stream.
-        input.addBuffer(StreamBufInput(socketStream, bodySize, [&socketStream](std::ios_base::iostate state){socketStream.setstate(state);}));
+        input.addBuffer(StreamBufInput(stream, bodySize, [&stream](std::ios_base::iostate state){stream.setstate(state);}));
     }
     else
     {
@@ -119,45 +118,9 @@ bool ClientHTTPResponse::buildStream()
 
         // Valid transfer encoding. Chunked.
         // Set an input stream that decodes a Chunked input stream.
-        input.addBuffer(StreamBufInput(socketStream, Encoding::Chunked, [&socketStream](std::ios_base::iostate state){socketStream.setstate(state);}));
+        input.addBuffer(StreamBufInput(stream, Encoding::Chunked, [&stream](std::ios_base::iostate state){stream.setstate(state);}));
     }
 
     // Good input.
     return true;
-}
-
-NISSE_HEADER_ONLY_INCLUDE
-ClientHTTPResponse ClientHTTP::send(Method method, std::string_view path, HeaderRequest const& headers, std::size_t size)
-{
-    sendHeader(method, path, headers);
-    if (size != 0) {
-        stream << "content-length: " << size << "\r\n\r\n";
-    }
-    else {
-        stream << "\r\n\r\n" << std::flush;
-    }
-
-    return ClientHTTPResponse{stream};
-}
-
-NISSE_HEADER_ONLY_INCLUDE
-ClientHTTPResponse ClientHTTP::send(Method method, std::string_view path, HeaderRequest const& headers, Encoding encoding)
-{
-    sendHeader(method, path, headers);
-    stream << "transfer-encoding: " << encoding << "\r\n\r\n";
-
-    return ClientHTTPResponse{stream};
-}
-
-NISSE_HEADER_ONLY_INCLUDE
-void ClientHTTP::sendHeader(Method method, std::string_view path, HeaderRequest const& headers)
-{
-    stream << method << " " << path << " " << version << "\r\n"
-           << "host: " << init.host << "\r\n";
-
-    for (auto const& header: headers) {
-        for (auto const& value: header.second) {
-            stream << header.first << ": " << value << "\r\n";
-        }
-    }
 }
