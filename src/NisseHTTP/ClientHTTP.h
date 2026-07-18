@@ -53,27 +53,29 @@ namespace ThorsAnvil::Nisse::HTTP
             int                     getStatus()     const   {return status;}
             std::string const&      getMessage()    const   {return message;}
             HeaderRequest const&    getHeader()     const   {return headers;}
-            std::istream&           body()          const   {return input;}
+            StreamInput&            body()          const   {return input;}
 
         private:
             bool readFirstLine(std::iostream& stream);
             bool buildStream(std::iostream& stream);
 
-            friend class ClientHTTP;
+            friend class ClientHTTPBase;
             bool isValid() const {return valid;}
     };
 
     class ClientHTTPBase
     {
-        std::iostream&      stream;
-        std::string_view    host;
-        Version             version;
+        std::iostream&          stream;
+        std::string_view        host;
+        Version                 version;
+        std::function<void()>   close;
 
         public:
-            ClientHTTPBase(std::iostream& stream, std::string_view host, Version version = Version::HTTP2)
+            ClientHTTPBase(std::iostream& stream, std::string_view host, Version version = Version::HTTP1_1, std::function<void()>&& close = [](){})
                 : stream{stream}
                 , host{host}
                 , version{version}
+                , close{std::move(close)}
             {}
 
             void get(ClientRequest const& request)                      {send(Method::GET, request, 0, [](std::ostream&){});}
@@ -119,19 +121,6 @@ namespace ThorsAnvil::Nisse::HTTP
                 std::forward<A>(action)(output);
             }
 
-    };
-    class ClientHTTP: public ClientHTTPBase
-    {
-        ThorsAnvil::ThorsSocket::SocketInfo     init;
-        ThorsAnvil::ThorsSocket::SocketStream   stream;
-
-        public:
-            ClientHTTP(ThorsAnvil::ThorsSocket::SocketInfo&& info, Version version = Version::HTTP2)
-                : ClientHTTPBase{stream, info.host, version}
-                , init{std::move(info)}
-                , stream{init}
-            {}
-
             template<typename A>
             void processResp(A&& action)
             {
@@ -140,10 +129,28 @@ namespace ThorsAnvil::Nisse::HTTP
                 // So your code can read directly from the input.
                 ClientHTTPResponse  response{stream};
                 if (!response.isValid()) {
-                    stream.close();
+                    close();
                 }
                 std::forward<A>(action)(response);
             }
+    };
+    class ClientHTTP: public ClientHTTPBase
+    {
+        ThorsAnvil::ThorsSocket::SocketStream   stream;
+
+        public:
+            ClientHTTP(ThorsAnvil::ThorsSocket::SSocketInfo const& info, Version version = Version::HTTP1_1)
+                : ClientHTTPBase{stream, info.host, version, [&](){stream.close();}}
+                , stream{info}
+            {}
+            ClientHTTP(ThorsAnvil::ThorsSocket::SSocketService const& info, Version version = Version::HTTP1_1)
+                : ClientHTTPBase{stream, info.host, version, [&](){stream.close();}}
+                , stream{info}
+            {}
+            ClientHTTP(ThorsAnvil::ThorsSocket::SocketInfo const& info, Version version = Version::HTTP1_1)
+                : ClientHTTPBase{stream, info.host, version, [&](){stream.close();}}
+                , stream{info}
+            {}
     };
 }
 
