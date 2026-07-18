@@ -139,41 +139,6 @@ bool Request::buildURL(std::string_view proto, std::string_view path)
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-Version Request::findVersion(std::string_view pv)
-{
-    static const std::map<std::string_view, Version>  versionMap {  {"HTTP/1.0", Version::HTTP1_0},
-                                                                    {"HTTP/1.1", Version::HTTP1_1},
-                                                                    {"HTTP/2",   Version::HTTP2},
-                                                                    {"HTTP/3",   Version::HTTP3}
-                                                                 };
-    auto find = versionMap.find(pv);
-    if (find != versionMap.end()) {
-        return find->second;
-    }
-    return Version::Unknown;
-}
-
-NISSE_HEADER_ONLY_INCLUDE
-Method Request::findMethod(std::string_view method)
-{
-    static const std::map<std::string_view, Method>  methodMap  {   {"GET",     Method::GET},
-                                                                    {"HEAD",    Method::HEAD},
-                                                                    {"OPTIONS", Method::OPTIONS},
-                                                                    {"TRACE",   Method::TRACE},
-                                                                    {"PUT",     Method::PUT},
-                                                                    {"DELETE",  Method::DELETER},
-                                                                    {"POST",    Method::POST},
-                                                                    {"PATCH",   Method::PATCH},
-                                                                    {"CONNECT", Method::CONNECT}
-                                                                };
-    auto find = methodMap.find(method);
-    if (find != methodMap.end()) {
-        return find->second;
-    }
-    return Method::Other;
-}
-
-NISSE_HEADER_ONLY_INCLUDE
 std::string_view Request::preloadStreamIntoBuffer(bool force) const
 {
     return input.preloadStreamIntoBuffer(force);

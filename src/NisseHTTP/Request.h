@@ -66,8 +66,6 @@ class Request
         std::string_view        readFirstLine(std::istream& stream);
         bool                    readHeaders(HeaderRequest& dst, std::istream& stream);
 
-        Version                 findVersion(std::string_view pv);
-        Method                  findMethod(std::string_view method);
         bool                    buildURL(std::string_view proto, std::string_view path);
         bool                    buildStream(std::istream& stream);
 

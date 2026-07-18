@@ -108,6 +108,21 @@ void StreamBufOutput::dumpBuffer()
             remaining = chunkBufferSize;
         }
     }
+    buffer->pubsync();
+}
+
+NISSE_HEADER_ONLY_INCLUDE
+void StreamBufOutput::done()
+{
+    ThorsLogTrace("ThorsAnvil::Nisse::HTTP::StreamBufOutput", "done", "Entered");
+    if (chunked)
+    {
+        dumpBuffer();
+        ThorsLogTrace("ThorsAnvil::Nisse::HTTP::StreamBufOutput", "done", "Sending tail");
+        sendAllData("0\r\n\r\n", 5);
+        remaining = 0;
+        chunked = false;
+    }
     else {
         /*
          * A non chunked buffer is a fixed size buffer.
@@ -131,20 +146,7 @@ void StreamBufOutput::dumpBuffer()
             }
         }
     }
-    buffer->pubsync();
-}
-
-NISSE_HEADER_ONLY_INCLUDE
-void StreamBufOutput::done()
-{
-    ThorsLogTrace("ThorsAnvil::Nisse::HTTP::StreamBufOutput", "done", "Entered");
-    if (chunked)
-    {
-        dumpBuffer();
-        ThorsLogTrace("ThorsAnvil::Nisse::HTTP::StreamBufOutput", "done", "Sending tail");
-        sendAllData("0\r\n\r\n", 5);
-        remaining = 0;
-        chunked = false;
+    if (buffer) {
         ThorsLogTrace("ThorsAnvil::Nisse::HTTP::StreamBufOutput", "done", "Sending buffer");
         buffer->pubsync();
     }

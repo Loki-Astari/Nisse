@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
 #include "NisseServer/NisseServer.h"
-#include "ClientRequest.h"
+#include "ClientHTTP.h"
 #include "PyntHTTPControl.h"
 #include "HTTPHandler.h"
 #include "HeaderResponse.h"
@@ -301,16 +301,7 @@ TEST(MugServerTest, ServiceRunAddServerWithFileValidateWorks)
 
     ASSERT_EQ("Data for page 1\n", response.getBody());
 
-    // Touch the control point to shut down the server.
-    ThorsAnvil::ThorsSocket::SocketStream       socket({"localhost", 8079});
-    ThorsAnvil::Nisse::HTTP::HeaderResponse   headers;
-    headers.add("host", "localhost");
-    headers.add("content-length", "0");
-    ThorsAnvil::Nisse::HTTP::ClientRequest  request(socket, "localhost:/?command=stophard");
-    request.addHeaders(headers);
-    request.flushRequest();
-    std::cerr << "Request Flushed\n";
+    ThorsAnvil::Nisse::HTTP::ClientHTTP  request({"localhost", 8079});
+    request.get({"/?command=stophard"});
     waitForExit.wait();
-    std::cerr << "Latch removed\n";
 }
-

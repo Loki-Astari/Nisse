@@ -30,6 +30,9 @@ std::ostream& operator<<(std::ostream&, BodyEncoding const& bodyEncoding);
 std::ostream& operator<<(std::ostream&, Encoding const& e);
 std::ostream& operator<<(std::ostream&, Method const& method);
 
+Version findVersion(std::string_view pv);
+Method findMethod(std::string_view method);
+
 struct StatusCode
 {
     int                 code;
