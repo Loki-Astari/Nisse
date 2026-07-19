@@ -98,7 +98,9 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
             PyntResult result = info.pynt->handleRequest(info.stream, context);
             while (result == PyntResult::More)
             {
-                yield({TaskYieldState::WaitForMore, socketId});
+                if (info.stream.rdbuf()->in_avail() == 0) {
+                    yield({TaskYieldState::WaitForMore, socketId});
+                }
                 result = info.pynt->handleRequest(info.stream, context);
             }
             // We are all done
