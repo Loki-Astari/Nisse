@@ -126,7 +126,7 @@ bool ClientHTTPResponse::buildStream(std::iostream& stream)
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void ClientHTTPBase::send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action)
+void ClientHTTPBase::send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action) const
 {
     // Send to the server a correctly encoded HTTP request.
     // With the minumum headers.
@@ -163,7 +163,7 @@ void ClientHTTPBase::send(Method method, ClientRequest const& request, BodyEncod
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void ClientHTTPBase::processResp(std::function<void(ClientHTTPResponse const&)>&& action)
+void ClientHTTPBase::processResp(std::function<void(ClientHTTPResponse const&)>&& action) const
 {
     // Reads the status line and header information from the stream.
     // Internally it will create a stream object that decodes the input based on the headers).
@@ -173,4 +173,17 @@ void ClientHTTPBase::processResp(std::function<void(ClientHTTPResponse const&)>&
         close();
     }
     action(response);
+}
+
+NISSE_HEADER_ONLY_INCLUDE
+std::string ClientHTTPBase::getRespAsString() const
+{
+    std::string data;
+    processResp([&data](ClientHTTPResponse const& resp)
+    {
+        std::stringstream   result;
+        result << resp.body().rdbuf();
+        data = result.str();
+    });
+    return data;
 }

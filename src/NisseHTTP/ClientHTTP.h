@@ -73,14 +73,15 @@ namespace ThorsAnvil::Nisse::HTTP
                 , close{std::move(close)}
             {}
 
-            void get(ClientRequest const& request)                      {send(Method::GET, request, 0, [](StreamOutput&){});}
+            void get(ClientRequest const& request)                      const {send(Method::GET, request, 0, [](StreamOutput&){});}
             template<typename T>
-            void put(ClientRequest const& request, T const& data)       {send(Method::PUT, request, ThorsAnvil::Serialize::jsonStreanSize(data), [&data](std::ostream& output){output << ThorsAnvil::Serialize::jsonExporter(data);});}
+            void put(ClientRequest const& request, T const& data)       const {send(Method::PUT, request, ThorsAnvil::Serialize::jsonStreanSize(data), [&data](std::ostream& output){output << ThorsAnvil::Serialize::jsonExporter(data);});}
             template<typename T>
-            void post(ClientRequest const& request, T const& data)      {send(Method::POST, request, ThorsAnvil::Serialize::jsonStreanSize(data), [&data](std::ostream& output){output << ThorsAnvil::Serialize::jsonExporter(data);});}
+            void post(ClientRequest const& request, T const& data)      const {send(Method::POST, request, ThorsAnvil::Serialize::jsonStreanSize(data), [&data](std::ostream& output){output << ThorsAnvil::Serialize::jsonExporter(data);});}
 
-            void send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action);
-            void processResp(std::function<void(ClientHTTPResponse const&)>&& action);
+            void send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action) const;
+            void processResp(std::function<void(ClientHTTPResponse const&)>&& action) const;
+            std::string getRespAsString() const;
     };
     class ClientHTTP: public ClientHTTPBase
     {
