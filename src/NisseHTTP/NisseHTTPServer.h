@@ -1,10 +1,7 @@
 #ifndef THORSANVIL_NISSE_HTTP_NISSEHTTP_SERVER_H
 #define THORSANVIL_NISSE_HTTP_NISSEHTTP_SERVER_H
 
-<<<<<<< HEAD
-=======
 #include <thread>
->>>>>>> 89d419c (Add NisseHTTPServer)
 #include "PyntHTTPControl.h"
 #include "HTTPHandler.h"
 #include "NisseServer/NisseServer.h"

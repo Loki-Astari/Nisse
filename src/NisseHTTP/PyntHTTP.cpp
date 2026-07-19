@@ -33,23 +33,27 @@ ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStre
     // By default we want to Keep-Alive
     // So we will only close if all the "connection" values are "close"
     std::vector<std::string> const& connection = request.headers().getHeader("connection");
-    std::size_t isClose = 0;
+    bool isClose = false;
+    bool isKeepAlive = false;
     for (auto const& c: connection) {
         if (c == "close") {
-            isClose++;
+            isClose = true;
+        }
+        if (c == "keep-alive") {
+            isKeepAlive = true;
         }
     }
 
     Server::PyntResult result;
-    if (connection.size() == 0) {
-        // If there are no "connection" headers then use the default.
-        // This depends on the HTTP version.
-        result = request.getVersion() == Version::HTTP1_0 ? Server::PyntResult::Done : Server::PyntResult::More;
+    if (isClose) {
+        // If I see one close then we will force a close no
+        // matter what the other connection values are.
+        result = Server::PyntResult::Done;
     }
     else {
-        // If there are multiple "connection" headers then use "close"
-        // if all the connections headers are "close"
-        result = isClose == connection.size() ? Server::PyntResult::Done : Server::PyntResult::More;
+        // HTTP 1.0 the connections are closed by default (unless explicitly kept open)
+        // HTTP 1.1 the connections are kept open by default.
+        result = isKeepAlive || request.getVersion() != Version::HTTP1_0 ? Server::PyntResult::More : Server::PyntResult::Done;
     }
     return result;
 }
