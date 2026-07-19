@@ -163,3 +163,32 @@ TEST(ClientHTTPTest, GetTwoPagesConnectionNotClosedReadAfterEachGet)
     std::string page2 = client.getRespAsString();
     EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page2);
 }
+
+TEST(ClientHTTPTest, GetTwoPagesConnection_IS_Closed)
+{
+    ServerRunner                runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);    // HTTP1.1 does not close connection by default.
+
+    client.get({.path = "/pageSized"});
+    client.get({.path = "/pageChunked"});
+
+    std::string page1 = client.getRespAsString();
+    EXPECT_EQ("A page with sized data\nOver 2 lines\n", page1);
+
+    std::string page2 = client.getRespAsString();
+    EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page2);
+}
+
+TEST(ClientHTTPTest, GetTwoPagesConnection_IS_ClosedReadAfterEachGet)
+{
+    ServerRunner                runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP2);    // HTTP1.1 does not close connection by default.
+
+    client.get({.path = "/pageSized"});
+    std::string page1 = client.getRespAsString();
+    EXPECT_EQ("A page with sized data\nOver 2 lines\n", page1);
+
+    client.get({.path = "/pageChunked"});
+    std::string page2 = client.getRespAsString();
+    EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page2);
+}
