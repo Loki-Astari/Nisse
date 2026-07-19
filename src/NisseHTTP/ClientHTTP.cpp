@@ -174,16 +174,3 @@ void ClientHTTPBase::processResp(std::function<void(ClientHTTPResponse const&)>&
     }
     action(response);
 }
-
-NISSE_HEADER_ONLY_INCLUDE
-std::string ClientHTTPBase::getRespAsString() const
-{
-    std::string data;
-    processResp([&data](ClientHTTPResponse const& resp)
-    {
-        std::stringstream   result;
-        result << resp.body().rdbuf();
-        data = result.str();
-    });
-    return data;
-}

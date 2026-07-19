@@ -73,15 +73,36 @@ namespace ThorsAnvil::Nisse::HTTP
                 , close{std::move(close)}
             {}
 
-            void get(ClientRequest const& request)                      const {send(Method::GET, request, 0, [](StreamOutput&){});}
-            template<typename T>
-            void put(ClientRequest const& request, T const& data)       const {send(Method::PUT, request, ThorsAnvil::Serialize::jsonStreanSize(data), [&data](std::ostream& output){output << ThorsAnvil::Serialize::jsonExporter(data);});}
-            template<typename T>
-            void post(ClientRequest const& request, T const& data)      const {send(Method::POST, request, ThorsAnvil::Serialize::jsonStreanSize(data), [&data](std::ostream& output){output << ThorsAnvil::Serialize::jsonExporter(data);});}
+            template<typename D>
+            void get(ClientRequest const& request, D& dst)                  const   {processes<Method::GET>(request, 0, dst);}
+            template<typename S, typename D>
+            void put(ClientRequest const& request, S const& src, D& dst)    const   {processes<Method::PUT>(request, src, dst);}
+            template<typename S, typename D>
+            void post(ClientRequest const& request, S const& src, D& dst)   const   {processes<Method::POST>(request, src, dst);}
 
             void send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action) const;
             void processResp(std::function<void(ClientHTTPResponse const&)>&& action) const;
-            std::string getRespAsString() const;
+        private:
+            template<Method method, typename S, typename D>
+            void processes(ClientRequest const& request, S const& src, D& dst) const
+            {
+                if constexpr (method == Method::GET)
+                {
+                    send(Method::GET, request, 0, [](StreamOutput&){});
+                }
+                else
+                {
+                    send(method, request, ThorsAnvil::Serialize::jsonStreanSize(src), [&src](std::ostream& output)
+                    {
+                        output << ThorsAnvil::Serialize::jsonExporter(src);
+                    });
+                }
+                processResp([&dst](ClientHTTPResponse const& resp)
+                {
+                    resp.body() >> ThorsAnvil::Serialize::jsonImporter(dst);
+                });
+            }
+
     };
     class ClientHTTP: public ClientHTTPBase
     {

@@ -301,7 +301,8 @@ TEST(MugServerTest, ServiceRunAddServerWithFileValidateWorks)
 
     ASSERT_EQ("Data for page 1\n", response.getBody());
 
+    std::string data;
     ThorsAnvil::Nisse::HTTP::ClientHTTP  request({"localhost", 8079});
-    request.get({"/?command=stophard"});
+    request.get({"/?command=stophard"}, data);
     waitForExit.wait();
 }
