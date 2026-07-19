@@ -199,6 +199,16 @@ void Store::operator()(StateUpdateRestoreRead& update)
         {}
         void operator()(ServerData& data)       {data.readEvent.add();}
         void operator()(StreamData& data)       {data.readEvent.add();}
+#if 0
+        {
+            char buffer[1];
+            ssize_t result = recv(update.fd, &buffer, 1, MSG_PEEK);
+            data.readEvent.add();
+            if (result == 1) {
+                data.readEvent.activate();
+            }
+        }
+#endif
         void operator()(OwnedFD& data)          {data.readEvent.add();}
         void operator()(SharedFD& data)
         {

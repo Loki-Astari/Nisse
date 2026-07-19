@@ -132,6 +132,10 @@ class Event
                 ThorsLogError("ThorsAnvil::Nisse::Server::Event", "add", "Timer: ", microsecondsPause, " Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
             }
         }
+        void activate()
+        {
+            event_active(event, 0, 0);
+        }
 };
 
 
