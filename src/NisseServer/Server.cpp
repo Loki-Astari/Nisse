@@ -1,4 +1,4 @@
-#include "NisseServer.h"
+#include "Server.h"
 #include "Context.h"
 #include "Pynt.h"
 
@@ -7,32 +7,32 @@ namespace TASock   = ThorsAnvil::ThorsSocket;
 using namespace ThorsAnvil::Nisse::Server;
 
 NISSE_HEADER_ONLY_INCLUDE
-NisseServer::NisseServer(std::size_t workerCount)
+Server::Server(std::size_t workerCount)
     : jobQueue{workerCount}
     , store{}
     , eventHandler{jobQueue, store}
 {}
 
 NISSE_HEADER_ONLY_INCLUDE
-void NisseServer::run(std::function<void()>&& notice)
+void Server::run(std::function<void()>&& notice)
 {
     eventHandler.run(std::move(notice));
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void NisseServer::stopSoft()
+void Server::stopSoft()
 {
     eventHandler.stopSoft();
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void NisseServer::stopHard()
+void Server::stopHard()
 {
     eventHandler.stopHard();
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-CoRoutine NisseServer::createStreamJob(StreamData& info)
+CoRoutine Server::createStreamJob(StreamData& info)
 {
     // Exceptions here will be caught
     // By the `EventHandler::addJob()` function.
@@ -108,7 +108,7 @@ CoRoutine NisseServer::createStreamJob(StreamData& info)
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-CoRoutine NisseServer::createAcceptJob(ServerData& info)
+CoRoutine Server::createAcceptJob(ServerData& info)
 {
     // Exceptions here will be caught
     // By the `EventHandler::addJob()` function.
@@ -144,7 +144,7 @@ CoRoutine NisseServer::createAcceptJob(ServerData& info)
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void NisseServer::listen(TASock::ServerInit&& listenerInit, Pynt& pynt)
+void Server::listen(TASock::ServerInit&& listenerInit, Pynt& pynt)
 {
     TASock::Server  server{std::move(listenerInit), TASock::Blocking::No};
 

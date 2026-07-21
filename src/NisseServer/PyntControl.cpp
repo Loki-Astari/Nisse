@@ -1,12 +1,12 @@
 #include "PyntControl.h"
-#include "NisseServer.h"
+#include "Server.h"
 
 namespace TASock = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::Server;
 
 NISSE_HEADER_ONLY_INCLUDE
-PyntControl::PyntControl(NisseServer& server)
+PyntControl::PyntControl(Server& server)
     : server{server}
 {}
 

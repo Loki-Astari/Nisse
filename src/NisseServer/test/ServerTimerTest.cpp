@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include <thread>
-#include "NisseServer.h"
+#include "Server.h"
 
 using namespace ThorsAnvil::Nisse::Server;
 
@@ -32,12 +32,12 @@ class TestAction: public ThorsAnvil::Nisse::Server::TimerAction
         }
 };
 
-TEST(NisseServerTimerTest, TestTimer)
+TEST(ServerTimerTest, TestTimer)
 {
 #if 0
     int                 value = 0;
     TestAction          action(value);
-    NisseServer         server;
+    Server              server;
     std::latch          latch(1);
 
     using namespace std::chrono_literals;

@@ -1,10 +1,10 @@
 #include "gtest/gtest.h"
 #include <latch>
 #include <thread>
-#include "NisseServer.h"
+#include "Server.h"
 #include "Pynt.h"
 
-using ThorsAnvil::Nisse::Server::NisseServer;
+using ThorsAnvil::Nisse::Server::Server;
 using ThorsAnvil::Nisse::Server::Pynt;
 using ThorsAnvil::Nisse::Server::PyntResult;
 using ThorsAnvil::Nisse::Server::Context;
@@ -61,78 +61,56 @@ class PyntTest: public Pynt
 PyntTest    testerPynt;
 
 
-TEST(NisseServerTest, stopSoft)
+TEST(ServerTest, stopSoft)
 {
     SocketSetUp     socketSetup;
-
-    NisseServer     server;
-    std::latch      latch(1);
+    ThorsAnvil::Nisse::Server::UnitTest::ServerRunner<Server>   server;
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
-    auto action = [&](){server.run([&latch](){latch.count_down();});};
-    LocalJthread    work(action);
-
-    latch.wait();
     server.stopSoft();
 }
 
-TEST(NisseServerTest, stopHard)
+TEST(ServerTest, stopHard)
 {
     SocketSetUp     socketSetup;
-
-    NisseServer     server;
-    std::latch      latch(1);
+    ThorsAnvil::Nisse::Server::UnitTest::ServerRunner<Server>   server;
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
-    auto action = [&](){server.run([&latch](){latch.count_down();});};
-    LocalJthread    work(action);
-
-    latch.wait();
     server.stopHard();
 }
 
-TEST(NisseServerTest, stopSoftWithWork)
+TEST(ServerTest, stopSoftWithWork)
 {
     SocketSetUp     socketSetup;
-
-    NisseServer     server;
-    std::latch      latch(1);
+    ThorsAnvil::Nisse::Server::UnitTest::ServerRunner<Server>   server;
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
-    auto action1 = [&](){server.run([&latch](){latch.count_down();});};
-    auto action2 = [&](){
+    auto action = [&](){
         TASock::SocketStream socketData({"localhost", 8070});
         socketData << "Check" << std::flush;
     };
 
-    LocalJthread    work1(action1);
-    LocalJthread    work2(action2);
+    LocalJthread    work2(action);
 
-    latch.wait();
     server.stopSoft();
 }
 
 
-TEST(NisseServerTest, stopHardWithWork)
+TEST(ServerTest, stopHardWithWork)
 {
     SocketSetUp     socketSetup;
-
-    NisseServer     server;
-    std::latch      latch(1);
+    ThorsAnvil::Nisse::Server::UnitTest::ServerRunner<Server>   server;
     server.listen(TASock::ServerInfo{8070}, testerPynt);
 
-    auto action1 = [&](){server.run([&latch](){latch.count_down();});};
-    auto action2 = [&](){
+    auto action = [&](){
         TASock::SocketStream socketData({"localhost", 8070});
         // I am getting an issue with the LSP telling me the line below is an error.
         // But it compiles fine. If you can explain to me why so I can resolve that would be great.
         // TODO: Understand the LSP error.
         socketData << "Check" << std::flush;
     };
-    LocalJthread    work1(action1);
-    LocalJthread    work2(action2);
+    LocalJthread    work2(action);
 
-    latch.wait();
     server.stopHard();
 }
 

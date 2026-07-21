@@ -12,22 +12,22 @@ namespace TASock = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse::Server
 {
 
-class NisseServer;
+class Server;
 
 class Context
 {
-    NisseServer&    server;
+    Server&         server;
     Yield&          yield;
     int             owner;
     public:
-        Context(NisseServer& server, Yield& yield, int owner);
+        Context(Server& server, Yield& yield, int owner);
         void registerOwnedSocketStream(TASock::SocketStream& stream, EventType initialWait);
         void unregisterOwnedSocketStream(TASock::SocketStream& stream);
         void registerOwnedSocket(TASock::Socket& socket, EventType initialWait);
         void unregisterOwnedSocket(TASock::Socket& socket);
         bool isFeatureEnabled(Feature feature) const;
-        static void registerSharedSocket(NisseServer& server, TASock::Socket& socket);
-        static void unregisterSharedSocket(NisseServer& server, TASock::Socket& socket);
+        static void registerSharedSocket(Server& server, TASock::Socket& socket);
+        static void unregisterSharedSocket(Server& server, TASock::Socket& socket);
 
         Yield&      getYield()  {return yield;}
     private:
@@ -57,9 +57,9 @@ class AsyncSocket
 class AsyncSharedSocket
 {
     TASock::Socket&         socket;
-    NisseServer&            server;
+    Server&                 server;
     public:
-        AsyncSharedSocket(TASock::Socket& socket, NisseServer& server);
+        AsyncSharedSocket(TASock::Socket& socket, Server& server);
         ~AsyncSharedSocket();
 };
 

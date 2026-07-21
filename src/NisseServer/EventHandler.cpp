@@ -318,7 +318,7 @@ void EventHandler::addJob(CoRoutine& work, int fd)
                 // Note: When the job is restarted (above) it will increment the active count
                 //       another time. So the yield return point will decrement the count
                 //       to compensate so we don't overcount.
-                //       See NisseServer::createStreamJob() (The CoRoutine)
+                //       See Server::createStreamJob() (The CoRoutine)
                 store.requestChange(StateUpdateRestoreRead{task.fd, fd});
                 break;
             case TaskYieldState::RestoreWrite:
@@ -327,7 +327,7 @@ void EventHandler::addJob(CoRoutine& work, int fd)
                 // Note: When the job is restarted (above) it will increment the active count
                 //       another time. So the yield return point will decrement the count
                 //       to compensate so we don't overcount.
-                //       See NisseServer::createStreamJob() (The CoRoutine)
+                //       See Server::createStreamJob() (The CoRoutine)
                 store.requestChange(StateUpdateRestoreWrite{task.fd, fd});
                 break;
         }

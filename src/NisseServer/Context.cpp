@@ -1,12 +1,12 @@
 #include "Context.h"
-#include "NisseServer.h"
+#include "Server.h"
 
 namespace TASock = ThorsAnvil::ThorsSocket;
 
 using namespace ThorsAnvil::Nisse::Server;
 
 NISSE_HEADER_ONLY_INCLUDE
-Context::Context(NisseServer& server, Yield& yield, int owner)
+Context::Context(Server& server, Yield& yield, int owner)
     : server{server}
     , yield{yield}
     , owner{owner}
@@ -78,13 +78,13 @@ void Context::unregisterOwnedSocket(TASock::Socket& socket)
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void Context::registerSharedSocket(NisseServer& server, TASock::Socket& socket)
+void Context::registerSharedSocket(Server& server, TASock::Socket& socket)
 {
     server.eventHandler.addSharedFD(socket.socketId());
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void Context::unregisterSharedSocket(NisseServer& server, TASock::Socket& socket)
+void Context::unregisterSharedSocket(Server& server, TASock::Socket& socket)
 {
     server.eventHandler.remSharedFD(socket.socketId());
 }
@@ -155,7 +155,7 @@ AsyncSocket::~AsyncSocket()
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-AsyncSharedSocket::AsyncSharedSocket(TASock::Socket& socket, NisseServer& server)
+AsyncSharedSocket::AsyncSharedSocket(TASock::Socket& socket, Server& server)
     : socket{socket}
     , server{server}
 {

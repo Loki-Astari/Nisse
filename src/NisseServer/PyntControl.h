@@ -15,13 +15,13 @@ namespace TASock = ThorsAnvil::ThorsSocket;
 namespace ThorsAnvil::Nisse::Server
 {
 
-class NisseServer;
+class Server;
 
 class PyntControl: public Pynt
 {
-    NisseServer&    server;
+    Server&    server;
     public:
-        PyntControl(NisseServer& server);
+        PyntControl(Server& server);
         virtual PyntResult handleRequest(TASock::SocketStream& stream, Context& context) override;
 };
 
