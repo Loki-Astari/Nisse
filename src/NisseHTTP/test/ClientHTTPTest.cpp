@@ -61,10 +61,8 @@ class LocalServer
         {}
         ~LocalServer()
         {
-            HTTP::ClientHTTP            client({"127.0.0.1", 8070}, HTTP::Version::HTTP1_0);
-            std::string     data;
-
-            client.get<std::string>({.path = "/?command=stophard"}, data);
+            HTTP::ClientHTTP    client({"127.0.0.1", 8070}, HTTP::Version::HTTP1_0);
+            client.get<std::string>({.path = "/?command=stophard"});
             thread.join();
         }
 };
@@ -76,8 +74,7 @@ TEST(ClientHTTPTest, GetChunked)
     LocalServer                 server;
     HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
-    std::string data;
-    client.get({.path = "/pageChunked"}, data);
+    std::string                 data = client.get<std::string>({.path = "/pageChunked"});
     EXPECT_EQ("A page with chunked data\nOver 2 lines\n", data);
 }
 
@@ -86,8 +83,7 @@ TEST(ClientHTTPTest, GetChunkedWithFlush)
     LocalServer                 runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
-    std::string data;
-    client.get({.path = "/pageChunkedWithFlush"}, data);
+    std::string                 data = client.get<std::string>({.path = "/pageChunkedWithFlush"});
     EXPECT_EQ("A page with chunked data\nOver 2 lines\nAnother piece\n", data);
 }
 TEST(ClientHTTPTest, GetSized)
@@ -95,8 +91,7 @@ TEST(ClientHTTPTest, GetSized)
     LocalServer                 runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
-    std::string data;
-    client.get({.path = "/pageSized"}, data);
+    std::string                 data = client.get<std::string>({.path = "/pageSized"});
     EXPECT_EQ("A page with sized data\nOver 2 lines\n", data);
 }
 
@@ -105,8 +100,7 @@ TEST(ClientHTTPTest, GetSizedWithFlush)
     LocalServer                 runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
-    std::string data;
-    client.get({.path = "/pageSizedWithFlush"}, data);
+    std::string                 data = client.get<std::string>({.path = "/pageSizedWithFlush"});
     EXPECT_EQ("A page with sized data\nOver 2 lines\nAnother piece\n", data);
 }
 
@@ -115,12 +109,11 @@ TEST(ClientHTTPTest, GetTwoPagesConnectionNotClosed)
     LocalServer                 runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_1);    // HTTP1.1 does not close connection by default.
 
-    std::string page;
-    client.get({.path = "/pageSized"}, page);
-    EXPECT_EQ("A page with sized data\nOver 2 lines\n", page);
+    std::string                 page1 = client.get<std::string>({.path = "/pageSized"});
+    EXPECT_EQ("A page with sized data\nOver 2 lines\n", page1);
 
-    client.get({.path = "/pageChunked"}, page);
-    EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page);
+    std::string                 page2 = client.get<std::string>({.path = "/pageChunked"});
+    EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page2);
 }
 
 TEST(ClientHTTPTest, GetTwoPagesConnection_IS_Closed)
@@ -128,11 +121,9 @@ TEST(ClientHTTPTest, GetTwoPagesConnection_IS_Closed)
     LocalServer                 runner;
     HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
-    std::string page;
-    client.get({.path = "/pageSized"}, page);
-    EXPECT_EQ("A page with sized data\nOver 2 lines\n", page);
+    std::string                 page1 = client.get<std::string>({.path = "/pageSized"});
+    EXPECT_EQ("A page with sized data\nOver 2 lines\n", page1);
 
-    page = "";
-    client.get({.path = "/pageChunked"}, page);
-    EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page);
+    std::string                 page2 = client.get<std::string>({.path = "/pageChunked"});
+    EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page2);
 }

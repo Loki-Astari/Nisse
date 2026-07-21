@@ -76,17 +76,17 @@ namespace ThorsAnvil::Nisse::HTTP
             {}
 
             template<typename D>
-            void get(ClientRequest const& request, D& dst)                  const   {processes<Method::GET>(request, 0, dst);}
-            template<typename S, typename D>
-            void put(ClientRequest const& request, S const& src, D& dst)    const   {processes<Method::PUT>(request, src, dst);}
-            template<typename S, typename D>
-            void post(ClientRequest const& request, S const& src, D& dst)   const   {processes<Method::POST>(request, src, dst);}
+            D get(ClientRequest const& request)                  const   {return processes<Method::GET, D>(request, 0);}
+            template<typename D, typename S>
+            D put(ClientRequest const& request, S const& src)    const   {return processes<Method::PUT, D>(request, src);}
+            template<typename D, typename S>
+            D post(ClientRequest const& request, S const& src)   const   {return processes<Method::POST, D>(request, src);}
 
             void send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action) const;
             void processResp(std::function<void(ClientHTTPResponse const&)>&& action) const;
         private:
-            template<Method method, typename S, typename D>
-            void processes(ClientRequest const& request, S const& src, D& dst) const
+            template<Method method, typename D, typename S>
+            D processes(ClientRequest const& request, S const& src) const
             {
                 if (stream.eof()) {
                     reset();
@@ -104,15 +104,18 @@ namespace ThorsAnvil::Nisse::HTTP
                             output << ThorsAnvil::Serialize::jsonExporter(src);
                         });
                     }
-                    processResp([&dst](ClientHTTPResponse const& resp)
+                    D result;
+                    processResp([&result](ClientHTTPResponse const& resp)
                     {
-                        resp.body() >> ThorsAnvil::Serialize::jsonImporter(dst);
+                        resp.body() >> ThorsAnvil::Serialize::jsonImporter(result);
                     });
                     if (stream.eof() && reset()) {
                         continue;
                     }
-                    break;
+                    return result;
                 }
+                // Failed 5 times log and throw.
+                ThorsLogAndThrowError(std::runtime_error, "ThorsAnvil::Nisse::HTTP::ClientHTTPBase", "processes", "Failed to extract value from input stream");
             }
             void sendHTTP(Method method, ClientRequest const& request, BodyEncoding encoding) const;
 
