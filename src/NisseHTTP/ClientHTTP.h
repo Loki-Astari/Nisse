@@ -60,17 +60,19 @@ namespace ThorsAnvil::Nisse::HTTP
 
     class ClientHTTPBase
     {
-        std::iostream&          stream;
-        std::string_view        host;
-        Version                 version;
-        std::function<void()>   close;
+        std::iostream&                      stream;
+        Version                             version;
+        std::function<void()>               close;
+        std::function<std::string_view()>   host;
+        std::function<bool()>               reset;
 
         public:
-            ClientHTTPBase(std::iostream& stream, std::string_view host, Version version = Version::HTTP1_1, std::function<void()>&& close = [](){})
+            ClientHTTPBase(std::iostream& stream, Version version = Version::HTTP1_1, std::function<void()>&& close = [](){}, std::function<std::string_view()>&& move = [](){return "localhost";}, std::function<bool()>&& reset = [](){return false;})
                 : stream{stream}
-                , host{host}
                 , version{version}
                 , close{std::move(close)}
+                , host{std::move(move)}
+                , reset{std::move(reset)}
             {}
 
             template<typename D>
@@ -86,41 +88,76 @@ namespace ThorsAnvil::Nisse::HTTP
             template<Method method, typename S, typename D>
             void processes(ClientRequest const& request, S const& src, D& dst) const
             {
-                if constexpr (method == Method::GET)
-                {
-                    send(Method::GET, request, 0, [](StreamOutput&){});
+                if (stream.eof()) {
+                    reset();
                 }
-                else
+                for (int retry = 0; retry < 5; ++retry)
                 {
-                    send(method, request, ThorsAnvil::Serialize::jsonStreanSize(src), [&src](std::ostream& output)
+                    if constexpr (method == Method::GET)
                     {
-                        output << ThorsAnvil::Serialize::jsonExporter(src);
+                        send(Method::GET, request, 0, [](StreamOutput&){});
+                    }
+                    else
+                    {
+                        send(method, request, ThorsAnvil::Serialize::jsonStreanSize(src), [&src](std::ostream& output)
+                        {
+                            output << ThorsAnvil::Serialize::jsonExporter(src);
+                        });
+                    }
+                    processResp([&dst](ClientHTTPResponse const& resp)
+                    {
+                        resp.body() >> ThorsAnvil::Serialize::jsonImporter(dst);
                     });
+                    if (stream.eof() && reset()) {
+                        continue;
+                    }
+                    break;
                 }
-                processResp([&dst](ClientHTTPResponse const& resp)
-                {
-                    resp.body() >> ThorsAnvil::Serialize::jsonImporter(dst);
-                });
             }
+            void sendHTTP(Method method, ClientRequest const& request, BodyEncoding encoding) const;
 
     };
     class ClientHTTP: public ClientHTTPBase
     {
+        struct GetHostName
+        {
+            std::string_view operator()(ThorsAnvil::ThorsSocket::FileInfo const& /*init*/)      {return "Ignore";}
+            std::string_view operator()(ThorsAnvil::ThorsSocket::PipeInfo const& /*init*/)      {return "Ignore";}
+            std::string_view operator()(ThorsAnvil::ThorsSocket::SocketInfo const& init)        {return init.host;}
+            std::string_view operator()(ThorsAnvil::ThorsSocket::SocketService const& init)     {return init.host;}
+            std::string_view operator()(ThorsAnvil::ThorsSocket::SSocketInfo const& init)       {return init.host;}
+            std::string_view operator()(ThorsAnvil::ThorsSocket::SSocketService const& init)    {return init.host;}
+        };
+        ThorsAnvil::ThorsSocket::SocketInit     init;
         ThorsAnvil::ThorsSocket::SocketStream   stream;
 
         public:
             ClientHTTP(ThorsAnvil::ThorsSocket::SSocketInfo const& info, Version version = Version::HTTP1_1)
-                : ClientHTTPBase{stream, info.host, version, [&](){stream.close();}}
-                , stream{info}
-            {}
-            ClientHTTP(ThorsAnvil::ThorsSocket::SSocketService const& info, Version version = Version::HTTP1_1)
-                : ClientHTTPBase{stream, info.host, version, [&](){stream.close();}}
-                , stream{info}
+                : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
+                , init{info}
+                , stream{init}
             {}
             ClientHTTP(ThorsAnvil::ThorsSocket::SocketInfo const& info, Version version = Version::HTTP1_1)
-                : ClientHTTPBase{stream, info.host, version, [&](){stream.close();}}
-                , stream{info}
+                : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
+                , init{info}
+                , stream{init}
             {}
+            ClientHTTP(ThorsAnvil::ThorsSocket::SocketService const& info, Version version = Version::HTTP1_1)
+                : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
+                , init{info}
+                , stream{init}
+            {}
+            ClientHTTP(ThorsAnvil::ThorsSocket::SSocketService const& info, Version version = Version::HTTP1_1)
+                : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
+                , init{info}
+                , stream{init}
+            {}
+            std::string_view hostname() const {return std::visit(GetHostName{}, init);}
+            bool resetStream()
+            {
+                stream = ThorsAnvil::ThorsSocket::SocketStream{init};
+                return true;
+            }
     };
 }
 

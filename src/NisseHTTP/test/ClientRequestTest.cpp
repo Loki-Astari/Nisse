@@ -13,7 +13,7 @@ using namespace std::string_literals;
 TEST(ClientRequestTest, Construct)
 {
     std::stringstream   stream;
-    ClientHTTPBase      request(stream, "localhost", Version::HTTP1_1);
+    ClientHTTPBase      request(stream, Version::HTTP1_1);
     std::string         result;
     request.put({.path = "/bang/bot"}, "Hi there"s, result);
 
@@ -28,7 +28,7 @@ TEST(ClientRequestTest, Construct)
 TEST(ClientRequestTest, ConstructWithAddedHeaders)
 {
     std::stringstream   stream;
-    ClientHTTPBase      request(stream, "localhost", Version::HTTP1_1);
+    ClientHTTPBase      request(stream, Version::HTTP1_1);
     std::string         result;
 
     ThorsAnvil::Nisse::HTTP::HeaderRequest   headers;

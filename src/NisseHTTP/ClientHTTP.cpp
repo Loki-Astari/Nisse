@@ -131,7 +131,7 @@ void ClientHTTPBase::send(Method method, ClientRequest const& request, BodyEncod
     // Send to the server a correctly encoded HTTP request.
     // With the minumum headers.
     stream << method << " " << request.path << " " << version << "\r\n"
-           << "host: " << host << "\r\n"
+           << "host: " << host() << "\r\n"
            << encoding;
 
     // Add the user requested header.

@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
+#include <sys/_types/_mach_port_t.h>
 #include <string>
+#include <thread>
 
 #include "Request.h"
 #include "Response.h"
@@ -18,7 +20,7 @@ class ServerRunner: public HTTP::NisseHTTPServer
 {
     public:
         ServerRunner()
-            : NisseHTTPServer{1, ThorsAnvil::ThorsSocket::ServerInfo{8079}, ThorsAnvil::ThorsSocket::ServerInfo{8070}}
+            : NisseHTTPServer{1, ThorsAnvil::ThorsSocket::ServerInfo{8080}, ThorsAnvil::ThorsSocket::ServerInfo{8070}}
         {
 
             addPath(HTTP::Method::GET, "/pageChunked", [](HTTP::Request const& request, HTTP::Response& response)
@@ -46,12 +48,33 @@ class ServerRunner: public HTTP::NisseHTTPServer
         }
 };
 
+class LocalServer
+{
+    std::thread     thread;
+    public:
+        LocalServer()
+            : thread{[]()
+              {
+                    ServerRunner                server;
+                    server.run();
+              }}
+        {}
+        ~LocalServer()
+        {
+            HTTP::ClientHTTP            client({"127.0.0.1", 8070}, HTTP::Version::HTTP1_0);
+            std::string     data;
+
+            client.get<std::string>({.path = "/?command=stophard"}, data);
+            thread.join();
+        }
+};
+
 ThorsAnvil::Serialize::PrinterConfig    outputConfig{ThorsAnvil::Serialize::OutputType::Stream};
 
 TEST(ClientHTTPTest, GetChunked)
 {
-    ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
+    LocalServer                 server;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
     std::string data;
     client.get({.path = "/pageChunked"}, data);
@@ -60,8 +83,8 @@ TEST(ClientHTTPTest, GetChunked)
 
 TEST(ClientHTTPTest, GetChunkedWithFlush)
 {
-    ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
+    LocalServer                 runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
     std::string data;
     client.get({.path = "/pageChunkedWithFlush"}, data);
@@ -69,8 +92,8 @@ TEST(ClientHTTPTest, GetChunkedWithFlush)
 }
 TEST(ClientHTTPTest, GetSized)
 {
-    ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
+    LocalServer                 runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
     std::string data;
     client.get({.path = "/pageSized"}, data);
@@ -79,8 +102,8 @@ TEST(ClientHTTPTest, GetSized)
 
 TEST(ClientHTTPTest, GetSizedWithFlush)
 {
-    ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
+    LocalServer                 runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
     std::string data;
     client.get({.path = "/pageSizedWithFlush"}, data);
@@ -89,8 +112,8 @@ TEST(ClientHTTPTest, GetSizedWithFlush)
 
 TEST(ClientHTTPTest, GetTwoPagesConnectionNotClosed)
 {
-    ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_1);    // HTTP1.1 does not close connection by default.
+    LocalServer                 runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_1);    // HTTP1.1 does not close connection by default.
 
     std::string page;
     client.get({.path = "/pageSized"}, page);
@@ -102,8 +125,8 @@ TEST(ClientHTTPTest, GetTwoPagesConnectionNotClosed)
 
 TEST(ClientHTTPTest, GetTwoPagesConnection_IS_Closed)
 {
-    ServerRunner                runner;
-    HTTP::ClientHTTP            client({"127.0.0.1", 8079}, HTTP::Version::HTTP1_0);
+    LocalServer                 runner;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_0);
 
     std::string page;
     client.get({.path = "/pageSized"}, page);

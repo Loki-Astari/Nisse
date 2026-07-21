@@ -277,11 +277,11 @@ TEST(MugServerTest, ServiceRunAddServerWithFileValidateWorks)
 #endif
 
     SocketSetUp   socketSetUp;
-    MugServer     server;
     std::latch    latch(1);
     std::latch    waitForExit(1);
 
     auto work = [&]() {
+        MugServer     server;
         server.run(
                 [&latch](){latch.count_down();}
         );
