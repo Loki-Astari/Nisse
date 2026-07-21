@@ -6,7 +6,7 @@
 using namespace ThorsAnvil::Nisse::HTTP;
 
 NISSE_HEADER_ONLY_INCLUDE
-PyntHTTPControl::PyntHTTPControl(ThorsAnvil::Nisse::Server::NisseServer& server)
+PyntHTTPControl::PyntHTTPControl(ThorsAnvil::Nisse::Server::Server& server)
     : server{server}
 {}
 

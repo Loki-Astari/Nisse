@@ -8,16 +8,16 @@
 
 #include "NisseHTTPConfig.h"
 #include "PyntHTTP.h"
-#include "NisseServer/NisseServer.h"
+#include "NisseServer/Server.h"
 
 namespace ThorsAnvil::Nisse::HTTP
 {
 
 class PyntHTTPControl: public PyntHTTP
 {
-    Server::NisseServer&    server;
+    Server::Server&    server;
     public:
-        PyntHTTPControl(Server::NisseServer& server);
+        PyntHTTPControl(Server::Server& server);
         virtual void processRequest(Request& request, Response& response) override;
 };
 

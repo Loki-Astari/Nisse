@@ -4,14 +4,14 @@
 #include <thread>
 #include "PyntHTTPControl.h"
 #include "HTTPHandler.h"
-#include "NisseServer/NisseServer.h"
+#include "NisseServer/Server.h"
 
 namespace ThorsAnvil::Nisse::HTTP
 {
 
 class NisseHTTPServer
 {
-    Server::NisseServer     server;
+    Server::Server          server;
     HTTPHandler             handler;
     PyntHTTPControl         control;
 
@@ -31,7 +31,7 @@ class NisseHTTPServer
         void run()                          {server.run();}
         void stopSoft()                     {server.stopSoft();}
         void stopHard()                     {server.stopHard();}
-        Server::NisseServer& getServer()    {return server;}
+        Server::Server& getServer()         {return server;}
 
         void addPath(MethodChoice method, std::string const& path, HTTPAction&& action, HTTPValidate&& val = [](Request const&){return true;})
         {

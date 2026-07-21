@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "NisseServer/NisseServer.h"
+#include "NisseServer/Server.h"
 #include "ClientHTTP.h"
 #include "PyntHTTPControl.h"
 #include "HTTPHandler.h"
@@ -8,7 +8,7 @@
 #include "Util.h"
 #include "Request.h"
 #include "Response.h"
-#include "NisseServer/NisseServer.h"
+#include "NisseServer/Server.h"
 #include "ThorsSocket/SocketStream.h"
 
 #include <sstream>
@@ -215,7 +215,7 @@ class HTTPResponse
         friend std::istream& operator>>(std::istream& stream, HTTPResponse& data) {data.recv(stream);return stream;}
 };
 
-class MugServer: public NisServer::NisseServer
+class MugServer: public NisServer::Server
 {
     using Hanlders = std::vector<NisHttp::HTTPHandler>;
 
@@ -250,7 +250,7 @@ class MugServer: public NisServer::NisseServer
 
     public:
         MugServer()
-            : NisseServer(4)
+            : Server(4)
             , control(*this)
         {
             ThorsLogDebug("MugServer", "MugServer", " Create Server");

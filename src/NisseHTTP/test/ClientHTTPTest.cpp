@@ -9,7 +9,7 @@
 #include "ClientHTTP.h"
 #include "NisseHTTPServer.h"
 
-#include "NisseServer/NisseServer.h"
+#include "NisseServer/Server.h"
 
 #include "ThorSerialize/PrinterConfig.h"
 #include "Util.h"
