@@ -198,17 +198,16 @@ void Store::operator()(StateUpdateRestoreRead& update)
             , update(update)
         {}
         void operator()(ServerData& data)       {data.readEvent.add();}
-        void operator()(StreamData& data)       {data.readEvent.add();}
-#if 0
+        void operator()(StreamData& data)
         {
-            char buffer[1];
-            ssize_t result = recv(update.fd, &buffer, 1, MSG_PEEK);
             data.readEvent.add();
-            if (result == 1) {
+            // If we have read data from the stream into the buffer.
+            // Then the event is not going to trigger if there is data
+            // still left in the buffer. So manually activate it.
+            if (data.stream.rdbuf()->in_avail() != 0) {
                 data.readEvent.activate();
             }
         }
-#endif
         void operator()(OwnedFD& data)          {data.readEvent.add();}
         void operator()(SharedFD& data)
         {
