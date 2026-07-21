@@ -128,6 +128,9 @@ bool ClientHTTPResponse::buildStream(std::iostream& stream)
 NISSE_HEADER_ONLY_INCLUDE
 void ClientHTTPBase::send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action) const
 {
+    if (closed || stream.eof()) {
+        closed = !(reset());
+    }
     // Send to the server a correctly encoded HTTP request.
     // With the minumum headers.
     stream << method << " " << request.path << " " << version << "\r\n"
@@ -173,4 +176,18 @@ void ClientHTTPBase::processResp(std::function<void(ClientHTTPResponse const&)>&
         close();
     }
     action(response);
+    bool isClosed = false;
+    bool isKeepAlive = false;
+    for (auto const& headerValue: response.getHeader().getHeader("connection")) {
+        using namespace std::string_view_literals;
+        if (headerValue == "close"sv) {
+            isClosed = true;
+        }
+        if (headerValue == "keep-alive"sv) {
+            isKeepAlive = true;
+        }
+    }
+    if (isClosed || (version == Version::HTTP1_0 && !isKeepAlive)) {
+        closed = true;
+    }
 }

@@ -65,6 +65,7 @@ namespace ThorsAnvil::Nisse::HTTP
         std::function<void()>               close;
         std::function<std::string_view()>   host;
         std::function<bool()>               reset;
+        mutable bool                        closed;
 
         public:
             ClientHTTPBase(std::iostream& stream, Version version = Version::HTTP1_1, std::function<void()>&& close = [](){}, std::function<std::string_view()>&& move = [](){return "localhost";}, std::function<bool()>&& reset = [](){return false;})
@@ -73,6 +74,7 @@ namespace ThorsAnvil::Nisse::HTTP
                 , close{std::move(close)}
                 , host{std::move(move)}
                 , reset{std::move(reset)}
+                , closed(false)
             {}
 
             template<typename D>
@@ -88,9 +90,6 @@ namespace ThorsAnvil::Nisse::HTTP
             template<Method method, typename D, typename S>
             D processes(ClientRequest const& request, S const& src) const
             {
-                if (stream.eof()) {
-                    reset();
-                }
                 for (int retry = 0; retry < 5; ++retry)
                 {
                     if constexpr (method == Method::GET)
@@ -110,6 +109,7 @@ namespace ThorsAnvil::Nisse::HTTP
                         resp.body() >> ThorsAnvil::Serialize::jsonImporter(result);
                     });
                     if (stream.eof() && reset()) {
+                        closed = false;
                         continue;
                     }
                     return result;
