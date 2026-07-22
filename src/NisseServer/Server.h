@@ -100,26 +100,26 @@ namespace UnitTest
                 }
                 runner.join();
             }
-            void stopHard()
+            template<typename R>
+            R callServer(std::function<R(T&)>&& action)
             {
                 std::unique_lock<std::mutex>     lock{mutex};
                 if (activeServer) {
-                    activeServer->stopHard();
+                    return std::forward<std::function<R(T&)>>(action)(*activeServer);
                 }
+                return R{};
+            }
+            void stopHard()
+            {
+                callServer<void>([](T& server) {server.stopHard();});
             }
             void stopSoft()
             {
-                std::unique_lock<std::mutex>     lock{mutex};
-                if (activeServer) {
-                    activeServer->stopSoft();
-                }
+                callServer<void>([](T& server) {server.stopSoft();});
             }
             void listen(TASock::ServerInit&& listenerInit, Pynt& pynt)
             {
-                std::unique_lock<std::mutex>     lock{mutex};
-                if (activeServer) {
-                    activeServer->listen(std::forward<TASock::ServerInit>(listenerInit), pynt);
-                }
+                callServer<void>([&](T& server) {server.listen(std::forward<TASock::ServerInit>(listenerInit), pynt);});
             }
     };
 };
