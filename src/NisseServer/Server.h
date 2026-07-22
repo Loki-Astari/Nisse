@@ -71,11 +71,12 @@ namespace UnitTest
         std::condition_variable condvar;
         std::thread             runner;
         public:
-            ServerRunner()
+            template<typename... Args>
+            ServerRunner(Args&&... args)
                 : activeServer{nullptr}
                 , runner([&]()
                 {
-                    T   server;
+                    T   server{std::forward<Args>(args)...};
                     server.run([&]()
                                {
                                     std::unique_lock<std::mutex>  lock{mutex};

@@ -84,11 +84,18 @@ namespace ThorsAnvil::Nisse::HTTP
             template<typename D, typename S>
             D post(ClientRequest const& request, S const& src)   const   {return processes<Method::POST, D>(request, src);}
 
+            using AsyncAction = std::function<void(ClientHTTPResponse const&)>;
+            void get_async(ClientRequest const& request, AsyncAction&& action)                  const   {return processes_async<Method::GET>(request, 0, std::forward<AsyncAction>(action));}
+            template<typename S>
+            void put_async(ClientRequest const& request, S const& src, AsyncAction&& action)    const   {return processes_async<Method::PUT>(request, src, std::forward<AsyncAction>(action));}
+            template<typename S>
+            void post_async(ClientRequest const& request, S const& src, AsyncAction&& action)   const   {return processes_async<Method::POST>(request, src, std::forward<AsyncAction>(action));}
+
             void send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action) const;
             void processResp(std::function<void(ClientHTTPResponse const&)>&& action) const;
         private:
-            template<Method method, typename D, typename S>
-            D processes(ClientRequest const& request, S const& src) const
+            template<Method method, typename S>
+            void processes_async(ClientRequest const& request, S const& src, AsyncAction&& action) const
             {
                 for (int retry = 0; retry < 5; ++retry)
                 {
@@ -103,19 +110,25 @@ namespace ThorsAnvil::Nisse::HTTP
                             output << ThorsAnvil::Serialize::jsonExporter(src);
                         });
                     }
-                    D result;
-                    processResp([&result](ClientHTTPResponse const& resp)
-                    {
-                        resp.body() >> ThorsAnvil::Serialize::jsonImporter(result);
-                    });
+                    processResp(std::forward<AsyncAction>(action));
                     if (stream.eof() && reset()) {
                         closed = false;
                         continue;
                     }
-                    return result;
+                    return;
                 }
                 // Failed 5 times log and throw.
                 ThorsLogAndThrowError(std::runtime_error, "ThorsAnvil::Nisse::HTTP::ClientHTTPBase", "processes", "Failed to extract value from input stream");
+            }
+            template<Method method, typename D, typename S>
+            D processes(ClientRequest const& request, S const& src) const
+            {
+                D result;
+                processes_async<method, S>(request, src, [&result](ClientHTTPResponse const& resp)
+                {
+                    resp.body() >> ThorsAnvil::Serialize::jsonImporter(result);
+                });
+                return result;
             }
             void sendHTTP(Method method, ClientRequest const& request, BodyEncoding encoding) const;
 
