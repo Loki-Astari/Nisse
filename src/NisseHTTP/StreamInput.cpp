@@ -7,6 +7,14 @@
 using namespace ThorsAnvil::Nisse::HTTP;
 
 NISSE_HEADER_ONLY_INCLUDE
+StreamBufInput::~StreamBufInput()
+{
+    while (underflow() != traits::eof()) {
+        // Keep calling unerflow until we have read all the data from the stream.
+    }
+}
+
+NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete)
     : remaining{0}
     , processed{0}

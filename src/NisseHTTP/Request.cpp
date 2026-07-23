@@ -80,7 +80,7 @@ std::string_view Request::readFirstLine(std::istream& stream)
     version = findVersion(pv);
     method = findMethod(meth);
 
-    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", "Request: Method:", method, " Path:", path, " Protocol:", prot, " Version:", version);
+    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine >", messageHeader, "< Request: Method:", method, " Path:", path, " Protocol:", prot, " Version:", version);
     if (meth.size() == 0 || path.size() == 0 || pv.size() == 0 || version == Version::Unknown || method == Method::Other)
     {
         ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", ": Bad Request: ", "Method: >", meth, "< Path: >", path, "< Proto: >", pv, "<");

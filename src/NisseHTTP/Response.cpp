@@ -38,7 +38,7 @@ void Response::sendHeaderIfNotSent()
 {
     if (!headerSent)
     {
-        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Response", "sendHeaderIfNotSent", "Sending header: ", statusCode);
+        ThorsLogTrack("ThorsAnvil::Nisse::HTTP::Response", "sendHeaderIfNotSent", "Sending header: ", version, " ", statusCode);
         baseStream << version << " " << statusCode << "\r\n";
         headerSent = true;
     }

@@ -31,6 +31,7 @@ class StreamBufInput: public std::streambuf
         Complete            complete;
         std::vector<char>   chunkBuffer;
     public:
+        ~StreamBufInput();
         StreamBufInput(std::istream& stream, BodyEncoding encoding, Complete&& complete);
         StreamBufInput(StreamBufInput&& move)                   noexcept;
         StreamBufInput& operator=(StreamBufInput&& move)        noexcept;
