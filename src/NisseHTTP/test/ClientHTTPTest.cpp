@@ -11,7 +11,10 @@
 
 #include "NisseServer/Server.h"
 
+#include "ThorSerialize/JsonThor.h"
 #include "ThorSerialize/PrinterConfig.h"
+#include "ThorSerialize/Traits.h"
+#include "ThorSerialize/SerUtil.h"
 #include "Util.h"
 
 using namespace ThorsAnvil::Nisse;
@@ -44,6 +47,24 @@ class HTTPTestServer: public HTTP::Server
                 response.body(55) << "\"A page with sized data\\nOver 2 lines\\n" << std::flush
                                   << "Another piece\\n\"";
                 return true;    // Indicates we handeled the request. Don't search for more matches.
+            });
+
+            addPath(HTTP::Method::POST, "/dont/read/post/chunked", [](HTTP::Request const& request, HTTP::Response& response)
+            {
+                std::string data;
+                request.body() >> ThorsAnvil::Serialize::jsonImporter(data);
+                std::cerr << "READ: " << data << "\n\n";
+                //response.setStatus(403);
+                // Note: Explicitly not reading any posted data.
+                response.body(HTTP::Encoding::Chunked) << R"("Received 403")";
+                return true;
+            });
+            addPath(HTTP::Method::POST, "/dont/read/post/sized", [](HTTP::Request const& request, HTTP::Response& response)
+            {
+                response.setStatus(403);
+                // Note: Explicitly not reading any posted data.
+                response.body(14) << R"("Received 403")";
+                return true;
             });
         }
 };
@@ -110,3 +131,19 @@ TEST(ClientHTTPTest, GetTwoPagesConnection_IS_Closed)
     std::string                 page2 = client.get<std::string>({.path = "/pageChunked"});
     EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page2);
 }
+
+TEST(ClientHTTPTest, ServerDoesNotExplicitlyReadBody)
+{
+    using namespace std::string_literals;
+    HTTPTestServerRunner        server;
+    HTTP::ClientHTTP            client({"127.0.0.1", 8080}, HTTP::Version::HTTP1_1);
+
+    std::string                 page1 = client.post<std::string>({.path = "/dont/read/post/chunked"}, "This is the input string"s);
+    EXPECT_EQ("Received 403", page1);
+
+    std::cerr << "\n\n\n\n\n================\n";
+
+    std::string                 page2 = client.get<std::string>({.path = "/pageChunked"});
+    //EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page2);
+}
+

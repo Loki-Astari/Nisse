@@ -9,8 +9,14 @@ using namespace ThorsAnvil::Nisse::HTTP;
 NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::~StreamBufInput()
 {
+    // ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "~StreamBufInput", "Complete");
+    setg(&chunkBuffer[0], &chunkBuffer[0], &chunkBuffer[0]);
     while (underflow() != traits::eof()) {
         // Keep calling unerflow until we have read all the data from the stream.
+        // Note underflow expects the buffer to be empty.
+        // So lets make sure that holds before calling (don't want to break assumptions)
+        // Also after all this is done we want the avail() to be zero.
+        setg(&chunkBuffer[0], &chunkBuffer[0], &chunkBuffer[0]);
     }
 }
 
@@ -132,17 +138,21 @@ std::string_view StreamBufInput::preloadStreamIntoBuffer(bool forceNextChunk)
 NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::int_type StreamBufInput::underflow()
 {
+    //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Underflow stream");
     if (remaining == 0)
     {
         getNextChunk();
         if (remaining == 0) {
+            //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Nothing left to read");
             return traits::eof();
         }
     }
 
     std::streamsize get = std::min(remaining, static_cast<std::streamsize>(chunkBuffer.size()));
     std::streamsize got = buffer->sgetn(&chunkBuffer[0], get);
+    //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Reading: ", get, "Received: ", got);
     if (got == 0) {
+        //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Failed to read");
         return traits::eof();
     }
     remaining -= got;
@@ -341,8 +351,17 @@ void StreamBufInput::getNextChunk()
     }
     if (chunkSize == 0)
     {
-        chunked = false;
-        complete(std::ios::goodbit);
+        // End of chunked stream terminated by '\r\n'
+        // Since we are going to mark this stream as no longer chunked these need to be removed.
+        char n1 = buffer->sbumpc();
+        char n2 = buffer->sbumpc();
+        if (n1 != '\r' || n2 != '\n') {
+            complete(std::ios::badbit);
+        }
+        else {
+            chunked = false;
+            complete(std::ios::goodbit);
+        }
     }
     else {
         remaining = chunkSize;
