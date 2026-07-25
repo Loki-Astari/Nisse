@@ -150,7 +150,7 @@ StreamBufInput::int_type StreamBufInput::underflow()
 
     std::streamsize get = std::min(remaining, static_cast<std::streamsize>(chunkBuffer.size()));
     std::streamsize got = buffer->sgetn(&chunkBuffer[0], get);
-    //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Reading: ", get, "Received: ", got);
+    //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Reading: ", get, " Received: ", got, " Remaining: ", remaining);
     if (got == 0) {
         //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Failed to read");
         return traits::eof();
@@ -351,17 +351,13 @@ void StreamBufInput::getNextChunk()
     }
     if (chunkSize == 0)
     {
-        // End of chunked stream terminated by '\r\n'
-        // Since we are going to mark this stream as no longer chunked these need to be removed.
-        char n1 = buffer->sbumpc();
-        char n2 = buffer->sbumpc();
-        if (n1 != '\r' || n2 != '\n') {
-            complete(std::ios::badbit);
-        }
-        else {
-            chunked = false;
-            complete(std::ios::goodbit);
-        }
+        /*
+         *  NOTE: The `complete()` function below will call readHeaders().
+         *        This is to extract any "Tailers" => Haders at the end, that are found after the chunked data.
+         *        This will extract the finial "\r\n" at the end of the chunked stream.
+         */
+        complete(std::ios::goodbit);
+        chunked = false;
     }
     else {
         remaining = chunkSize;

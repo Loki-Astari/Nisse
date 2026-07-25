@@ -66,6 +66,29 @@ class HTTPTestServer: public HTTP::Server
                 response.body(14) << R"("Received 403")";
                 return true;
             });
+            addPath(HTTP::Method::POST, "/MCPIssue", [](HTTP::Request const& request, HTTP::Response& response)
+            {
+                response.body(HTTP::Encoding::Chunked) << R"({"jsonrpc":"2.0","id":1,"error":{"code":-32600,"message":"A bad thing happened"}}))";
+                return true;
+            });
+            addPath(HTTP::Method::POST, "/ClientSendsLessThanServerExpects", [](HTTP::Request const& request, HTTP::Response& response)
+            {
+                std::istream& body = request.body();
+
+                char next;
+                body >> next;
+                EXPECT_EQ('[', next);
+
+                if (body >> next) {
+                    EXPECT_TRUE(false); // We only sent a single character and that was just read.
+                }
+                else {
+                    EXPECT_TRUE(true);
+                }
+
+                response.body(HTTP::Encoding::Chunked) << R"({"jsonrpc":"2.0","error":{"code":-32700,"message":"Parse error"},"id":null})";
+                return true;
+            });
         }
 };
 
@@ -141,9 +164,54 @@ TEST(ClientHTTPTest, ServerDoesNotExplicitlyReadBody)
     std::string                 page1 = client.post<std::string>({.path = "/dont/read/post/chunked"}, "This is the input string"s);
     EXPECT_EQ("Received 403", page1);
 
-    std::cerr << "\n\n\n\n\n================\n";
 
     std::string                 page2 = client.get<std::string>({.path = "/pageChunked"});
     //EXPECT_EQ("A page with chunked data\nOver 2 lines\n", page2);
 }
+
+TEST(ClientHTTPTest, MCPIssue)
+{
+    HTTPTestServerRunner        server;
+
+    ThorsAnvil::Nisse::HTTP::ClientHTTP client{ThorsAnvil::ThorsSocket::SocketInfo{"localhost", 8080}, ThorsAnvil::Nisse::HTTP::Version::HTTP1_0 };
+    client.send(ThorsAnvil::Nisse::HTTP::Method::POST, {.path = "/MCPIssue"}, ThorsAnvil::Nisse::HTTP::Encoding::Chunked, [&](ThorsAnvil::Nisse::HTTP::StreamOutput& out)
+    {
+        out << R"({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025_11_25"}})";
+        return true;
+    });
+    client.processResp([](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& resp)
+    {
+        using namespace std::string_view_literals;
+        EXPECT_EQ(resp.getStatus(), 200);
+        EXPECT_EQ(resp.getMessage(), "OK");
+        ASSERT_TRUE(resp.getHeader().hasHeader("transfer-encoding"sv));
+        EXPECT_EQ(resp.getHeader().getHeader("transfer-encoding")[0], "chunked");
+
+        std::cerr << "Status:  " << resp.getStatus() << "\n"
+                  << "Message: " << resp.getMessage() << "\n"
+                  << "Version: " << resp.getVersion() << "\n"
+                  << "Header:  " << resp.getHeader() << "\n"
+                  << "Body:   >" << resp.body().rdbuf() << "<\n";
+    });
+
+}
+
+TEST(ClientHTTPTest, ClientSendsLessThanServerExpects)
+{
+    HTTPTestServerRunner        server;
+    std::ostringstream   result;
+
+    ThorsAnvil::Nisse::HTTP::ClientHTTP  client({"localhost", 8080});
+    client.send(ThorsAnvil::Nisse::HTTP::Method::POST, {.path = "/ClientSendsLessThanServerExpects"}, ThorsAnvil::Nisse::HTTP::Encoding::Chunked, [&](ThorsAnvil::Nisse::HTTP::StreamOutput& action)
+    {
+        action << R"([)";
+    });
+    client.processResp([&](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& resp)
+    {
+        result << resp.body().rdbuf();
+    });
+
+    EXPECT_EQ(R"({"jsonrpc":"2.0","error":{"code":-32700,"message":"Parse error"},"id":null})", result.str());
+}
+
 

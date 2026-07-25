@@ -317,7 +317,6 @@ TEST(RequestTest, ContentChunked)
                                "12\r\nThis is sime test\n\r\n"
                                "12\r\nOne more line XXX\n\r\n"
                                "0\r\n"
-                               "\r\n"
                                "tail1: data\r\n"
                                "tail2: stop, loop\r\n"
                                "\r\n"
