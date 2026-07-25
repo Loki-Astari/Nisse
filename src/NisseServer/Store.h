@@ -50,6 +50,7 @@ struct ServerData
     CoRoutine               coRoutine;
     Event                   readEvent;
     Pynt*                   pynt;
+    bool                    finished;
 };
 struct StreamData
 {
@@ -58,6 +59,7 @@ struct StreamData
     Event                   readEvent;
     Event                   writeEvent;
     Pynt*                   pynt;
+    bool                    finished;
 };
 struct OwnedFD
 {
@@ -170,6 +172,7 @@ class Store
     std::atomic<int>            openStreamCount = 0;
 
     public:
+        ~Store();
         StoreData&      getStoreData(int fd);
         int             getOpenConnections() const {return openStreamCount;}
         void            processUpdateRequest();

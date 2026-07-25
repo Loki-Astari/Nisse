@@ -11,6 +11,24 @@ using namespace ThorsAnvil::Nisse::Server;
 NISSE_HEADER_ONLY_INCLUDE
 CoRoutine Store::invalid{[](Yield&){}};
 
+struct CoRoutineSafeTerminate
+{
+    void operator()(ServerData& data)       {data.finished = true;while (data.coRoutine){data.coRoutine();}}
+    void operator()(StreamData& data)       {data.finished = true;while (data.coRoutine){data.coRoutine();}}
+    void operator()(OwnedFD&)               {}
+    void operator()(SharedFD&)              {}
+    void operator()(TimerData&)             {}
+};
+
+NISSE_HEADER_ONLY_INCLUDE
+Store::~Store()
+{
+    // Because we are storing co routines we need to make sure there any stacks are correctly unwound.
+    for (auto& storedItem: data) {
+        std::visit(CoRoutineSafeTerminate{}, storedItem.second);
+    }
+}
+
 NISSE_HEADER_ONLY_INCLUDE
 StoreData& Store::getStoreData(int fd)
 {
@@ -69,7 +87,8 @@ void Store::operator()(StateUpdateCreateServer& update)
                                             ServerData{std::move(update.server),
                                                        std::move(invalid),
                                                        std::move(update.readEvent),
-                                                       &update.pynt
+                                                       &update.pynt,
+                                                       false            // Not finished.
                                                       });
 
     ServerData& data = std::get<ServerData>(iter->second);
@@ -87,7 +106,8 @@ void Store::operator()(StateUpdateCreateStream& update)
                                                        std::move(invalid),
                                                        std::move(update.readEvent),
                                                        std::move(update.writeEvent),
-                                                       &update.pynt
+                                                       &update.pynt,
+                                                       false            // Not finished
                                                       });
 
     StreamData& data = std::get<StreamData>(iter->second);
@@ -164,7 +184,7 @@ void Store::operator()(StateUpdateExternallClosed& update)
         Store&  store;
 
         void operator()(ServerData&)            {}
-        void operator()(StreamData& data)       {data.stream.getSocket().externalyClosed();}
+        void operator()(StreamData& data)       {data.finished = true;data.stream.getSocket().externalyClosed();while (data.coRoutine){data.coRoutine();}}
         void operator()(OwnedFD&)               {}
         void operator()(SharedFD&)              {}
         void operator()(TimerData&)             {}

@@ -91,6 +91,11 @@ CoRoutine Server::createStreamJob(StreamData& info)
             // See Store: StateUpdateCreateStream and StateUpdateCreateServer
             yield({TaskYieldState::WaitForMore, socketId});
 
+            // If we are tidying up the exit immediately.
+            if (info.finished) {
+                return;
+            }
+
             // On normal sockets this does nothing.
             // ON SSL we do the SSL handshake.
             streamSocket.deferInit();
@@ -98,6 +103,16 @@ CoRoutine Server::createStreamJob(StreamData& info)
             PyntResult result = info.pynt->handleRequest(info.stream, context);
             while (result == PyntResult::More)
             {
+                // This is a co-operative multi tasking environment.
+                // Yield here to give other requests an opportunity.
+                // See Store Restore Read request. This will re=shedule this task if there
+                // is still more data available on socketId automatically.
+                yield({TaskYieldState::RestoreRead, socketId});
+
+                // If we are tidying up the exit immediately.
+                if (info.finished) {
+                    break;
+                }
                 result = info.pynt->handleRequest(info.stream, context);
             }
             // We are all done
@@ -124,6 +139,11 @@ CoRoutine Server::createAcceptJob(ServerData& info)
             // The next call will happen when there is data available on the file descriptor.
             yield({TaskYieldState::WaitForMore, socketId});
 
+            // If we are tidying up the exit immediately.
+            if (info.finished) {
+                return;
+            }
+
             while (true)
             {
                 TASock::Socket     accept = info.server.accept(TASock::Blocking::No, TASock::DeferAccept::Yes);
@@ -135,6 +155,11 @@ CoRoutine Server::createAcceptJob(ServerData& info)
                     eventHandler.add(TASock::SocketStream{std::move(accept)}, [&](StreamData& info){return createStreamJob(info);}, *info.pynt);
                 }
                 yield({TaskYieldState::WaitForMore, socketId});
+
+                // If we are tidying up the exit immediately.
+                if (info.finished) {
+                    break;
+                }
             }
             // We are all done
             // So indicate that we should tidy up state.
