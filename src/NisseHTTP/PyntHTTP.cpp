@@ -27,16 +27,11 @@ ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStre
         return Server::PyntResult::Done;
     }
 
-    Response    response(stream, request.getVersion());
-    this->processRequest(request, response);
-
-
-    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Good Request: ", response.getCode().code, " => ", response.getCode().message);
-    // By default we want to Keep-Alive
-    // So we will only close if all the "connection" values are "close"
-    std::vector<std::string> const& connection = request.headers().getHeader("connection");
+    // Work out what we should do with the connection after fulfilling the request.
+    // This depends on the protocol and the header 'connection'
     bool isClose = false;
     bool isKeepAlive = false;
+    std::vector<std::string> const& connection = request.headers().getHeader("connection");
     for (auto const& c: connection) {
         if (c == "close") {
             isClose = true;
@@ -57,5 +52,15 @@ ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStre
         // HTTP 1.1 the connections are kept open by default.
         result = isKeepAlive || request.getVersion() != Version::HTTP1_0 ? Server::PyntResult::More : Server::PyntResult::Done;
     }
+
+    Response    response(stream, request.getVersion());
+    // If the connection is going to be closed then let the client know.
+    if (result == Server::PyntResult::Done) {
+        response.addHeader("connection", "close");
+    }
+    this->processRequest(request, response);
+    ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Good Request: ", response.getCode().code, " => ", response.getCode().message);
+
+
     return result;
 }
