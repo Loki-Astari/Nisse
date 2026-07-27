@@ -1,4 +1,4 @@
-#include "NisseServer/NisseServer.h"
+#include "NisseServer/Server.h"
 #include "NisseServer/PyntControl.h"
 #include "NisseHTTP/HTTPHandler.h"
 #include "NisseHTTP/Request.h"
@@ -11,7 +11,7 @@ namespace NisServer = ThorsAnvil::Nisse::Server;
 namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
 
-class HelloWorld: public NisServer::NisseServer
+class HelloWorld: public NisServer::Server
 {
     NisHttp::HTTPHandler    http;
     NisServer::PyntControl  control;

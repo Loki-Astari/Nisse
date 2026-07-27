@@ -1,7 +1,7 @@
 #ifndef THORSANVIL_NISSE_EXAMPLES_MONGO_SERVER_H
 #define THORSANVIL_NISSE_EXAMPLES_MONGO_SERVER_H
 
-#include "NisseServer/NisseServer.h"
+#include "NisseServer/Server.h"
 #include "NisseServer/Context.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
@@ -25,7 +25,7 @@ class MongoConnectionPool
     TASock::Socket                      pipe;
     NisServer::AsyncSharedSocket        async;
     public:
-        MongoConnectionPool(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
+        MongoConnectionPool(NisServer::Server& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
             : pipe{TASock::PipeInfo{}, TASock::Blocking::No}
             , async(pipe, server)
         {
@@ -87,7 +87,7 @@ class MongoServer
 {
     MongoConnectionPool     mongoPool;
     public:
-        MongoServer(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db);
+        MongoServer(NisServer::Server& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db);
         // CRUD
         void personCreate(NisHttp::Request const& request, NisHttp::Response& response);
         void personGet(NisHttp::Request const& request, NisHttp::Response& response);

@@ -20,7 +20,9 @@ ThorsAnvil::Nisse::Server::PyntResult PyntHTTP::handleRequest(TASock::SocketStre
     if (!request.isValidRequest())
     {
         Response    clientError(stream, request.getVersion(), 400);
-        clientError.addHeaders(request.failHeader());
+        for (auto const& fail: request.failHeader()) {
+            clientError.addHeader(fail.first, fail.second);
+        }
         ThorsLogTrack("ThorsAnvil::Nisse::HTTP::PyntHTTP", "handleRequest", "Invalid Request: ", clientError.getCode().code, " => ", clientError.getCode().message);
         return Server::PyntResult::Done;
     }

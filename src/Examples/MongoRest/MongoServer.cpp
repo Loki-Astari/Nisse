@@ -83,11 +83,9 @@ void MongoServer::requestFailed(NisHttp::Response& response, std::initializer_li
 {
     response.setStatus(404);
 
-    NisHttp::HeaderResponse   headers;
     for (auto const& message: messages) {
-        headers.add("Error", message);
+        response.addHeader("Error", message);
     }
-    response.addHeaders(headers);
 }
 
 void requestStreamRange(NisHttp::Response& response, TAMongo::FindRange<FindResult>& result)
@@ -103,7 +101,7 @@ void requestStreamRange(NisHttp::Response& response, TAMongo::FindRange<FindResu
     output << ']';
 }
 
-MongoServer::MongoServer(NisServer::NisseServer& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
+MongoServer::MongoServer(NisServer::Server& server, std::size_t poolSize, std::string_view host, int port, std::string_view user, std::string_view password, std::string_view db)
     : mongoPool(server, poolSize, host, port, user, password, db)
 {}
 

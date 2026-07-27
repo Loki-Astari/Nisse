@@ -33,8 +33,8 @@ class Response
 
 
         // Build up the response message.
-        void          setStatus(int code);
-        void          addHeaders(Header const& headers);
+        Response&     setStatus(int code);
+        Response&     addHeader(std::string_view head, std::string_view value);
         std::ostream& body(BodyEncoding encoding);
 
         // Simplifications to handling common cases.

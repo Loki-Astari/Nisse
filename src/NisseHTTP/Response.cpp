@@ -1,6 +1,4 @@
 #include "Response.h"
-#include "HeaderResponse.h"
-#include "HeaderStreamOperator.tpp"
 #include "ThorsLogging/ThorsLogging.h"
 #include <limits>
 #include <stdexcept>
@@ -63,20 +61,37 @@ void Response::read(std::istream& stream)
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void Response::setStatus(int newStatusCode)
+Response& Response::setStatus(int newStatusCode)
 {
+    if (headerSent) {
+        ThorsLogAndThrowError(std::runtime_error, "ThorsAnvil::Nisse::HTTP::Response", "setStatus", "Setting status after headers already sent");
+    }
     statusCode = StandardStatusCodeMap::getStandardStatusCodeMap()[newStatusCode];
+    return *this;
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-void Response::addHeaders(Header const& headers)
+Response& Response::addHeader(std::string_view head, std::string_view value)
 {
     if (stream.rdbuf() != nullptr) {
         ThorsLogAndThrowWarning(std::runtime_error, "ThorsAnvil::Nisse::HTTP::Response", "addHeaders", "Headers can not be sent after the body has been started");
     }
 
+    using namespace std::string_view_literals;
+
+    /*
+     * Ignore content Length and transfer encoding.
+     * These are set when you call body
+     */
+    if (std::ranges::equal(head, "content-length"sv, ichar_equals)) {
+        return *this;
+    }
+    if (std::ranges::equal(head, "transfer-encoding"sv, ichar_equals)) {
+        return *this;
+    }
     sendHeaderIfNotSent();
-    baseStream << headers;
+    baseStream << head << ": "<< value << "\r\n";
+    return *this;
 }
 
 NISSE_HEADER_ONLY_INCLUDE
@@ -98,8 +113,5 @@ std::ostream& Response::body(BodyEncoding bodyEncoding)
 NISSE_HEADER_ONLY_INCLUDE
 void Response::error(int code, std::string_view errorMessage)
 {
-    setStatus(code);
-    HeaderResponse  header;
-    header.add("Error", errorMessage);
-    addHeaders(header);
+    setStatus(code).addHeader("Error", errorMessage);
 }

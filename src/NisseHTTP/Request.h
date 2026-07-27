@@ -4,7 +4,6 @@
 #include "NisseHTTPConfig.h"
 #include "URL.h"
 #include "HeaderRequest.h"
-#include "HeaderResponse.h"
 #include "StreamInput.h"
 #include "NisseServer/Context.h"
 #include <iostream>
@@ -20,6 +19,8 @@ class Request
     static constexpr std::size_t    maxHeaderSize = 8192;
     static constexpr std::size_t    maxTotalHeaderSize = maxHeaderSize * 8;
 
+    using HeaderMap = std::map<std::string, std::string>;
+
     Server::Context*    context;
     std::string         messageHeader;
     Version             version;
@@ -27,7 +28,7 @@ class Request
     URL                 url;
     HeaderRequest       head;
     HeaderRequest       tail;
-    HeaderResponse      failResponse;
+    HeaderMap           failResponse;
     RequestVariables    var;
 
     mutable StreamInput input;
@@ -44,7 +45,7 @@ class Request
 
         HeaderRequest const&    headers()       const   {return head;}
         HeaderRequest const&    trailers()      const   {return tail;}
-        HeaderResponse const&   failHeader()    const   {return failResponse;}
+        HeaderMap      const&   failHeader()    const   {return failResponse;}
         bool                    isValidRequest()const   {return !input.fail() && failResponse.empty();}
 
         RequestVariables const& variables()     const   {return var;}

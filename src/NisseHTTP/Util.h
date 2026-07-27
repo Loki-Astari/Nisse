@@ -52,12 +52,6 @@ class StandardStatusCodeMap
         StatusCode const& operator[](int code);
 };
 
-// TODO Move to Util
-class HeaderResponse;
-class HeaderPassThrough;
-using Header = std::variant<std::reference_wrapper<HeaderResponse const>, std::reference_wrapper<HeaderPassThrough const>>;
-std::ostream& operator<<(std::ostream& stream, Header const& header);
-
 class RequestVariables
 {
     using Store = std::map<std::string, std::string>;

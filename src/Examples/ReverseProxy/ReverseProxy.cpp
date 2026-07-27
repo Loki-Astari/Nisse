@@ -1,10 +1,10 @@
-#include "NisseServer/NisseServer.h"
+#include "NisseHTTP/Util.h"
+#include "NisseServer/Server.h"
 #include "NisseServer/PyntControl.h"
 #include "NisseServer/Context.h"
 #include "NisseHTTP/HTTPHandler.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
-#include "NisseHTTP/HeaderPassThrough.h"
 #include <ThorsSocket/Server.h>
 #include <filesystem>
 
@@ -13,7 +13,7 @@ namespace NisServer = ThorsAnvil::Nisse::Server;
 namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace FS        = std::filesystem;
 
-class ReverseProxy: public NisServer::NisseServer
+class ReverseProxy: public NisServer::Server
 {
     NisHttp::HTTPHandler    http;
     NisServer::PyntControl  control;
@@ -33,6 +33,25 @@ class ReverseProxy: public NisServer::NisseServer
         return TASock::SServerInfo{port, std::move(ctx)};
     }
 
+    bool isHeader(std::string_view headerLine, std::string_view check)
+    {
+        headerLine.remove_prefix(std::min(headerLine.size(), headerLine.find_first_not_of(" \r\t\v")));
+        auto find = std::min(headerLine.size(), headerLine.find(':'));
+        headerLine.remove_suffix(headerLine.size() - find);
+
+        return std::ranges::equal(headerLine, check, NisHttp::ichar_equals);
+    }
+    std::size_t getContentLength(std::string_view line)
+    {
+        auto find = std::min(line.size(), line.find(':'));
+        find = line.find_first_not_of(" \r\t\v", find + 1);
+        line.remove_prefix(find);
+        line.remove_suffix(1);
+        int result = 0;
+        std::from_chars(line.data(), line.data() + line.size(), result);
+        return result;
+    }
+
     bool handleRequest(NisHttp::Request const& request, NisHttp::Response& response)
     {
         TASock::SocketInfo      init{dest, destPort};
@@ -50,14 +69,39 @@ class ReverseProxy: public NisServer::NisseServer
                << request.body().rdbuf()
                << std::flush;
 
-        // Step 2: Read the reply and return.
+        // Step 2: Read the reply status line and headers
         stream >> response;
-        NisHttp::HeaderPassThrough  headers(stream);
-        NisHttp::StreamInput        body(stream, headers.getEncoding());
+        NisHttp::BodyEncoding       encoding = 0;
+        std::string                 line;
+        while (std::getline(stream, line)) {
+
+        while (std::getline(stream, line)) {
+            if (line == "\r") {
+                // The back slash r back slash n will be added when we call body()
+                break;
+            }
+            // content-length or transfer-encoding is handled when we call body() below.
+            // Note: It is also filtered out by addHeader() so no point in explicitly adding these
+            using namespace std::string_view_literals;
+            if (isHeader(line, "content-length"sv)) {
+                encoding = getContentLength(line);
+                continue;
+            }
+            if (isHeader(line, "transfer-encoding")) {
+                encoding = NisHttp::Encoding::Chunked;
+                continue;
+            }
+            // Calculate the header name and value.
+            auto breakPoint = std::min(std::size(line), line.find(':'));
+            auto valueStart = std::min(std::size(line), breakPoint + 1);
+            auto headerName = line.substr(0, breakPoint);
+            auto headerValue = line.substr(valueStart);
+            response.addHeader(headerName, headerValue);
+        }
 
         // Step 3: Send the reply back to the originator.
-        response.addHeaders(headers);
-        response.body(headers.getEncoding()) << body.rdbuf();
+        NisHttp::StreamInput        body(stream, encoding);
+        response.body(encoding) << body.rdbuf();
         return true;
     }
 

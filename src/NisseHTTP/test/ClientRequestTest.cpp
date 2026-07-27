@@ -2,7 +2,6 @@
 #include <sstream>
 #include <string>
 #include "ClientHTTP.h"
-#include "HeaderResponse.h"
 
 using ThorsAnvil::Nisse::HTTP::ClientRequest;
 using ThorsAnvil::Nisse::HTTP::ClientHTTPBase;

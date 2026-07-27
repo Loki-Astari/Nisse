@@ -1,5 +1,5 @@
 #include "MongoServer.h"
-#include "NisseServer/NisseServer.h"
+#include "NisseServer/Server.h"
 #include "NisseServer/PyntControl.h"
 #include "NisseServer/Context.h"
 #include "NisseHTTP/HTTPHandler.h"
@@ -15,7 +15,7 @@ namespace NisHttp   = ThorsAnvil::Nisse::HTTP;
 namespace MRest     = ThorsAnvil::Nisse::Examples::MongoRest;
 namespace FS        = std::filesystem;
 
-class MongoRest: public NisServer::NisseServer
+class MongoRest: public NisServer::Server
 {
     NisHttp::HTTPHandler    http;
     NisServer::PyntControl  control;
@@ -51,7 +51,7 @@ class MongoRest: public NisServer::NisseServer
     }
     public:
         MongoRest(std::size_t poolSize, std::size_t mongoConnectionCount, int port, FS::path contentDir, std::string_view mongoHost, int mongoPort, std::string_view mongoUser, std::string_view mongoPass, std::string_view mongoDB, std::optional<FS::path> certPath)
-            : NisServer::NisseServer{poolSize}
+            : NisServer::Server{poolSize}
             , control{*this}
             , mongoServer{*this, mongoConnectionCount, mongoHost, 27017, mongoUser, mongoPass, mongoDB}
             , contentDir{contentDir}
