@@ -107,7 +107,7 @@ namespace ThorsAnvil::Nisse::HTTP
                     {
                         send(method, request, ThorsAnvil::Serialize::jsonStreamSize(src), [&src](std::ostream& output)
                         {
-                            output << ThorsAnvil::Serialize::jsonExporter(src);
+                            output << ThorsAnvil::Serialize::jsonExporter(src, ThorsAnvil::Serialize::OutputType::Stream);
                         });
                     }
                     processResp(std::forward<AsyncAction>(action));
