@@ -49,6 +49,13 @@ bool ClientHTTPResponse::readFirstLine(std::iostream& stream)
         message = "Invalid HTTP Response received from Server. First Line no invalid format. This message generated client side";
         return false;
     }
+    readHeaders(stream, headers);
+    return true;
+}
+
+NISSE_HEADER_ONLY_INCLUDE
+void ClientHTTPResponse::readHeaders(std::iostream& stream, HeaderRequest& headers)
+{
     std::string header;
     while (std::getline(stream, header)) {
         if (header == "\r") {
@@ -65,7 +72,6 @@ bool ClientHTTPResponse::readFirstLine(std::iostream& stream)
         ThorsLogTrack("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "readFirstLine", "Header:", keys, " : ", valu);
         headers.add(keys, valu);
     }
-    return true;
 }
 
 NISSE_HEADER_ONLY_INCLUDE
@@ -118,12 +124,22 @@ bool ClientHTTPResponse::buildStream(std::iostream& stream)
 
         // Valid transfer encoding. Chunked.
         // Set an input stream that decodes a Chunked input stream.
-        input.addBuffer(StreamBufInput(stream, Encoding::Chunked, [&stream](std::ios_base::iostate state){stream.setstate(state);}));
+        input.addBuffer(StreamBufInput(stream, Encoding::Chunked, [&](std::ios_base::iostate state){stream.setstate(state);if (stream){readHeaders(stream, tailers);}}));
     }
 
     // Good input.
     return true;
 }
+
+NISSE_HEADER_ONLY_INCLUDE
+ClientHTTPBase::ClientHTTPBase(std::iostream& stream, Version version, std::function<void()>&& close, std::function<std::string_view()>&& move, std::function<bool()>&& reset)
+    : stream{stream}
+    , version{version}
+    , close{std::move(close)}
+    , host{std::move(move)}
+    , reset{std::move(reset)}
+    , closed(false)
+{}
 
 NISSE_HEADER_ONLY_INCLUDE
 void ClientHTTPBase::send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action) const

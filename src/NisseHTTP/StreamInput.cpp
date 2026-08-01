@@ -139,13 +139,11 @@ NISSE_HEADER_ONLY_INCLUDE
 StreamBufInput::int_type StreamBufInput::underflow()
 {
     //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Underflow stream");
-    if (remaining == 0)
-    {
+    if (remaining == 0 && chunked) {
         getNextChunk();
-        if (remaining == 0) {
-            //ThorsLogLowLevel("ThorsAnvil::Nisse::HTTP::StreamBufInput", "underflow", "Nothing left to read");
-            return traits::eof();
-        }
+    }
+    if (remaining == 0) {
+        return traits::eof();
     }
 
     std::streamsize get = std::min(remaining, static_cast<std::streamsize>(chunkBuffer.size()));
@@ -295,11 +293,6 @@ void StreamBufInput::checkBuffer()
 NISSE_HEADER_ONLY_INCLUDE
 void StreamBufInput::getNextChunk()
 {
-    if (!chunked)
-    {
-        complete(std::ios::goodbit);
-        return;
-    }
     if (firstChunk) {
         firstChunk = false;
     }

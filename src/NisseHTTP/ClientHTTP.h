@@ -31,6 +31,7 @@ class ClientHTTPResponse
         int                         status;
         std::string                 message;
         HeaderRequest               headers;
+        HeaderRequest               tailers;
         mutable StreamInput         input;
         bool                        valid;
     public:
@@ -53,6 +54,7 @@ class ClientHTTPResponse
 
     private:
         bool readFirstLine(std::iostream& stream);
+        void readHeaders(std::iostream& stream, HeaderRequest& headers);
         bool buildStream(std::iostream& stream);
 
         friend class ClientHTTPBase;
@@ -69,14 +71,7 @@ class ClientHTTPBase
     mutable bool                        closed;
 
     public:
-        ClientHTTPBase(std::iostream& stream, Version version = Version::HTTP1_1, std::function<void()>&& close = [](){}, std::function<std::string_view()>&& move = [](){return "localhost";}, std::function<bool()>&& reset = [](){return false;})
-            : stream{stream}
-            , version{version}
-            , close{std::move(close)}
-            , host{std::move(move)}
-            , reset{std::move(reset)}
-            , closed(false)
-        {}
+        ClientHTTPBase(std::iostream& stream, Version version = Version::HTTP1_1, std::function<void()>&& close = [](){}, std::function<std::string_view()>&& move = [](){return "localhost";}, std::function<bool()>&& reset = [](){return false;});
 
         template<typename D>
         D get(ClientRequest const& request)                  const   {return processes<Method::GET, D>(request, 0);}
@@ -170,7 +165,7 @@ class ClientHTTP: public ClientHTTPBase
             , stream{init}
         {}
         std::string_view hostname() const {return std::visit(GetHostName{}, init);}
-        bool resetStream()
+        virtual bool resetStream()
         {
             stream = ThorsAnvil::ThorsSocket::SocketStream{init};
             return true;
