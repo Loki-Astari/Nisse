@@ -84,7 +84,7 @@ class EventHandler
         void stopHard();
         void add(TASock::Server&& stream, ServerCreator&& creator, Pynt& pynt);
         void add(TASock::SocketStream&& stream, StreamCreator&& creator, Pynt& pynt);
-        int  addTimer(int microseconds, TimerAction& action);
+        int  addTimer(std::size_t microseconds, TimerAction& action);
         void addOwnedFD(int fd, int owner, EventType initialWait);
 
         void remOwnedFD(int fd);

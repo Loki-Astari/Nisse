@@ -124,9 +124,17 @@ class Event
                 ThorsLogError("ThorsAnvil::Nisse::Server::Event", "add", "Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
             }
         }
-        void add(int microsecondsPause)
+        void add(std::size_t microsecondsPause)
         {
-            LibEventTimeOut timeout = {0, microsecondsPause};
+            /*
+             * `timeval` requires a normalized value: tv_usec must be in the range [0, 999999].
+             * Passing a raw microsecond count larger than a second leaves libEvent with a
+             * denormalized timeout that kqueue()/kevent() rejects with EINVAL (this shows up
+             * as "[warn] kevent: Invalid argument" and kills the event loop).
+             */
+            auto const      seconds = static_cast<decltype(LibEventTimeOut::tv_sec)>(microsecondsPause / 1'000'000);
+            auto const      micros  = static_cast<decltype(LibEventTimeOut::tv_usec)>(microsecondsPause % 1'000'000);
+            LibEventTimeOut timeout = {seconds, micros};
             int result = evtimer_add(event, &timeout);
             if (result != 0) {
                 ThorsLogError("ThorsAnvil::Nisse::Server::Event", "add", "Timer: ", microsecondsPause, " Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());

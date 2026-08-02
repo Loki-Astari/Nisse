@@ -111,7 +111,7 @@ void EventHandler::add(TASock::SocketStream&& stream, StreamCreator&& streamCrea
 }
 
 NISSE_HEADER_ONLY_INCLUDE
-int EventHandler::addTimer(int microseconds, TimerAction& action)
+int EventHandler::addTimer(std::size_t microseconds, TimerAction& action)
 {
     int result = getNextTImerId()++;
     store.requestChange(StateUpdateCreateTimer{result,

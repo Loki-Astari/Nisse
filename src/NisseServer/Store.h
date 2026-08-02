@@ -77,7 +77,7 @@ struct SharedFD
 struct TimerData
 {
     int                     timerId;
-    int                     waitTime;       // microseconds. Be careful => 1,000,000 per second.
+    std::size_t             waitTime;       // microseconds. Be careful => 1,000,000 per second.
     TimerAction*            timerAction;
     EventHandler*           eventHandler;
     Event                   timerEvent;
@@ -128,7 +128,7 @@ struct StateUpdateCreateSharedFD
 struct StateUpdateCreateTimer
 {
     int                     timerId;
-    int                     waitTime;       // microseconds. Be careful => 1,000,000 per second.
+    std::size_t             waitTime;       // microseconds. Be careful => 1,000,000 per second.
     TimerAction*            timerAction;
     EventBase*              eventBase;
     EventHandler*           eventHandler;
