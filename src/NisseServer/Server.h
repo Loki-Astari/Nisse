@@ -76,6 +76,7 @@ namespace UnitTest
                 : activeServer{nullptr}
                 , runner([&]()
                 {
+                    ThorsLogInfo("ThorsAnvil::Nisse::Server::UnitTest::ServerRunner::ServerRunner", "<Thread:runner>", "Server Starting");
                     T   server{std::forward<Args>(args)...};
                     server.run([&]()
                                {
@@ -85,6 +86,7 @@ namespace UnitTest
                                });
                     std::unique_lock<std::mutex>    lock{mutex};
                     activeServer = nullptr;
+                    ThorsLogInfo("ThorsAnvil::Nisse::Server::UnitTest::ServerRunner::ServerRunner", "<Thread:runner>", "Server Exiting");
                 })
             {
                 std::unique_lock<std::mutex>     lock{mutex};

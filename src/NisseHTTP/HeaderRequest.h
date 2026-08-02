@@ -11,9 +11,23 @@
 namespace ThorsAnvil::Nisse::HTTP
 {
 
+struct CaseInsensitiveCompare
+{
+    bool operator()(const std::string& lhs, const std::string& rhs) const
+    {
+        return std::lexicographical_compare(
+            std::begin(lhs), std::end(lhs),
+            std::begin(rhs), std::end(rhs),
+            [](unsigned char lhs, unsigned char rhs) {
+                return std::tolower(lhs) < std::tolower(rhs);
+            }
+        );
+    }
+};
+
 class HeaderRequest
 {
-    using HeaderMap = std::map<std::string, std::vector<std::string>>;
+    using HeaderMap = std::map<std::string, std::vector<std::string>, CaseInsensitiveCompare>;
     using CIterator = HeaderMap::const_iterator;
 
     HeaderMap   headers;

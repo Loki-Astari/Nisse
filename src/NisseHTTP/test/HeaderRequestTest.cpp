@@ -16,7 +16,8 @@ TEST(HeaderRequestTest, AddHeadderStringLiteral)
     EXPECT_EQ(1, header.getHeader("content-length"sv).size());
     EXPECT_EQ("56", header.getHeader("content-length"sv)[0]);
 
-    EXPECT_EQ(0, header.getHeader("Content-Length"sv).size());
+    // The get is now case insensitive as well.
+    EXPECT_EQ(1, header.getHeader("Content-Length"sv).size());
 }
 
 TEST(HeaderRequestTest, AddHeadderString)
@@ -28,7 +29,8 @@ TEST(HeaderRequestTest, AddHeadderString)
     EXPECT_EQ(1, header.getHeader("content-length"s).size());
     EXPECT_EQ("56", header.getHeader("content-length"s)[0]);
 
-    EXPECT_EQ(0, header.getHeader("Content-Length"s).size());
+    // The get is now case insensitive as well.
+    EXPECT_EQ(1, header.getHeader("Content-Length"s).size());
 }
 
 TEST(HeaderRequestTest, AddHeadderCharArray)
@@ -39,7 +41,8 @@ TEST(HeaderRequestTest, AddHeadderCharArray)
     EXPECT_EQ(1, header.getHeader("content-length").size());
     EXPECT_EQ("56", header.getHeader("content-length")[0]);
 
-    EXPECT_EQ(0, header.getHeader("Content-Length").size());
+    // The get is now case insensitive as well.
+    EXPECT_EQ(1, header.getHeader("Content-Length").size());
 }
 
 TEST(HeaderRequestTest, AddHeadderConstStringLiteral)
@@ -52,7 +55,8 @@ TEST(HeaderRequestTest, AddHeadderConstStringLiteral)
     EXPECT_EQ(1, header.getHeader("content-length"sv).size());
     EXPECT_EQ("56", header.getHeader("content-length"sv)[0]);
 
-    EXPECT_EQ(0, header.getHeader("Content-Length"sv).size());
+    // The get is now case insensitive as well.
+    EXPECT_EQ(1, header.getHeader("Content-Length"sv).size());
 }
 
 TEST(HeaderRequestTest, AddHeadderConstString)
@@ -65,7 +69,8 @@ TEST(HeaderRequestTest, AddHeadderConstString)
     EXPECT_EQ(1, header.getHeader("content-length"s).size());
     EXPECT_EQ("56", header.getHeader("content-length"s)[0]);
 
-    EXPECT_EQ(0, header.getHeader("Content-Length"s).size());
+    // The get is now case insensitive as well.
+    EXPECT_EQ(1, header.getHeader("Content-Length"s).size());
 }
 
 TEST(HeaderRequestTest, AddHeadderConstCharArray)
@@ -77,7 +82,8 @@ TEST(HeaderRequestTest, AddHeadderConstCharArray)
     EXPECT_EQ(1, header.getHeader("content-length").size());
     EXPECT_EQ("56", header.getHeader("content-length")[0]);
 
-    EXPECT_EQ(0, header.getHeader("Content-Length").size());
+    // The get is now case insensitive as well.
+    EXPECT_EQ(1, header.getHeader("Content-Length").size());
 }
 
 TEST(HeaderRequestTest, GetInvalidHeader)
