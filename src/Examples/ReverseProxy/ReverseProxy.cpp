@@ -73,7 +73,6 @@ class ReverseProxy: public NisServer::Server
         stream >> response;
         NisHttp::BodyEncoding       encoding = 0;
         std::string                 line;
-        while (std::getline(stream, line)) {
 
         while (std::getline(stream, line)) {
             if (line == "\r") {
@@ -140,7 +139,7 @@ int main(int argc, char* argv[])
 
         std::cout << "Nisse ReverseProxy: Port: " << port << " Destination: >" << dest << "< DestPort: >" << destPort << "< Certificate Path: >" << (argc == 4 ? "NONE" : argv[4]) << "<\n";
 
-        ReverseProxy   server(port, dest, destPort, certPath);;
+        ReverseProxy   server(port, dest, destPort, certPath);
         server.run();
     }
     catch (std::exception const& e)
