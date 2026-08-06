@@ -292,11 +292,11 @@ void EventHandler::addJob(CoRoutine& work, int fd)
         }
         catch (std::exception const& e)
         {
-            ThorsLogWarning("ThorsAnvil::Nisse::Server::EventHandler", "addJob", "jobQueue::job: Ignoring Exception: ",  e.what());
+            ThorsLogCritical("ThorsAnvil::Nisse::Server::EventHandler", "addJob", "jobQueue::job: Ignoring Exception: ",  e.what());
         }
         catch (...)
         {
-            ThorsLogWarning("ThorsAnvil::Nisse::Server::EventHandler", "addJob", "jobQueue::job: Ignoring Exception: Unknown");
+            ThorsLogCritical("ThorsAnvil::Nisse::Server::EventHandler", "addJob", "jobQueue::job: Ignoring Exception: Unknown");
         }
         switch (task.state)
         {

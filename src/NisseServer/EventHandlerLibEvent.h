@@ -121,7 +121,7 @@ class Event
                  * Please figure out why this is being logged and try and prevent this issue from happening as
                  * the side effects of this failing is going to be unpredictable.
                  */
-                ThorsLogError("ThorsAnvil::Nisse::Server::Event", "add", "Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
+                ThorsLogAlert("ThorsAnvil::Nisse::Server::Event", "add", "Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
             }
         }
         void add(std::size_t microsecondsPause)
@@ -137,7 +137,7 @@ class Event
             LibEventTimeOut timeout = {seconds, micros};
             int result = evtimer_add(event, &timeout);
             if (result != 0) {
-                ThorsLogError("ThorsAnvil::Nisse::Server::Event", "add", "Timer: ", microsecondsPause, " Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
+                ThorsLogAlert("ThorsAnvil::Nisse::Server::Event", "add", "Timer: ", microsecondsPause, " Faied to call event_add(): errno: ", errno, " Msg: ", ThorsAnvil::Utility::systemErrorMessage());
             }
         }
         void activate()

@@ -137,7 +137,7 @@ void StreamBufOutput::done()
          */
         if (remaining > 0) {
 
-            ThorsLogError("ThorsAnvil::Nisse::HTTP::StreamBufOutput", "dumpBuffer", "Content-Length too large. Sending raw data to compensate");
+            ThorsLogAlert("ThorsAnvil::Nisse::HTTP::StreamBufOutput", "dumpBuffer", "Content-Length too large. Sending raw data to compensate");
             while (remaining > 0)
             {
                 std::streamsize next = std::min(static_cast<std::streamsize>(chunkBuffer.size()), remaining);

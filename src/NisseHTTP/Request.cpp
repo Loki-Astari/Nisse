@@ -49,7 +49,7 @@ std::string_view Request::readFirstLine(std::istream& stream)
     }
     else
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", ": Header not \\r\\n terminated");
+        ThorsLogError("ThorsAnvil::Nisse::HTTP::Request", "readFirstLine", ": Header not \\r\\n terminated");
         failResponse.insert_or_assign("error", "Invalid HTTP Request");
         failResponse.insert_or_assign("reason", "Header Not terminated with <CR><LF>");
         return "";
@@ -130,7 +130,7 @@ bool Request::buildURL(std::string_view proto, std::string_view path)
     std::vector<std::string> const& hostValues = head.getHeader("host"sv);
     if (hostValues.size() == 0)
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildURL", ": Bad Request No Host Field: ");
+        ThorsLogError("ThorsAnvil::Nisse::HTTP::Request", "buildURL", ": Bad Request No Host Field: ");
         failResponse.insert_or_assign("error", "Invalid HTTP Request- No Host header");
         return false;
     }
@@ -159,7 +159,7 @@ bool Request::buildStream(std::istream& stream)
     /* Check there we have a valid content definition */
     if (contentLength.size() + transferEncoding.size() != 1)
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Bad Request: Includes more than one 'content-length' and 'transfer-encoding'");
+        ThorsLogError("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Bad Request: Includes more than one 'content-length' and 'transfer-encoding'");
         failResponse.insert_or_assign("error", "Invalid HTTP Request- Includes multiple 'content-length' or 'transfer-encoding'");
         for (auto const& v: contentLength) {
             failResponse.insert_or_assign("value-content-length", v);
@@ -174,7 +174,7 @@ bool Request::buildStream(std::istream& stream)
     {
         // The header specifies a content Length.
         if (contentLength[0].size() == 0) {
-            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid content-length: Empty");
+            ThorsLogError("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid content-length: Empty");
             failResponse.insert_or_assign("error", "Invalid HTTP Request- Malformed content-length: <empty>");
             return false;
         }
@@ -183,7 +183,7 @@ bool Request::buildStream(std::istream& stream)
         char const*     last  = first + contentLength[0].size();
         auto result = std::from_chars(first, last, bodySize);
         if (result.ec != std::errc() || result.ptr != last || bodySize < 0) {
-            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid content-length: ", contentLength[0]);
+            ThorsLogError("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid content-length: ", contentLength[0]);
             failResponse.insert_or_assign("error", "Invalid HTTP Request- Malformed content-length: " + contentLength[0]);
             return false;
         }
@@ -196,7 +196,7 @@ bool Request::buildStream(std::istream& stream)
         // The header specifies a body encoding/
         if (transferEncoding[0] != "chunked") {
             /* TODO: Understand other transfer-encoding and add support for these */
-            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid transfer-encoding: ", transferEncoding[0]);
+            ThorsLogError("ThorsAnvil::Nisse::HTTP::Request", "buildStream", ": Invalid transfer-encoding: ", transferEncoding[0]);
             failResponse.insert_or_assign("error", "Invalid HTTP Request- Unsupported Transer Encoding: " + transferEncoding[0]);
             return false;
         }

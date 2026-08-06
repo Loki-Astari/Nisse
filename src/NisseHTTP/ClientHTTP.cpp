@@ -15,7 +15,7 @@ bool ClientHTTPResponse::readFirstLine(std::iostream& stream)
     }
     else
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "readFirstLine", ": Header not \\r\\n terminated");
+        ThorsLogError("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "readFirstLine", ": Header not \\r\\n terminated");
         status = 500;
         message = "Invalid HTTP Response received from Server. First Line no '\\r'. This message generated client side";
         return false;
@@ -90,7 +90,7 @@ bool ClientHTTPResponse::buildStream(std::iostream& stream)
     /* Check there we have a valid content definition */
     if (contentLength.size() + transferEncoding.size() != 1)
     {
-        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "buildStream", ": Bad Request: Includes more than one 'content-length' and 'transfer-encoding'");
+        ThorsLogError("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "buildStream", ": Bad Request: Includes more than one 'content-length' and 'transfer-encoding'");
         return false;
     }
 
@@ -98,7 +98,7 @@ bool ClientHTTPResponse::buildStream(std::iostream& stream)
     {
         // The header specifies a content Length.
         if (contentLength[0].size() == 0) {
-            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "buildStream", ": Invalid content-length: Empty");
+            ThorsLogError("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "buildStream", ": Invalid content-length: Empty");
             return false;
         }
         std::streamsize bodySize = 0;
@@ -106,7 +106,7 @@ bool ClientHTTPResponse::buildStream(std::iostream& stream)
         char const*     last  = first + contentLength[0].size();
         auto result = std::from_chars(first, last, bodySize);
         if (result.ec != std::errc() || result.ptr != last || bodySize < 0) {
-            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "buildStream", ": Invalid content-length: ", contentLength[0]);
+            ThorsLogError("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "buildStream", ": Invalid content-length: ", contentLength[0]);
             return false;
         }
 
@@ -118,7 +118,7 @@ bool ClientHTTPResponse::buildStream(std::iostream& stream)
         // The header specifies a body encoding/
         if (transferEncoding[0] != "chunked") {
             /* TODO: Understand other transfer-encoding and add support for these */
-            ThorsLogInfo("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "buildStream", ": Invalid transfer-encoding: ", transferEncoding[0]);
+            ThorsLogError("ThorsAnvil::Nisse::HTTP::ClientHTTPResponse", "buildStream", ": Invalid transfer-encoding: ", transferEncoding[0]);
             return false;
         }
 

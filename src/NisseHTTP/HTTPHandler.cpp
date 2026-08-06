@@ -134,7 +134,7 @@ void HTTPHandler::addFormVariables(RequestVariables& var, std::istream& stream)
         std::string name = decode(nameView);
         std::string value = decode(valueView);
 
-        ThorsLogDebug("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addFormVariables", name, " => ", value);
+        ThorsLogNotice("ThorsAnvil::Nisse::HTTP::HTTPHandler", "addFormVariables", name, " => ", value);
         var.insert_or_assign(std::move(name), std::move(value));
     }
 }
@@ -171,7 +171,7 @@ bool HTTPHandler::callUserAction(std::string const& path, HTTPAction& action, HT
     addPathMatch(var, matches);
 
     if (!val(request)) {
-        ThorsLogInfo("ThorsAnvil::Nisse::HTTP::HTTPHandler", "callUserAction", "Validation fail");
+        ThorsLogError("ThorsAnvil::Nisse::HTTP::HTTPHandler", "callUserAction", "Validation fail");
         response.setStatus(400);
         return true;
     }

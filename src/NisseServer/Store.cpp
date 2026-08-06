@@ -35,7 +35,7 @@ StoreData& Store::getStoreData(int fd)
     auto find = data.find(fd);
     if (find == data.end())
     {
-        ThorsLogFatal("ThorsAnvil::Nisse::Server::Store", "getStoreData", "Invalid Request: Exit applications");
+        ThorsLogEmergency("ThorsAnvil::Nisse::Server::Store", "getStoreData", "Invalid Request: Exit applications");
     }
     return find->second;
 }

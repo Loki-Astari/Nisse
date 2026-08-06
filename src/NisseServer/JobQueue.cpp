@@ -81,11 +81,11 @@ void JobQueue::processWork()
         }
         catch (std::exception const& e)
         {
-            ThorsLogWarning("ThorsAnvil::Nisse::Server::JobQueue", "processWork", "Work Exception: ",  e.what());
+            ThorsLogCritical("ThorsAnvil::Nisse::Server::JobQueue", "processWork", "Work Exception: ",  e.what());
         }
         catch (...)
         {
-            ThorsLogWarning("ThorsAnvil::Nisse::Server::JobQueue", "processWork", "Work Exception: Unknown");
+            ThorsLogCritical("ThorsAnvil::Nisse::Server::JobQueue", "processWork", "Work Exception: Unknown");
         }
     }
 }
