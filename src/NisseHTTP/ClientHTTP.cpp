@@ -133,7 +133,7 @@ bool ClientHTTPResponse::buildStream(std::iostream& stream)
 
 NISSE_HEADER_ONLY_INCLUDE
 ClientHTTPBase::ClientHTTPBase(std::iostream& stream, Version version, std::function<void()>&& close, std::function<std::string_view()>&& move, std::function<bool()>&& reset)
-    : stream{stream}
+    : streamPtr{&stream}
     , version{version}
     , close{std::move(close)}
     , host{std::move(move)}
@@ -141,27 +141,53 @@ ClientHTTPBase::ClientHTTPBase(std::iostream& stream, Version version, std::func
     , closed(false)
 {}
 
+ClientHTTPBase::ClientHTTPBase(ClientHTTPBase&& move) noexcept
+    : streamPtr{std::exchange(move.streamPtr, nullptr)}
+    , version{move.version}
+    , close{std::move(move.close)}
+    , host{std::move(move.host)}
+    , reset{std::move(move.reset)}
+    , closed(move.closed)
+{}
+
+ClientHTTPBase& ClientHTTPBase::operator=(ClientHTTPBase&& move) noexcept
+{
+    swap(move);
+    return *this;
+}
+
+void ClientHTTPBase::swap(ClientHTTPBase& other) noexcept
+{
+    using std::swap;
+    swap(streamPtr,     other.streamPtr);
+    swap(version,       other.version);
+    swap(close,         other.close);
+    swap(host,          other.host);
+    swap(reset,         other.reset);
+    swap(closed,        other.closed);
+}
+
 NISSE_HEADER_ONLY_INCLUDE
 void ClientHTTPBase::send(Method method, ClientRequest const& request, BodyEncoding encoding, std::function<void(StreamOutput& action)>&& action) const
 {
-    if (closed || stream.eof()) {
+    if (closed || streamPtr->eof()) {
         closed = !(reset());
     }
     // Send to the server a correctly encoded HTTP request.
     // With the minumum headers.
-    stream << method << " " << request.path << " " << version << "\r\n"
-           << "host: " << host() << "\r\n"
-           << encoding;
+    (*streamPtr) << method << " " << request.path << " " << version << "\r\n"
+                 << "host: " << host() << "\r\n"
+                 << encoding;
 
     // Add the user requested header.
     for (auto const& header: request.headers) {
         for (auto const& value: header.second) {
-            stream << header.first << ": " << value << "\r\n";
+            (*streamPtr) << header.first << ": " << value << "\r\n";
         }
     }
 
     // Empty line marking end of headers.
-    stream << "\r\n";
+    (*streamPtr) << "\r\n";
 
     /*
      * Create a stream that knows how to enforce the encoding specified.
@@ -177,7 +203,7 @@ void ClientHTTPBase::send(Method method, ClientRequest const& request, BodyEncod
      * The same pattern for other encodings. The stream will automatically apply the encoding.
      * And the destructor of `output` will make sure the stream is correctly terminated and flushed.
      */
-    StreamOutput    output(stream, encoding);
+    StreamOutput    output((*streamPtr), encoding);
     action(output);
 }
 
@@ -187,7 +213,7 @@ void ClientHTTPBase::processResp(std::function<void(ClientHTTPResponse const&)>&
     // Reads the status line and header information from the stream.
     // Internally it will create a stream object that decodes the input based on the headers).
     // So your code can read directly from the input.
-    ClientHTTPResponse  response{stream};
+    ClientHTTPResponse  response{*streamPtr};
     if (!response.isValid()) {
         close();
     }
@@ -206,4 +232,31 @@ void ClientHTTPBase::processResp(std::function<void(ClientHTTPResponse const&)>&
     if (isClosed || (version == Version::HTTP1_0 && !isKeepAlive)) {
         closed = true;
     }
+}
+
+ClientHTTP::ClientHTTP(Init, ThorsAnvil::ThorsSocket::SocketInit const& info, Version version)
+    : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
+    , init{info}
+    , stream{init}
+{}
+
+ClientHTTP::ClientHTTP(ClientHTTP&& move) noexcept
+    : ClientHTTPBase{std::move(move)}
+    , init{std::move(move.init)}
+    , stream{std::move(move.stream)}
+{}
+
+ClientHTTP& ClientHTTP::operator=(ClientHTTP&& move) noexcept
+{
+    swap(move);
+    return *this;
+}
+
+void ClientHTTP::swap(ClientHTTP& other) noexcept
+{
+    ClientHTTPBase::swap(other);
+
+    using std::swap;
+    swap(init,      other.init);
+    swap(stream,    other.stream);
 }

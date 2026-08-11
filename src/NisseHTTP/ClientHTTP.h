@@ -63,7 +63,7 @@ class ClientHTTPResponse
 
 class ClientHTTPBase
 {
-    std::iostream&                      stream;
+    std::iostream*                      streamPtr;
     Version                             version;
     std::function<void()>               close;
     std::function<std::string_view()>   host;
@@ -72,6 +72,10 @@ class ClientHTTPBase
 
     public:
         ClientHTTPBase(std::iostream& stream, Version version = Version::HTTP1_1, std::function<void()>&& close = [](){}, std::function<std::string_view()>&& move = [](){return "localhost";}, std::function<bool()>&& reset = [](){return false;});
+        ClientHTTPBase(ClientHTTPBase&& move) noexcept;
+        ClientHTTPBase& operator=(ClientHTTPBase&& move) noexcept;
+        void swap(ClientHTTPBase& other) noexcept;
+        friend void swap(ClientHTTPBase& lhs, ClientHTTPBase& rhs)  {lhs.swap(rhs);}
 
         template<typename D>
         D get(ClientRequest const& request)                  const   {return processes<Method::GET, D>(request, 0);}
@@ -107,7 +111,7 @@ class ClientHTTPBase
                     });
                 }
                 processResp(std::forward<AsyncAction>(action));
-                if (stream.eof() && reset()) {
+                if (streamPtr->eof() && reset()) {
                     closed = false;
                     continue;
                 }
@@ -143,27 +147,33 @@ class ClientHTTP: public ClientHTTPBase
     ThorsAnvil::ThorsSocket::SocketInit     init;
     ThorsAnvil::ThorsSocket::SocketStream   stream;
 
+    enum Init {Constructor};
+
     public:
         ClientHTTP(ThorsAnvil::ThorsSocket::SSocketInfo const& info, Version version = Version::HTTP1_1)
-            : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
-            , init{info}
-            , stream{init}
+            : ClientHTTP(Init::Constructor, info, version)
         {}
         ClientHTTP(ThorsAnvil::ThorsSocket::SocketInfo const& info, Version version = Version::HTTP1_1)
-            : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
-            , init{info}
-            , stream{init}
+            : ClientHTTP(Init::Constructor, info, version)
         {}
         ClientHTTP(ThorsAnvil::ThorsSocket::SocketService const& info, Version version = Version::HTTP1_1)
-            : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
-            , init{info}
-            , stream{init}
+            : ClientHTTP(Init::Constructor, info, version)
         {}
         ClientHTTP(ThorsAnvil::ThorsSocket::SSocketService const& info, Version version = Version::HTTP1_1)
-            : ClientHTTPBase{stream, version, [&](){stream.close();}, [&](){return hostname();}, [&](){return resetStream();}}
-            , init{info}
-            , stream{init}
+            : ClientHTTP(Init::Constructor, info, version)
         {}
+        ClientHTTP(ThorsAnvil::ThorsSocket::SocketInit const& info, Version version = Version::HTTP1_1)
+            : ClientHTTP(Init::Constructor, info, version)
+        {}
+    private:
+        ClientHTTP(Init, ThorsAnvil::ThorsSocket::SocketInit const& info, Version version);
+    public:
+        ClientHTTP(ClientHTTP&& move) noexcept;
+        ClientHTTP& operator=(ClientHTTP&& move) noexcept;
+        void swap(ClientHTTP& other) noexcept;
+        friend void swap(ClientHTTP& lhs, ClientHTTP& rhs)  {lhs.swap(rhs);}
+
+        virtual ~ClientHTTP() = default;
         std::string_view hostname() const {return std::visit(GetHostName{}, init);}
         virtual bool resetStream()
         {
