@@ -45,7 +45,7 @@ CoRoutine Server::createStreamJob(StreamData& info)
             // Set the socket to work asynchronously.
             TASock::Socket& streamSocket = info.stream.getSocket();
 
-            streamSocket.setReadYield([&yield, &server, &info, socketId]()
+            streamSocket.setReadYield([&yield, &server, &info, &context, socketId]()
             {
                 // If yield() throws we are unwinding the stack.
                 // This lambda is being called from deep inside the iostream but we want the
@@ -53,7 +53,10 @@ CoRoutine Server::createStreamJob(StreamData& info)
                 // but if yield() does not throw put the exception mask back.
                 std::ios_base::iostate e = info.stream.exceptions();
                 info.stream.exceptions(std::ios::badbit);
-                yield({TaskYieldState::RestoreRead, socketId});
+                {
+                    ContextThreadNotifyYield    contextYield(context);
+                    yield({TaskYieldState::RestoreRead, socketId});
+                }
                 /*
                  * Entry at this point means that we have continued an existing calling that was waiting
                  * for data from the client. If you look at EventHandler::addJob() you will see that
@@ -64,7 +67,7 @@ CoRoutine Server::createStreamJob(StreamData& info)
                 info.stream.exceptions(e);
                 return true;
             });
-            streamSocket.setWriteYield([&yield, &server, &info, socketId]()
+            streamSocket.setWriteYield([&yield, &server, &info, &context, socketId]()
             {
                 // If yield() throws we are unwinding the stack.
                 // This lambda is being called from deep inside the iostream but we want the
@@ -72,7 +75,10 @@ CoRoutine Server::createStreamJob(StreamData& info)
                 // but if yield() does not throw put the exception mask back.
                 std::ios_base::iostate e = info.stream.exceptions();
                 info.stream.exceptions(std::ios::badbit);
-                yield({TaskYieldState::RestoreWrite, socketId});
+                {
+                    ContextThreadNotifyYield    contextYield(context);
+                    yield({TaskYieldState::RestoreWrite, socketId});
+                }
                 /*
                  * Entry at this point means that we have continued an existing calling that was waiting
                  * to send data to the client. If you look at EventHandler::addJob() you will see that
@@ -107,6 +113,11 @@ CoRoutine Server::createStreamJob(StreamData& info)
                 // Yield here to give other requests an opportunity.
                 // See Store Restore Read request. This will re=shedule this task if there
                 // is still more data available on socketId automatically.
+                //
+                // Note: We are deliberately not using "ContextThreadNotifyYield" here.
+                // This is because a client may use "ContextThreadNotify" in the `handleRequest()`
+                // but it should be destroyed by the time we get back here so there is no
+                // need to yield in the context here.
                 yield({TaskYieldState::RestoreRead, socketId});
 
                 // If we are tidying up the exit immediately.

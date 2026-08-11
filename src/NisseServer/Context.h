@@ -7,18 +7,27 @@
 #include <ThorsSocket/Socket.h>
 #include <ThorsSocket/SocketStream.h>
 
+#include <thread>
+
 namespace TASock = ThorsAnvil::ThorsSocket;
 
 namespace ThorsAnvil::Nisse::Server
 {
 
 class Server;
+class ContextThreadNotify;
+class ContextThreadNotifyYield;
+class ContextThreadNotifyInterface;
 
 class Context
 {
     Server&         server;
     Yield&          yield;
     int             owner;
+
+    friend class ContextThreadNotify;
+    friend class ContextThreadNotifyYield;
+    ContextThreadNotifyInterface*  notify;
     public:
         Context(Server& server, Yield& yield, int owner);
         void registerOwnedSocketStream(TASock::SocketStream& stream, EventType initialWait);
@@ -61,6 +70,49 @@ class AsyncSharedSocket
     public:
         AsyncSharedSocket(TASock::Socket& socket, Server& server);
         ~AsyncSharedSocket();
+};
+
+class ContextThreadNotifyInterface
+{
+    public:
+        virtual ~ContextThreadNotifyInterface() {}
+        virtual void notifyThreadJoinContext(std::thread::id id)   = 0;
+        virtual void notifyThreadYieldContext(std::thread::id id)  = 0;
+};
+
+class ContextThreadNotify
+{
+    Context&                        context;
+    public:
+        ContextThreadNotify(Context& context, ContextThreadNotifyInterface& notifier)
+            : context(context)
+        {
+            context.notify = &notifier;
+            context.notify->notifyThreadJoinContext(std::this_thread::get_id());
+        }
+        ~ContextThreadNotify()
+        {
+            context.notify->notifyThreadYieldContext(std::this_thread::get_id());
+            context.notify = nullptr;
+        }
+};
+class ContextThreadNotifyYield
+{
+    Context&                        context;
+    public:
+        ContextThreadNotifyYield(Context& context)
+            : context(context)
+        {
+            if (context.notify) {
+                context.notify->notifyThreadYieldContext(std::this_thread::get_id());
+            }
+        }
+        ~ContextThreadNotifyYield()
+        {
+            if (context.notify) {
+                context.notify->notifyThreadJoinContext(std::this_thread::get_id());
+            }
+        }
 };
 
 }

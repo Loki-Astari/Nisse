@@ -10,6 +10,7 @@ Context::Context(Server& server, Yield& yield, int owner)
     : server{server}
     , yield{yield}
     , owner{owner}
+    , notify{nullptr}
 {}
 
 NISSE_HEADER_ONLY_INCLUDE
