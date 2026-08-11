@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSE_CONTEXT_H
-#define THORSANVIL_NISSE_CONTEXT_H
+#ifndef THORSANVIL_NISSE_SERVER_CONTEXT_H
+#define THORSANVIL_NISSE_SERVER_CONTEXT_H
 
 #include "NisseServerConfig.h"
 #include "NisseUtil.h"

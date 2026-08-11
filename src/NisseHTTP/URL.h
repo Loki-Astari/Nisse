@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSE_NISSEHTTP_URL_H
-#define THORSANVIL_NISSE_NISSEHTTP_URL_H
+#ifndef THORSANVIL_NISSE_HTTP_URL_H
+#define THORSANVIL_NISSE_HTTP_URL_H
 
 #include "NisseHTTPConfig.h"
 #include <cstddef>

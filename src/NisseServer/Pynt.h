@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSE_PYNT_H
-#define THORSANVIL_NISSE_PYNT_H
+#ifndef THORSANVIL_NISSE_SERVER_PYNT_H
+#define THORSANVIL_NISSE_SERVER_PYNT_H
 
 /*
  * Virtual base class for representing different protocols.

@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSE_JOB_QUEUE_H
-#define THORSANVIL_NISSE_JOB_QUEUE_H
+#ifndef THORSANVIL_NISSE_SERVER_JOB_QUEUE_H
+#define THORSANVIL_NISSE_SERVER_JOB_QUEUE_H
 
 /*
  * The class that holds all the background threads and work that the threads will do.

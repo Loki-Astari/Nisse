@@ -1,5 +1,5 @@
-#ifndef THORSANVIL_NISSE_NISSE_UTIL_H
-#define THORSANVIL_NISSE_NISSE_UTIL_H
+#ifndef THORSANVIL_NISSE_SERVER_NISSE_UTIL_H
+#define THORSANVIL_NISSE_SERVER_NISSE_UTIL_H
 
 #include "NisseServerConfig.h"
 #include <ThorsSocket/Server.h>
